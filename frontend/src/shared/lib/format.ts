@@ -1,3 +1,5 @@
+import { UnitHoliday, UnitHoursRange } from '@/modules/site/api/unit';
+
 import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
 
 import { format, isValid } from 'date-fns';
@@ -66,4 +68,40 @@ export function formatCPF(value: string): string {
     .replace(/^(\d{3})(\d)/, '$1.$2')
     .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
     .replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+}
+
+function getRangeEdges(range: UnitHoursRange): { start: string; end: string } {
+  return 'start' in range ? range : { start: range[0], end: range[1] };
+}
+
+export function formatRanges(ranges?: UnitHoursRange[]): string {
+  if (!ranges?.length) return 'Fechado';
+  return ranges
+    .map((range) => {
+      const { start, end } = getRangeEdges(range);
+      return `${start}–${end}`;
+    })
+    .join(' · ');
+}
+
+export function getBusinessDate(value: Date): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: BUSINESS_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(value);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? '';
+  return `${part('year')}-${part('month')}-${part('day')}`;
+}
+
+export function getUpcomingHolidays(holidays: UnitHoliday[] | undefined): UnitHoliday[] {
+  const today = getBusinessDate(new Date());
+  return (holidays ?? []).filter((holiday) => holiday.date >= today).sort((left, right) => left.date.localeCompare(right.date));
+}
+
+export function toWhatsAppUrl(phone?: string | null): string {
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  return `https://wa.me/${digits.startsWith('55') ? digits : `55${digits}`}`;
 }
