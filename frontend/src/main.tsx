@@ -3,8 +3,7 @@ import { createRoot } from 'react-dom/client';
 
 import '@/index.css';
 
-import App from './App.tsx';
-import './index.css';
+import { App } from './app';
 
 document.documentElement.classList.add('dark');
 
