@@ -3,15 +3,19 @@ import { lazy, ReactNode, Suspense, useEffect } from 'react';
 import { ForbiddenPage } from '@/modules/core/pages/forbidden';
 import { NotFoundPage } from '@/modules/core/pages/not-found';
 
+import { AccountLayout } from '@/shared/components/account-layout';
+import { AdminLayout } from '@/shared/components/admin-layout';
+import { AuthLayout } from '@/shared/components/auth-layout';
+import { BookingLayout } from '@/shared/components/booking-layout';
 import { RenderComponent } from '@/shared/components/render-component';
 import { RouteMeta } from '@/shared/components/route-placeholder';
+import { SiteLayout } from '@/shared/components/site-layout';
 import { setPageMetadata } from '@/shared/lib/page-meta';
 
 import { Route, Switch, useLocation, useSearch } from 'wouter';
 
-const DevUiPage = import.meta.env.DEV ? lazy(() => import('@/shared/pages/ui-gallery-page')) : null;
-
-const routeGroups = new Map<string, RouteMeta>();
+const HomePage = lazy(() => import('@/modules/site/pages/home-page'));
+const DevUiPage = import.meta.env.DEV ? lazy(() => import('@/shared/pages/ui-gallery-page')) : () => <div>Error</div>;
 
 function Layout({ kind, children }: { kind: RouteMeta['layout']; children: ReactNode }) {
   switch (kind) {
@@ -31,8 +35,24 @@ function Layout({ kind, children }: { kind: RouteMeta['layout']; children: React
 }
 
 const definitions: RouteMeta[] = [
-  { id: 'L01', title: 'Entrar', description: 'Acesse sua conta da Barbearia.', url: '/entrar', matchPath: '/entrar', access: 'Público', layout: 'auth' },
-  { id: 'L02', title: 'Criar conta', description: 'Crie sua conta para acompanhar seus agendamentos.', url: '/cadastrar', matchPath: '/cadastrar', access: 'Público', layout: 'auth' },
+  {
+    id: 'L01',
+    title: 'Entrar',
+    description: 'Acesse sua conta da Barbearia.',
+    url: '/entrar',
+    matchPath: '/entrar',
+    access: 'Público',
+    layout: 'auth',
+  },
+  {
+    id: 'L02',
+    title: 'Criar conta',
+    description: 'Crie sua conta para acompanhar seus agendamentos.',
+    url: '/cadastrar',
+    matchPath: '/cadastrar',
+    access: 'Público',
+    layout: 'auth',
+  },
   {
     id: 'L03',
     title: 'Recuperar senha',
@@ -52,12 +72,52 @@ const definitions: RouteMeta[] = [
     access: 'Público',
     layout: 'auth',
   },
-  { id: 'L05', title: 'Acesso da equipe', description: 'Entre no painel da equipe.', url: '/admin/login', matchPath: '/admin/login', access: 'Público', layout: 'auth' },
+  {
+    id: 'L05',
+    title: 'Acesso da equipe',
+    description: 'Entre no painel da equipe.',
+    url: '/admin/login',
+    matchPath: '/admin/login',
+    access: 'Público',
+    layout: 'auth',
+  },
   { id: 'S01', title: 'Início', description: 'Agende seu próximo corte na Barbearia.', url: '/', matchPath: '/', access: 'Público', layout: 'site' },
-  { id: 'S02', title: 'Serviços', description: 'Conheça os serviços da Barbearia.', url: '/servicos', matchPath: '/servicos', access: 'Público', layout: 'site' },
-  { id: 'S04', title: 'Profissionais', description: 'Conheça a equipe da Barbearia.', url: '/barbeiros', matchPath: '/barbeiros', access: 'Público', layout: 'site' },
-  { id: 'S09', title: 'Contato e horários', description: 'Veja como encontrar a Barbearia e nossos horários.', url: '/contato', matchPath: '/contato', access: 'Público', layout: 'site' },
-  { id: 'B02', title: 'Escolher serviços', description: 'Escolha os serviços do seu agendamento.', url: '/agendar', matchPath: '/agendar', access: 'Público', layout: 'booking' },
+  {
+    id: 'S02',
+    title: 'Serviços',
+    description: 'Conheça os serviços da Barbearia.',
+    url: '/servicos',
+    matchPath: '/servicos',
+    access: 'Público',
+    layout: 'site',
+  },
+  {
+    id: 'S04',
+    title: 'Profissionais',
+    description: 'Conheça a equipe da Barbearia.',
+    url: '/barbeiros',
+    matchPath: '/barbeiros',
+    access: 'Público',
+    layout: 'site',
+  },
+  {
+    id: 'S09',
+    title: 'Contato e horários',
+    description: 'Veja como encontrar a Barbearia e nossos horários.',
+    url: '/contato',
+    matchPath: '/contato',
+    access: 'Público',
+    layout: 'site',
+  },
+  {
+    id: 'B02',
+    title: 'Escolher serviços',
+    description: 'Escolha os serviços do seu agendamento.',
+    url: '/agendar',
+    matchPath: '/agendar',
+    access: 'Público',
+    layout: 'booking',
+  },
   {
     id: 'B03',
     title: 'Escolher profissional',
@@ -67,8 +127,24 @@ const definitions: RouteMeta[] = [
     access: 'Público',
     layout: 'booking',
   },
-  { id: 'B04', title: 'Data e horário', description: 'Escolha uma data e um horário disponível.', url: '/agendar/horario', matchPath: '/agendar/horario', access: 'Público', layout: 'booking' },
-  { id: 'B05', title: 'Seus dados', description: 'Informe os dados para confirmar o agendamento.', url: '/agendar/dados', matchPath: '/agendar/dados', access: 'Público', layout: 'booking' },
+  {
+    id: 'B04',
+    title: 'Data e horário',
+    description: 'Escolha uma data e um horário disponível.',
+    url: '/agendar/horario',
+    matchPath: '/agendar/horario',
+    access: 'Público',
+    layout: 'booking',
+  },
+  {
+    id: 'B05',
+    title: 'Seus dados',
+    description: 'Informe os dados para confirmar o agendamento.',
+    url: '/agendar/dados',
+    matchPath: '/agendar/dados',
+    access: 'Público',
+    layout: 'booking',
+  },
   {
     id: 'B06',
     title: 'Revisão e pagamento',
@@ -87,8 +163,24 @@ const definitions: RouteMeta[] = [
     access: 'Público',
     layout: 'booking',
   },
-  { id: 'A01', title: 'Visão geral', description: 'Resumo da sua conta e próximos horários.', url: '/conta', matchPath: '/conta', access: 'Autenticado', layout: 'account' },
-  { id: 'A02', title: 'Meus agendamentos', description: 'Acompanhe seus agendamentos.', url: '/conta/agendamentos', matchPath: '/conta/agendamentos', access: 'Autenticado', layout: 'account' },
+  {
+    id: 'A01',
+    title: 'Visão geral',
+    description: 'Resumo da sua conta e próximos horários.',
+    url: '/conta',
+    matchPath: '/conta',
+    access: 'Autenticado',
+    layout: 'account',
+  },
+  {
+    id: 'A02',
+    title: 'Meus agendamentos',
+    description: 'Acompanhe seus agendamentos.',
+    url: '/conta/agendamentos',
+    matchPath: '/conta/agendamentos',
+    access: 'Autenticado',
+    layout: 'account',
+  },
   {
     id: 'A03',
     title: 'Detalhe do agendamento',
@@ -118,7 +210,15 @@ const definitions: RouteMeta[] = [
     access: 'Autenticado',
     layout: 'account',
   },
-  { id: 'A15', title: 'Meu perfil', description: 'Consulte e atualize seus dados.', url: '/conta/perfil', matchPath: '/conta/perfil', access: 'Autenticado', layout: 'account' },
+  {
+    id: 'A15',
+    title: 'Meu perfil',
+    description: 'Consulte e atualize seus dados.',
+    url: '/conta/perfil',
+    matchPath: '/conta/perfil',
+    access: 'Autenticado',
+    layout: 'account',
+  },
   {
     id: 'D01',
     title: 'Visão geral',
@@ -140,7 +240,16 @@ const definitions: RouteMeta[] = [
     layout: 'admin',
     permission: 'agenda.read',
   },
-  { id: 'G01', title: 'Agenda', description: 'Acompanhe os horários da equipe.', url: '/admin/agenda', matchPath: '/admin/agenda', access: 'agenda.read', layout: 'admin', permission: 'agenda.read' },
+  {
+    id: 'G01',
+    title: 'Agenda',
+    description: 'Acompanhe os horários da equipe.',
+    url: '/admin/agenda',
+    matchPath: '/admin/agenda',
+    access: 'agenda.read',
+    layout: 'admin',
+    permission: 'agenda.read',
+  },
   {
     id: 'G02',
     title: 'Novo agendamento',
@@ -464,6 +573,13 @@ const definitions: RouteMeta[] = [
   },
 ];
 
+const routeGroups = new Map<string, RouteMeta>();
+definitions.forEach((definition) => {
+  if (!routeGroups.has(definition.matchPath) || !definition.query) {
+    routeGroups.set(definition.matchPath, definition);
+  }
+});
+
 function resolveRoute(baseRoute: RouteMeta, search: string): RouteMeta {
   const query = new URLSearchParams(search);
   return (
@@ -477,294 +593,37 @@ function resolveRoute(baseRoute: RouteMeta, search: string): RouteMeta {
   );
 }
 
+const pages: Record<string, React.JSX.Element> = {
+  S01: <HomePage />,
+};
+
 function RoutedPage({ route }: { route: RouteMeta }) {
   const search = useSearch();
   const [location] = useLocation();
+  console.log('ola');
+
   const activeRoute = resolveRoute(route, search);
+  console.log({ activeRoute: activeRoute.id });
   useEffect(() => {
-    setPageMetadata(activeRoute.title, activeRoute.description, activeRoute.access === 'Público' && activeRoute.id !== 'S01', activeRoute.layout === 'admin' ? 'Painel administrativo' : 'Barbearia');
+    setPageMetadata(
+      activeRoute.title,
+      activeRoute.description,
+      activeRoute.access === 'Público' && activeRoute.id !== 'S01',
+      activeRoute.layout === 'admin' ? 'Painel administrativo' : 'Barbearia',
+    );
   }, [activeRoute, location]);
-  const fallback = <div className="mx-auto max-w-3xl animate-pulse rounded-2xl border border-border bg-card p-10 text-muted-foreground">Carregando tela...</div>;
-  let content: ReactNode;
-  // if (activeRoute.id === 'L01' || activeRoute.id === 'L03') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <LoginPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'S01') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <HomePage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'B02') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BookingServicesPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'B03') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BookingBarberPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'B04') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BookingSlotPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'B05') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BookingCustomerDetailsPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'B06') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BookingReviewPaymentPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'B07') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BookingConfirmedPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'A01') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AccountOverviewPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'A02') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AccountAppointmentsPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'A03') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AccountAppointmentDetailPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'A15') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AccountProfilePage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'A04' || activeRoute.id === 'A05') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AccountAppointmentsPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'D01') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AdminDashboardPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'D02') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AdminMyDayPage />
-  //     </Suspense>
-  //   )
-  // } else if (['G01', 'G02', 'G03'].includes(activeRoute.id)) {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AdminAgendaPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'G09') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AttendancePage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'M02') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <TeamProfilePage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'M03') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <TeamSchedulePage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'M04') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <TeamTimeOffPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'M01') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <TeamPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'M05') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <CommissionsPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'M08') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <TeamUsersPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'F01') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <FinanceOverviewPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'F03') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <ExpensesPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'T01') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BusinessSettingsPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'T04') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BusinessHoursPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'T05') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BookingRulesPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'T07') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <NotificationSettingsPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'Q01' || activeRoute.id === 'Q06') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <CashPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'Q05') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <CashSessionPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'Q02' || activeRoute.id === 'Q03') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <CashTabDetailPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'P01' || activeRoute.id === 'P02') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AdminServicesPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'P08') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AdminProductsPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'P09') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AdminProductPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'U01' || activeRoute.id === 'U04') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AdminCustomersPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'U02') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <AdminCustomerProfilePage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'L02') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <RegisterPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'L04') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <ResetPasswordPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'L05') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <StaffLoginPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'S02') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <ServicesPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'S04') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <BarbersPage />
-  //     </Suspense>
-  //   )
-  // } else if (activeRoute.id === 'S09') {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <ContactPage />
-  //     </Suspense>
-  //   )
-  // } else {
-  //   content = (
-  //     <Suspense fallback={fallback}>
-  //       <RoutePlaceholder route={activeRoute} />
-  //     </Suspense>
-  //   )
-  // }
 
-  // if (activeRoute.id === 'M01' || activeRoute.id === 'M05') {
-  //   content = <TeamPageAccess>{content}</TeamPageAccess>
-  // } else if (activeRoute.permission) {
-  //   content = <RequirePermission permission={activeRoute.permission}>{content}</RequirePermission>
-  // } else if (activeRoute.access === 'Autenticado') {
-  //   content = <RequireAuth>{content}</RequireAuth>
-  // }
+  const fallback = (
+    <div className="mx-auto max-w-3xl animate-pulse rounded-2xl border border-border bg-card p-10 text-muted-foreground">Carregando tela...</div>
+  );
 
-  // if (activeRoute.roles) {
-  //   content = <RequireRole roles={activeRoute.roles}>{content}</RequireRole>
-  // }
+  console.log(activeRoute.id);
 
-  return <Layout kind={activeRoute.layout}>{content}</Layout>;
+  return (
+    <Layout kind={activeRoute.layout}>
+      <Suspense fallback={fallback}>{pages[activeRoute.id]}</Suspense>
+    </Layout>
+  );
 }
 
 export function Router() {
