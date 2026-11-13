@@ -1,59 +1,121 @@
-import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
+import { makeAutoObservable, reaction } from 'mobx';
 
-export type BookingStep = 'services' | 'barber' | 'slot' | 'details' | 'review'
+export type BookingStep = 'services' | 'barber' | 'slot' | 'details' | 'review';
 
 export interface BookingDraftPersisted {
-  serviceIds: string[]
-  barberId: string | null
-  date: string | null
-  time: string | null
-  holdKey: string | null
-  holdExpiresAt: string | null
-  customerName: string
-  customerPhone: string
+  serviceIds: string[];
+  barberId: string | null;
+  date: string | null;
+  time: string | null;
+  holdKey: string | null;
+  holdExpiresAt: string | null;
+  customerName: string;
+  customerPhone: string;
 }
 
-export interface BookingDraftState extends BookingDraftPersisted {
-  step: BookingStep
-  setStep: (step: BookingStep) => void
-  setServiceIds: (serviceIds: string[]) => void
-  setBarberId: (barberId: string | null) => void
-  setSlot: (date: string | null, time: string | null, hold?: { key: string; expiresAt: string } | null) => void
-  setCustomer: (customer: { name: string; phone: string }) => void
-  reset: () => void
-  clearAfterBooking: () => void
-}
+const STORAGE_KEY = 'barbearia-booking-draft';
+const STORAGE_VERSION = 1;
 
-const initialDraft: BookingDraftPersisted = { serviceIds: [], barberId: null, date: null, time: null, holdKey: null, holdExpiresAt: null, customerName: '', customerPhone: '' }
+const createInitialDraft = (): BookingDraftPersisted => ({
+  serviceIds: [],
+  barberId: null,
+  date: null,
+  time: null,
+  holdKey: null,
+  holdExpiresAt: null,
+  customerName: '',
+  customerPhone: '',
+});
 
-export const useBookingDraftStore = create<BookingDraftState>()(
-  persist<BookingDraftState, [], [], BookingDraftPersisted>(
-    set => ({
-      ...initialDraft,
-      step: 'services',
-      setStep: step => set({ step }),
-      setServiceIds: serviceIds => set({ serviceIds, barberId: null, date: null, time: null, holdKey: null, holdExpiresAt: null }),
-      setBarberId: barberId => set(state => (state.barberId === barberId ? {} : { barberId, date: null, time: null, holdKey: null, holdExpiresAt: null })),
-      setSlot: (date, time, hold = null) => set({ date, time, holdKey: hold?.key ?? null, holdExpiresAt: hold?.expiresAt ?? null }),
-      setCustomer: ({ name, phone }) => set({ customerName: name, customerPhone: phone }),
-      reset: () => set({ ...initialDraft, step: 'services' }),
-      clearAfterBooking: () => set({ ...initialDraft, step: 'review' })
-    }),
-    {
-      name: 'barbearia-booking-draft',
-      storage: createJSONStorage(() => localStorage),
-      partialize: state => ({
-        serviceIds: state.serviceIds,
-        barberId: state.barberId,
-        date: state.date,
-        time: state.time,
-        holdKey: state.holdKey,
-        holdExpiresAt: state.holdExpiresAt,
-        customerName: '',
-        customerPhone: ''
-      }),
-      version: 1
+const clearSlotState = { date: null, time: null, holdKey: null, holdExpiresAt: null } as const;
+
+export class BookingDraftStore {
+  private state = {
+    step: 'services',
+    customerName: '',
+    customerPhone: '',
+    serviceIds: [] as string[],
+    date: null as string | null,
+    time: null as string | null,
+    holdKey: null as string | null,
+    barberId: null as string | null,
+    holdExpiresAt: null as string | null,
+  };
+
+  constructor() {
+    makeAutoObservable(this, {}, { autoBind: true });
+    this.hydrate();
+    reaction(
+      () => this.persistedSnapshot,
+      (snapshot) => this.persist(snapshot),
+    );
+  }
+
+  get persistedSnapshot(): BookingDraftPersisted {
+    return {
+      customerName: '',
+      customerPhone: '',
+      date: this.state.date,
+      time: this.state.time,
+      holdKey: this.state.holdKey,
+      barberId: this.state.barberId,
+      holdExpiresAt: this.state.holdExpiresAt,
+      serviceIds: this.state.serviceIds.slice(),
+    };
+  }
+
+  setStep(value: BookingStep) {
+    this.state.step = value;
+  }
+
+  setServiceIds(value: string[]) {
+    this.state.serviceIds = value;
+    this.state.barberId = null;
+    Object.assign(this, clearSlotState);
+  }
+
+  setBarberId(value: string | null) {
+    if (this.state.barberId === value) return;
+    this.state.barberId = value;
+    Object.assign(this, clearSlotState);
+  }
+
+  setSlot(date: string | null, time: string | null, hold: { key: string; expiresAt: string } | null = null) {
+    this.state.date = date;
+    this.state.time = time;
+    this.state.holdKey = hold?.key ?? null;
+    this.state.holdExpiresAt = hold?.expiresAt ?? null;
+  }
+
+  setCustomer({ name, phone }: { name: string; phone: string }) {
+    this.state.customerName = name;
+    this.state.customerPhone = phone;
+  }
+
+  reset() {
+    Object.assign(this.state, createInitialDraft(), { step: 'services' satisfies BookingStep });
+  }
+
+  clearAfterBooking() {
+    Object.assign(this.state, createInitialDraft(), { step: 'review' satisfies BookingStep });
+  }
+
+  private hydrate() {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { state?: Partial<BookingDraftPersisted>; version?: number };
+      if (parsed.version !== STORAGE_VERSION || !parsed.state) return;
+      Object.assign(this, { ...createInitialDraft(), ...parsed.state });
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
     }
-  )
-)
+  }
+
+  private persist(state: BookingDraftPersisted) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state, version: STORAGE_VERSION }));
+  }
+}
+
+export const useBookingDraftStore = new BookingDraftStore();
