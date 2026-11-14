@@ -70,8 +70,8 @@ export default function AccountOverviewPage() {
   useEffect(() => {
     const dispose = reaction(
       () => unitQuery.unit,
-      () => {
-        store.setMapDestination(unitQuery.unit?.address?.trim() || unitQuery.unit?.name?.trim() || 'barbearia');
+      (unit) => {
+        store.setMapDestination(unit?.address?.trim() || unit?.name?.trim() || 'barbearia');
       },
     );
 
