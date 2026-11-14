@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { getPublicBarbers } from '@/modules/site/api/barbers';
 
 import { MobxQuery } from '@/shared/lib/query';
@@ -28,4 +30,4 @@ export const usePublicBarberList = () => {
   const [store] = useState(() => new PublicBarberListStore());
 
   return store;
-}
+};

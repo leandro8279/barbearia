@@ -1,6 +1,8 @@
-import React, { useLayoutEffect } from 'react';
+import React from 'react';
 
 import { ContactAndHours } from '@/modules/site/components/contact-and-hours';
+import { usePublicBarberList } from '@/modules/site/hooks/use-public-barber-list';
+import { usePublicServiceCatalog } from '@/modules/site/hooks/use-public-service-catalog';
 import { usePublicUnit } from '@/modules/site/hooks/use-public-unit';
 
 import { EmptyState } from '@/shared/components/empty-state';
@@ -16,9 +18,6 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { ArrowRight, Clock3, Scissors } from 'lucide-react';
 import { Observer } from 'mobx-react-lite';
 import { Link, useLocation } from 'wouter';
-
-import { usePublicBarberList } from '../hooks/use-public-barber-list';
-import { usePublicServiceCatalog } from '../hooks/use-public-service-catalog';
 
 export default function HomePage() {
   const unitQuery = usePublicUnit();
