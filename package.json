@@ -1,6 +1,11 @@
 {
   "scripts": {
     "api": "node backend/index.cjs",
-    "seed": "node backend/seed.cjs"
+    "seed": "node backend/seed.cjs",
+    "dev:web": "pnpm --dir frontend dev",
+    "dev": "concurrently -n web,api -c yellow,cyan \"pnpm:dev:web\" \"pnpm:api\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
   }
 }
