@@ -2,7 +2,12 @@
 
 import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 
+import { sessionStore } from '../stores/session-store';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
+const DEV_DELAY_MS = import.meta.env.DEV ? Number(import.meta.env.VITE_API_DELAY_MS ?? 0) : 0;
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export class HttpError extends Error {
   constructor(
@@ -27,16 +32,21 @@ http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const hasCustomAuth = config.headers.has('Authorization') || config.headers.has('X-Appointment-Token');
 
   if (!PUBLIC_PATHS.has(path) && !hasCustomAuth) {
-    // const token = useSessionStore.getState().token;
-    // if (token) config.headers.set('Authorization', `Bearer ${token}`);
+    const token = sessionStore.token;
+
+    if (token) config.headers.set('Authorization', `Bearer ${token}`);
   }
   return config;
 });
 
 // Response: normaliza erros em HttpError
 http.interceptors.response.use(
-  (response) => response,
-  (error: AxiosError<unknown>) => {
+  async (response) => {
+    await sleep(DEV_DELAY_MS);
+    return response;
+  },
+  async (error: AxiosError<unknown>) => {
+    await sleep(DEV_DELAY_MS);
     const status = error.response?.status ?? 0;
     const payload = error.response?.data;
 
