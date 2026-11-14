@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "api": "node backend/index.cjs",
+    "api": "node --watch backend/index.cjs ",
     "seed": "node backend/seed.cjs",
     "dev:web": "pnpm --dir frontend dev",
     "dev": "concurrently -n web,api -c yellow,cyan \"pnpm:dev:web\" \"pnpm:api\""
