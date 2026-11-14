@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "api": "node backend/index.cjs",
+    "seed": "node backend/seed.cjs"
+  }
+}
