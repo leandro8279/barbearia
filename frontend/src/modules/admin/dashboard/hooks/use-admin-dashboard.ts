@@ -4,13 +4,11 @@ import { getAdminDashboard } from '@/modules/admin/dashboard/api/dashboard';
 
 import { MobxQuery } from '@/shared/lib/query';
 
-import { makeAutoObservable } from 'mobx';
-
 const STALE_TIME = 30_000;
 
 type DashboardParams = { from: string; to: string };
 
-const dashboardKey = (params: DashboardParams) => ['admin-dashboard', params] as const;
+const dashboardKey = (filters: DashboardParams) => ['admin-dashboard', filters] as const;
 type DashboardKey = ReturnType<typeof dashboardKey>;
 
 class AdminDashboardStore {
@@ -22,14 +20,12 @@ class AdminDashboardStore {
     },
   });
 
-  constructor(private readonly params: DashboardParams & { validRange: boolean }) {
-    makeAutoObservable<AdminDashboardStore, 'filters'>(this, { filters: false });
-  }
+  constructor(private readonly filters: DashboardParams & { validRange: boolean }) { }
 
   get queryResult() {
     return this.#dashboardQuery.query({
-      enabled: this.params.validRange,
-      queryKey: dashboardKey({ from: this.params.from, to: this.params.to }),
+      enabled: this.filters.validRange,
+      queryKey: dashboardKey({ from: this.filters.from, to: this.filters.to }),
     });
   }
 
@@ -50,8 +46,8 @@ class AdminDashboardStore {
   }
 }
 
-export const useAdminDashboard = (params: DashboardParams & { validRange: boolean }) => {
-  const [store] = useState(() => new AdminDashboardStore(params));
+export const useAdminDashboard = (filters: DashboardParams & { validRange: boolean }) => {
+  const [store] = useState(() => new AdminDashboardStore(filters));
 
   return store;
 };
