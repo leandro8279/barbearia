@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { Query, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { AppErrorBoundary } from '@/shared/components/app-error-boundary';
 import { syncOpenGraph } from '@/shared/lib/page-meta';
@@ -95,6 +96,7 @@ export function App() {
           <Toaster position="top-right" richColors />
         </AppErrorBoundary>
       </TooltipProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
