@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { makeAutoObservable, reaction } from 'mobx';
 
 export type BookingStep = 'services' | 'barber' | 'slot' | 'details' | 'review';
@@ -118,4 +120,8 @@ export class BookingDraftStore {
   }
 }
 
-export const useBookingDraftStore = new BookingDraftStore();
+export const useBookingDraftStore = () => {
+  const [store] = useState(() => new BookingDraftStore());
+
+  return store;
+};
