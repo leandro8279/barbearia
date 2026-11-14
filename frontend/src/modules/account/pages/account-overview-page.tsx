@@ -230,8 +230,8 @@ export default function AccountOverviewPage() {
                   </CardHeader>
                   <CardContent>
                     <Button
-                      className="min-h-11 w-full"
                       variant="outline"
+                      className="min-h-11 w-full"
                       disabled={!lastCutQuery.lastCut?.items.length}
                       onClick={() => lastCutQuery.lastCut && repeatAppointment(lastCutQuery.lastCut)}
                     >
