@@ -133,3 +133,8 @@ export function footerHours(unit?: ReturnType<typeof usePublicUnit>['unit']) {
     return { label: day.label, hours };
   });
 }
+
+export function shiftDate(value: string, days: number) {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
