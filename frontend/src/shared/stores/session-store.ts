@@ -11,8 +11,8 @@ const STORAGE_KEY = 'barbearia-session';
 const STORAGE_VERSION = 1;
 
 class SessionStore {
-  user: SessionUser | null = null;
   token: string | null = null;
+  user: SessionUser | null = null;
 
   #rememberOnDevice = true;
 
@@ -83,4 +83,4 @@ class SessionStore {
   }
 }
 
-export const useSessionStore = new SessionStore();
+export const sessionStore = new SessionStore();
