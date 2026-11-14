@@ -4,11 +4,14 @@ import { getAdminDashboard } from '@/modules/admin/dashboard/api/dashboard';
 
 import { MobxQuery } from '@/shared/lib/query';
 
+import { makeAutoObservable } from 'mobx';
+
 const STALE_TIME = 30_000;
 
 type DashboardParams = { from: string; to: string };
+type DashboardFilters = DashboardParams & { validRange: boolean };
 
-const dashboardKey = (filters: DashboardParams) => ['admin-dashboard', filters] as const;
+const dashboardKey = (params: DashboardParams) => ['admin-dashboard', params] as const;
 type DashboardKey = ReturnType<typeof dashboardKey>;
 
 class AdminDashboardStore {
@@ -20,7 +23,9 @@ class AdminDashboardStore {
     },
   });
 
-  constructor(private readonly filters: DashboardParams & { validRange: boolean }) { }
+  constructor(private readonly filters: DashboardFilters) {
+    makeAutoObservable<AdminDashboardStore, 'filters'>(this, { filters: false });
+  }
 
   get queryResult() {
     return this.#dashboardQuery.query({
@@ -46,7 +51,7 @@ class AdminDashboardStore {
   }
 }
 
-export const useAdminDashboard = (filters: DashboardParams & { validRange: boolean }) => {
+export const useAdminDashboard = (filters: DashboardFilters) => {
   const [store] = useState(() => new AdminDashboardStore(filters));
 
   return store;
