@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useState } from 'react';
 
 import { getPublicUnit, PublicUnit } from '@/modules/site/api/unit';
 
@@ -24,16 +24,10 @@ class PublicUnitStore {
   get unit() {
     return this.result.data || ({} as PublicUnit);
   }
-
-  dispose() {
-    this.#query.dispose();
-  }
 }
 
 export const usePublicUnit = () => {
-  const store = useMemo(() => new PublicUnitStore(), []);
-
-  useEffect(() => () => store.dispose(), [store]);
+  const [store] = useState(() => new PublicUnitStore());
 
   return store;
 };
