@@ -1,51 +1,64 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { makeAutoObservable } from 'mobx';
 
 import { getAdminDashboard } from '@/modules/admin/dashboard/api/dashboard';
-
 import { MobxQuery } from '@/shared/lib/query';
 
-import { makeAutoObservable } from 'mobx';
+const STALE_TIME = 30_000;
 
 type DashboardParams = { from: string; to: string };
 
 const dashboardKey = (params: DashboardParams) => ['admin-dashboard', params] as const;
+type DashboardKey = ReturnType<typeof dashboardKey>;
 
 class AdminDashboardStore {
-  #enabled = false;
-  private params = { from: '', to: '' };
+  private params: DashboardParams;
+  private enabled: boolean;
 
-  #query = new MobxQuery({
-    staleTime: 30_000,
-    queryFn: ({ queryKey }: { queryKey: ReturnType<typeof dashboardKey> }) => {
+  #dashboardQuery = new MobxQuery({
+    staleTime: STALE_TIME,
+    queryFn: ({ queryKey }: { queryKey: DashboardKey }) => {
       const [, { from, to }] = queryKey;
       return getAdminDashboard(from, to);
     },
   });
 
-  constructor(from: string, to: string, enabled = false) {
-    this.params = { from, to };
-    this.#enabled = enabled;
+  constructor(params: DashboardParams, enabled: boolean) {
+    this.params = params;
+    this.enabled = enabled;
     makeAutoObservable(this);
   }
 
-  get result() {
-    return this.#query.query({
-      enabled: this.#enabled,
+  get queryResult() {
+    return this.#dashboardQuery.query({
+      enabled: this.enabled,
       queryKey: dashboardKey(this.params),
     });
   }
 
   get dashboard() {
-    return this.result.data;
+    return this.queryResult.data;
+  }
+
+  get isLoading() {
+    return this.queryResult.isLoading;
+  }
+
+  get error() {
+    return this.queryResult.error;
   }
 
   setParams(params: DashboardParams) {
     this.params = params;
   }
+
+  setEnabled(value: boolean) {
+    this.enabled = value;
+  }
 }
 
 export const useAdminDashboard = (from: string, to: string, enabled = true) => {
-  const [store] = useState(() => new AdminDashboardStore(from, to, enabled));
+  const [store] = useState(() => new AdminDashboardStore({ from, to }, enabled));
 
   return store;
 };
