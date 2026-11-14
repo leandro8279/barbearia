@@ -7,7 +7,7 @@ import { makeAutoObservable } from 'mobx';
 class PublicBarberListStore {
   #query = new MobxQuery({
     staleTime: 5 * 60 * 1000,
-    queryFn: getPublicBarbers,
+    queryFn: () => getPublicBarbers(),
     queryKey: ['barbers', { scope: 'public-site' }],
   });
 
@@ -24,4 +24,8 @@ class PublicBarberListStore {
   }
 }
 
-export const usePublicBarberList = () => new PublicBarberListStore();
+export const usePublicBarberList = () => {
+  const [store] = useState(() => new PublicBarberListStore());
+
+  return store;
+}
