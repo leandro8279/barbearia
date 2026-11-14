@@ -1,7 +1,7 @@
-import { queryClient } from '@/app';
+import { queryClient } from '@/shared/lib/query-client';
 import { QueryKey, QueryObserver, QueryObserverOptions, QueryObserverResult } from '@tanstack/react-query';
 
-import { observable, runInAction } from 'mobx';
+import { createAtom, observable, runInAction } from 'mobx';
 
 export class MobxQuery<
   TQueryFnData = unknown,
@@ -10,16 +10,23 @@ export class MobxQuery<
   TQueryData = TQueryFnData,
   TQueryKey extends QueryKey = QueryKey,
 > {
-  private readonly queryClient = queryClient;
   private observer?: QueryObserver<TQueryFnData, TError, TData, TQueryData, TQueryKey>;
-  private reactQueryResult = observable({}, { deep: false }) as QueryObserverResult<TData, TError>;
-  private subscription?: () => void;
-  private stopTracking?: () => void;
+  private unsubscribe?: () => void;
+
+  // Muda a cada notificação do TanStack, fazendo os computed/observers recalcularem
+  private readonly version = observable.box(0);
+
+  // Liga/desliga a subscrição conforme alguém observa ou deixa de observar
+  private readonly atom = createAtom(
+    'MobxQuery',
+    () => this.subscribe(),
+    () => this.stop(),
+  );
 
   constructor(private readonly baseOptions = {} as Partial<QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>>) {}
 
   query(options?: Partial<QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>>): QueryObserverResult<TData, TError> {
-    const mergedOptions = this.queryClient.defaultQueryOptions({ ...this.baseOptions, ...options } as QueryObserverOptions<
+    const merged = queryClient.defaultQueryOptions({ ...this.baseOptions, ...options } as QueryObserverOptions<
       TQueryFnData,
       TError,
       TData,
@@ -28,21 +35,24 @@ export class MobxQuery<
     >);
 
     if (this.observer) {
-      this.observer.setOptions(mergedOptions);
+      this.observer.setOptions(merged);
     } else {
-      const observer = (this.observer = new QueryObserver(this.queryClient, mergedOptions));
-
-      runInAction(() => Object.assign(this.reactQueryResult, observer.getCurrentResult()));
-
-      this.subscription = observer.subscribe((result) => runInAction(() => Object.assign(this.reactQueryResult, result)));
+      this.observer = new QueryObserver(queryClient, merged);
     }
 
-    return this.reactQueryResult;
+    this.atom.reportObserved(); // dispara subscribe() se for o primeiro observador
+    this.version.get(); // cria a dependência para reagir às atualizações
+
+    // Leitura pura: não escreve em nenhum observable dentro do computed
+    return this.observer.getOptimisticResult(merged);
   }
 
-  dispose() {
-    this.subscription?.();
-    this.stopTracking?.();
-    this.stopTracking = this.subscription = this.observer = undefined;
+  private subscribe() {
+    this.unsubscribe = this.observer?.subscribe(() => runInAction(() => this.version.set(this.version.get() + 1)));
+  }
+
+  private stop() {
+    this.unsubscribe?.();
+    this.unsubscribe = undefined;
   }
 }

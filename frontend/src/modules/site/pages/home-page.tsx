@@ -24,9 +24,7 @@ export default function HomePage() {
   const unitQuery = usePublicUnit();
   const [, navigate] = useLocation();
   const barbersQuery = usePublicBarberList();
-  const catalogQuery = usePublicServiceCatalog();
-
-  useLayoutEffect(() => catalogQuery.setParams(true));
+  const catalogQuery = usePublicServiceCatalog(true);
 
   function startBooking(serviceId?: number) {
     alert(serviceId);
