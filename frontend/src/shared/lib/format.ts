@@ -1,4 +1,5 @@
 import { UnitHoliday, UnitHoursRange } from '@/modules/site/api/unit';
+import { usePublicUnit } from '@/modules/site/hooks/use-public-unit';
 
 import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
 
@@ -104,4 +105,31 @@ export function toWhatsAppUrl(phone?: string | null): string {
   if (!phone) return '';
   const digits = phone.replace(/\D/g, '');
   return `https://wa.me/${digits.startsWith('55') ? digits : `55${digits}`}`;
+}
+
+const footerWeekdays = [
+  { weekday: 1, label: 'Seg' },
+  { weekday: 2, label: 'Ter' },
+  { weekday: 3, label: 'Qua' },
+  { weekday: 4, label: 'Qui' },
+  { weekday: 5, label: 'Sex' },
+  { weekday: 6, label: 'Sáb' },
+  { weekday: 0, label: 'Dom' },
+];
+
+export function footerHours(unit?: ReturnType<typeof usePublicUnit>['unit']) {
+  if (!unit?.businessHours?.length) return null;
+  return footerWeekdays.map((day) => {
+    const ranges = unit.businessHours?.find((item) => Number(item.weekday) === day.weekday)?.ranges ?? [];
+    const hours =
+      ranges.length ?
+        ranges
+          .map((range) => {
+            const [start, end] = Array.isArray(range) ? range : [range.start, range.end];
+            return `${start}–${end}`;
+          })
+          .join(' · ')
+      : 'Fechado';
+    return { label: day.label, hours };
+  });
 }
