@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { getPublicUnit, PublicUnit } from '@/modules/site/api/unit';
 
+import { footerHours } from '@/shared/lib/format';
 import { MobxQuery } from '@/shared/lib/query';
 
 import { makeAutoObservable } from 'mobx';
@@ -23,6 +24,10 @@ class PublicUnitStore {
 
   get unit() {
     return this.result.data || ({} as PublicUnit);
+  }
+
+  get hours() {
+    return footerHours(this.unit);
   }
 }
 
