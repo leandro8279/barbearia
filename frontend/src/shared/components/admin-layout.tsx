@@ -1,5 +1,5 @@
 import { Brand } from '@/shared/components/brand';
-import { useSessionStore } from '@/shared/stores/session-store';
+import { sessionStore } from '@/shared/stores/session-store';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/ui/sheet';
@@ -44,7 +44,7 @@ const roleGrants: Record<string, string[]> = {
   admin: ['*'],
 };
 
-function canNavigate(user: NonNullable<ReturnType<typeof useSessionStore.getState>['user']>, permission: Permission) {
+function canNavigate(user: NonNullable<ReturnType<typeof sessionStore>['user']>, permission: Permission) {
   const grants = [...(roleGrants[user.role] ?? []), ...user.permissions];
   return grants.some((grant) => grant === '*' || grant === permission || (grant.endsWith('.*') && permission.startsWith(grant.slice(0, -1))));
 }
@@ -54,7 +54,7 @@ interface AdminLayoutProps {
 }
 
 function AdminNav() {
-  const user = useSessionStore((state) => state.user);
+  const user = sessionStore.user;
   const visibleItems = navItems.filter((item) => {
     if (!user) return false;
     if (canNavigate(user, item.permission)) return true;

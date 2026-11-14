@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 import { usePublicUnit } from '@/modules/site/hooks/use-public-unit';
 
 import { Brand } from '@/shared/components/brand';
@@ -6,41 +8,14 @@ import { Button } from '@/shared/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/ui/sheet';
 
 import { Menu, UserRound } from 'lucide-react';
+import { Observer } from 'mobx-react-lite';
 import { Link, useLocation } from 'wouter';
 
-import type { ReactNode } from 'react';
 const links = [
   { href: '/servicos', label: 'Serviços' },
   { href: '/barbeiros', label: 'Profissionais' },
   { href: '/contato', label: 'Contato' },
 ];
-
-const footerWeekdays = [
-  { weekday: 1, label: 'Seg' },
-  { weekday: 2, label: 'Ter' },
-  { weekday: 3, label: 'Qua' },
-  { weekday: 4, label: 'Qui' },
-  { weekday: 5, label: 'Sex' },
-  { weekday: 6, label: 'Sáb' },
-  { weekday: 0, label: 'Dom' },
-];
-
-function footerHours(unit?: ReturnType<typeof usePublicUnit>['data']) {
-  if (!unit?.businessHours?.length) return null;
-  return footerWeekdays.map((day) => {
-    const ranges = unit.businessHours?.find((item) => Number(item.weekday) === day.weekday)?.ranges ?? [];
-    const hours =
-      ranges.length ?
-        ranges
-          .map((range) => {
-            const [start, end] = Array.isArray(range) ? range : [range.start, range.end];
-            return `${start}–${end}`;
-          })
-          .join(' · ')
-      : 'Fechado';
-    return { label: day.label, hours };
-  });
-}
 
 interface SiteLayoutProps {
   children: ReactNode;
@@ -49,7 +24,6 @@ interface SiteLayoutProps {
 export function SiteLayout({ children }: SiteLayoutProps) {
   const [location] = useLocation();
   const unitQuery = usePublicUnit();
-  const hours = footerHours(unitQuery.data);
 
   return (
     <div className="min-h-screen">
@@ -109,27 +83,35 @@ export function SiteLayout({ children }: SiteLayoutProps) {
           <div className="text-muted-foreground sm:text-right">
             <p className="font-medium text-foreground">Horários</p>
 
-            <RenderComponent condition={hours}>
-              <ul className="mt-1 grid grid-cols-2 gap-x-5 gap-y-0.5 sm:justify-items-end">
-                {hours?.map((day) => (
-                  <li key={day.label}>
-                    {day.label}: {day.hours}
-                  </li>
-                ))}
-              </ul>
-            </RenderComponent>
-
-            <RenderComponent condition={!hours}>
-              <p>
-                <RenderComponent condition={unitQuery.isPending}>Carregando horários…</RenderComponent>
-
-                <RenderComponent condition={!unitQuery.isPending}>
-                  <Link href="/contato" className="underline underline-offset-4">
-                    Consulte os horários
-                  </Link>
+            <Observer>
+              {() => (
+                <RenderComponent condition={unitQuery.hours}>
+                  <ul className="mt-1 grid grid-cols-2 gap-x-5 gap-y-0.5 sm:justify-items-end">
+                    {unitQuery.hours?.map((day) => (
+                      <li key={day.label}>
+                        {day.label}: {day.hours}
+                      </li>
+                    ))}
+                  </ul>
                 </RenderComponent>
-              </p>
-            </RenderComponent>
+              )}
+            </Observer>
+
+            <Observer>
+              {() => (
+                <RenderComponent condition={!unitQuery.hours}>
+                  <p>
+                    <RenderComponent condition={unitQuery.result.isPending}>Carregando horários…</RenderComponent>
+
+                    <RenderComponent condition={!unitQuery.result.isPending}>
+                      <Link href="/contato" className="underline underline-offset-4">
+                        Consulte os horários
+                      </Link>
+                    </RenderComponent>
+                  </p>
+                </RenderComponent>
+              )}
+            </Observer>
           </div>
         </div>
       </footer>
