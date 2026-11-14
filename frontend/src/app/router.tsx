@@ -1,5 +1,7 @@
 import { lazy, ReactNode, Suspense, useEffect } from 'react';
 
+import { RequireAuth } from '@/app/guards';
+
 import { ForbiddenPage } from '@/modules/core/pages/forbidden';
 import { NotFoundPage } from '@/modules/core/pages/not-found';
 
@@ -14,6 +16,8 @@ import { setPageMetadata } from '@/shared/lib/page-meta';
 
 import { Route, Switch, useLocation, useSearch } from 'wouter';
 
+const LoginPage = lazy(() => import('@/modules/auth/pages/login-page'));
+const AccountOverviewPage = lazy(() => import('@/modules/account/pages/account-overview-page'));
 const HomePage = lazy(() => import('@/modules/site/pages/home-page'));
 const DevUiPage = import.meta.env.DEV ? lazy(() => import('@/shared/pages/ui-gallery-page')) : () => <div>Error</div>;
 
@@ -595,15 +599,17 @@ function resolveRoute(baseRoute: RouteMeta, search: string): RouteMeta {
 
 const pages: Record<string, React.JSX.Element> = {
   S01: <HomePage />,
+  A01: <AccountOverviewPage />,
+  L01: <LoginPage />,
+  L03: <LoginPage />,
 };
 
 function RoutedPage({ route }: { route: RouteMeta }) {
   const search = useSearch();
   const [location] = useLocation();
-  console.log('ola');
 
   const activeRoute = resolveRoute(route, search);
-  console.log({ activeRoute: activeRoute.id });
+
   useEffect(() => {
     setPageMetadata(
       activeRoute.title,
@@ -617,11 +623,17 @@ function RoutedPage({ route }: { route: RouteMeta }) {
     <div className="mx-auto max-w-3xl animate-pulse rounded-2xl border border-border bg-card p-10 text-muted-foreground">Carregando tela...</div>
   );
 
-  console.log(activeRoute.id);
+  console.log(JSON.stringify({ activeRoute }, null, 2));
 
   return (
     <Layout kind={activeRoute.layout}>
-      <Suspense fallback={fallback}>{pages[activeRoute.id]}</Suspense>
+      <Suspense fallback={fallback}>
+        <RenderComponent condition={activeRoute.access === 'Autenticado'}>
+          <RequireAuth>{pages[activeRoute.id]}</RequireAuth>
+        </RenderComponent>
+
+        <RenderComponent condition={activeRoute.access !== 'Autenticado'}>{pages[activeRoute.id]}</RenderComponent>
+      </Suspense>
     </Layout>
   );
 }
