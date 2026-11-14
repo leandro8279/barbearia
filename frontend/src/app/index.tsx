@@ -6,8 +6,8 @@ import { AppErrorBoundary } from '@/shared/components/app-error-boundary';
 import { syncOpenGraph } from '@/shared/lib/page-meta';
 import { Toaster } from '@/shared/ui/sonner';
 import { TooltipProvider } from '@/shared/ui/tooltip';
-
-import { Router } from './router';
+import { queryClient } from '@/shared/lib/query-client';
+import { Router } from '@/app/router';
 
 const entityStaleTimes: Record<string, number> = {
   appointments: 15_000,
@@ -76,8 +76,6 @@ function staleTimeForEntity(query: Query): number {
   const entity = query.queryKey[0];
   return typeof entity === 'string' ? (entityStaleTimes[entity] ?? 30_000) : 30_000;
 }
-
-export const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: staleTimeForEntity, retry: 1, refetchOnWindowFocus: false } } });
 
 export function App() {
   useEffect(() => {
