@@ -40,7 +40,7 @@ export default function LoginPage() {
   const recoveryOverlay = useOverlay('recuperar');
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { identifier: 'cliente01@email.test', password: 'Barbearia@123' },
+    defaultValues: { identifier: 'admin@barbearia.test', password: 'Barbearia@123' },
   });
 
   const store = useLocalObservable(() => ({
