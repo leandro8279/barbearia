@@ -56,43 +56,40 @@ interface Card {
 
 export default function AdminDashboardPage() {
   const canReadCatalog = useCan('catalog.read');
+  const filters = useLocalObservable(() => {
+    const { from, to } = initialPeriod();
+
+    return {
+      from: from,
+      to: to,
+      get validRange() {
+        return Boolean(this.from && this.to && this.from <= this.to);
+      },
+      setTo(value: string) {
+        this.to = value;
+      },
+      setFrom(value: string) {
+        this.from = value;
+      },
+    };
+  });
 
   const store = useLocalObservable(() => ({
     period: 'month',
     isBarber: false,
-    to: initialPeriod().to,
-    from: initialPeriod().from,
     cards: [] as Card[],
-    setTo(value: string) {
-      this.to = value;
-    },
     setIsBarber(value: boolean) {
       this.isBarber = value;
     },
     setCards(value: Card[]) {
       this.cards = value;
     },
-    setFrom(value: string) {
-      this.from = value;
-    },
     setPeriod(value: string) {
       this.period = value;
     },
-    get validRange() {
-      return Boolean(this.from && this.to && this.from <= this.to);
-    },
   }));
 
-  const dashboardQuery = useAdminDashboard(store.from, store.to, store.validRange);
-
-  useEffect(() => {
-    const dispose = reaction(
-      () => ({ from: store.from, to: store.to }),
-      ({ from, to }) => dashboardQuery.setParams({ from, to }),
-    );
-
-    return () => dispose();
-  }, [dashboardQuery, store]);
+  const dashboardQuery = useAdminDashboard(filters);
 
   useEffect(() => {
     const dispose = reaction(
@@ -157,16 +154,16 @@ export default function AdminDashboardPage() {
   function selectPeriod(value: string) {
     const today = todayInBusinessTimeZone();
     if (value === 'today') {
-      store.setFrom(today);
-      store.setTo(today);
+      filters.setFrom(today);
+      filters.setTo(today);
       store.setPeriod('today');
     } else if (value === 'month') {
-      store.setFrom(`${today.slice(0, 7)}-01`);
-      store.setTo(today);
+      filters.setFrom(`${today.slice(0, 7)}-01`);
+      filters.setTo(today);
       store.setPeriod('month');
     } else if (value === 'last30') {
-      store.setFrom(shiftDate(today, -29));
-      store.setTo(today);
+      filters.setFrom(shiftDate(today, -29));
+      filters.setTo(today);
       store.setPeriod('last30');
     } else {
       store.setPeriod('custom');
@@ -237,12 +234,12 @@ export default function AdminDashboardPage() {
                 <Input
                   id="dashboard-from"
                   type="date"
-                  value={store.from}
-                  max={store.to || undefined}
+                  value={filters.from}
+                  max={filters.to || undefined}
                   className="min-h-11"
                   onChange={(event) => {
                     store.setPeriod('custom');
-                    store.setFrom(event.target.value);
+                    filters.setFrom(event.target.value);
                   }}
                 />
               )}
@@ -255,13 +252,13 @@ export default function AdminDashboardPage() {
                 <Input
                   id="dashboard-to"
                   type="date"
-                  value={store.to}
-                  min={store.from || undefined}
+                  value={filters.to}
+                  min={filters.from || undefined}
                   max={todayInBusinessTimeZone()}
                   className="min-h-11"
                   onChange={(event) => {
                     store.setPeriod('custom');
-                    store.setTo(event.target.value);
+                    filters.setTo(event.target.value);
                   }}
                 />
               )}
@@ -272,7 +269,7 @@ export default function AdminDashboardPage() {
 
       <Observer>
         {() => (
-          <RenderComponent condition={!store.validRange}>
+          <RenderComponent condition={!filters.validRange}>
             <p role="alert" className="text-sm text-destructive">
               A data inicial precisa ser anterior ou igual à data final.
             </p>
@@ -282,11 +279,11 @@ export default function AdminDashboardPage() {
 
       <Observer>
         {() => (
-          <RenderComponent condition={dashboardQuery.result.isError && store.validRange}>
+          <RenderComponent condition={dashboardQuery.isError && filters.validRange}>
             <ErrorState
               title="Não foi possível carregar o dashboard"
               description="Confira sua conexão e tente carregar os dados novamente."
-              onRetry={() => void dashboardQuery.result.refetch()}
+              onRetry={() => void dashboardQuery.queryResult.refetch()}
             />
           </RenderComponent>
         )}
@@ -294,18 +291,18 @@ export default function AdminDashboardPage() {
 
       <Observer>
         {() => (
-          <RenderComponent condition={!(dashboardQuery.result.isError && store.validRange)}>
+          <RenderComponent condition={!(dashboardQuery.isError && filters.validRange)}>
             <section aria-label="Indicadores da operação" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {store.cards.map(({ title, value, description, icon: Icon }) => (
                 <Card key={title} className="min-w-0">
                   <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-2">
                     <div className="space-y-1">
                       <CardDescription>{title}</CardDescription>
-                      <RenderComponent condition={dashboardQuery.result.isPending || !store.validRange}>
+                      <RenderComponent condition={dashboardQuery.isPending || !filters.validRange}>
                         <Skeleton className="h-8 w-28" aria-label={`Carregando ${title.toLowerCase()}`} />
                       </RenderComponent>
 
-                      <RenderComponent condition={!(dashboardQuery.result.isPending || !store.validRange)}>
+                      <RenderComponent condition={!(dashboardQuery.isPending || !filters.validRange)}>
                         <CardTitle className="text-2xl tabular-nums">{value}</CardTitle>
                       </RenderComponent>
                     </div>
@@ -314,11 +311,11 @@ export default function AdminDashboardPage() {
                     </span>
                   </CardHeader>
                   <CardContent>
-                    <RenderComponent condition={dashboardQuery.result.isPending || !store.validRange}>
+                    <RenderComponent condition={dashboardQuery.isPending || !filters.validRange}>
                       <Skeleton className="h-4 w-36" />
                     </RenderComponent>
 
-                    <RenderComponent condition={!(dashboardQuery.result.isPending || !store.validRange)}>
+                    <RenderComponent condition={!(dashboardQuery.isPending || !filters.validRange)}>
                       <p className="text-xs text-muted-foreground">{description}</p>
                     </RenderComponent>
                   </CardContent>
@@ -326,14 +323,14 @@ export default function AdminDashboardPage() {
               ))}
             </section>
 
-            <RenderComponent condition={dashboardQuery.result.isPending || !store.validRange}>
+            <RenderComponent condition={dashboardQuery.isPending || !filters.validRange}>
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
                 <Skeleton className="h-88 rounded-xl" aria-label="Carregando gráfico de faturamento" />
                 <Skeleton className="h-88 rounded-xl" aria-label="Carregando ranking de barbeiros" />
               </div>
             </RenderComponent>
 
-            <RenderComponent condition={!(dashboardQuery.result.isPending || !store.validRange)}>
+            <RenderComponent condition={!(dashboardQuery.isPending || !filters.validRange)}>
               <RenderComponent condition={dashboardQuery.dashboard}>
                 <section className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
                   <Card className="min-w-0">
@@ -409,11 +406,11 @@ export default function AdminDashboardPage() {
               </RenderComponent>
             </RenderComponent>
 
-            <RenderComponent condition={dashboardQuery.result.isPending || !store.validRange}>
+            <RenderComponent condition={dashboardQuery.isPending || !filters.validRange}>
               <Skeleton className="h-64 rounded-xl" aria-label="Carregando próximos atendimentos" />
             </RenderComponent>
 
-            <RenderComponent condition={!(dashboardQuery.result.isPending || !store.validRange)}>
+            <RenderComponent condition={!(dashboardQuery.isPending || !filters.validRange)}>
               <RenderComponent condition={dashboardQuery.dashboard}>
                 <Card>
                   <CardHeader>
