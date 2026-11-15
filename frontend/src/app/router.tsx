@@ -16,6 +16,7 @@ import { setPageMetadata } from '@/shared/lib/page-meta';
 
 import { Route, Switch, useLocation, useSearch } from 'wouter';
 
+const AdminMyDayPage = lazy(() => import('@/modules/admin/dashboard/pages/admin-my-day-page'));
 const AdminDashboardPage = lazy(() => import('@/modules/admin/dashboard/pages/admin-dashboard-page'));
 const LoginPage = lazy(() => import('@/modules/auth/pages/login-page'));
 const AccountOverviewPage = lazy(() => import('@/modules/account/pages/account-overview-page'));
@@ -604,6 +605,7 @@ const pages: Record<string, React.JSX.Element> = {
   L01: <LoginPage />,
   L03: <LoginPage />,
   D01: <AdminDashboardPage />,
+  D02: <AdminMyDayPage />,
 };
 
 function RoutedPage({ route }: { route: RouteMeta }) {
