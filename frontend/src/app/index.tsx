@@ -7,9 +7,9 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppErrorBoundary } from '@/shared/components/app-error-boundary';
 import { syncOpenGraph } from '@/shared/lib/page-meta';
 import { queryClient } from '@/shared/lib/query-client';
+import { BookingDraftProvider } from '@/shared/stores/booking-draft-store';
 import { Toaster } from '@/shared/ui/sonner';
 import { TooltipProvider } from '@/shared/ui/tooltip';
-import { BookingDraftProvider } from '@/shared/store/booking-draft.store';
 
 export function App() {
   useEffect(() => {
