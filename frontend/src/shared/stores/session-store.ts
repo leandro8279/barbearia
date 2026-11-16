@@ -29,6 +29,14 @@ class SessionStore {
     return this.user !== null && this.token !== null;
   }
 
+  get canWrite() {
+    return this.user?.role === 'admin' || this.user?.role === 'manager' || Boolean(this.user?.permissions.includes('agenda.write'));
+  }
+
+  get isBarber() {
+    return this.user?.role === 'barber';
+  }
+
   setUser(user: SessionUser | null) {
     this.user = user;
   }
