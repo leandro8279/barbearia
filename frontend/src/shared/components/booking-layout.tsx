@@ -1,10 +1,11 @@
+import { ReactNode } from 'react';
+
 import { Brand } from '@/shared/components/brand';
 import { useBookingDraftUrlSync } from '@/shared/hooks/use-booking-draft-url-sync';
 import { Button } from '@/shared/ui/button';
 
 import { Link, useLocation } from 'wouter';
 
-import type { ReactNode } from 'react';
 const steps = [
   { href: '/agendar', label: 'Serviços', number: '01' },
   { href: '/agendar/profissional', label: 'Profissional', number: '02' },
