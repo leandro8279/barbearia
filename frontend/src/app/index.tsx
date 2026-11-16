@@ -9,6 +9,7 @@ import { syncOpenGraph } from '@/shared/lib/page-meta';
 import { queryClient } from '@/shared/lib/query-client';
 import { Toaster } from '@/shared/ui/sonner';
 import { TooltipProvider } from '@/shared/ui/tooltip';
+import { BookingDraftProvider } from '@/shared/store/booking-draft.store';
 
 export function App() {
   useEffect(() => {
@@ -21,10 +22,12 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AppErrorBoundary>
-          <Router />
-          <Toaster position="top-right" richColors />
-        </AppErrorBoundary>
+        <BookingDraftProvider>
+          <AppErrorBoundary>
+            <Router />
+            <Toaster position="top-right" richColors />
+          </AppErrorBoundary>
+        </BookingDraftProvider>
       </TooltipProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
