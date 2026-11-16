@@ -22,6 +22,11 @@ const LoginPage = lazy(() => import('@/modules/auth/pages/login-page'));
 const AccountOverviewPage = lazy(() => import('@/modules/account/pages/account-overview-page'));
 const HomePage = lazy(() => import('@/modules/site/pages/home-page'));
 const DevUiPage = import.meta.env.DEV ? lazy(() => import('@/shared/pages/ui-gallery-page')) : () => <div>Error</div>;
+const AdminAgendaPage = lazy(() => import('@/modules/admin/agenda/pages/admin-agenda-page'));
+const ServicesPage = lazy(() => import('@/modules/site/pages/services-page'));
+const BookingServicesPage = lazy(() => import('@/modules/booking/pages/services-step-page'));
+const BookingBarberPage = lazy(() => import('@/modules/booking/pages/barber-step-page'));
+const BookingSlotPage = lazy(() => import('@/modules/booking/pages/slot-step-page'));
 
 function Layout({ kind, children }: { kind: RouteMeta['layout']; children: ReactNode }) {
   switch (kind) {
@@ -602,10 +607,17 @@ function resolveRoute(baseRoute: RouteMeta, search: string): RouteMeta {
 const pages: Record<string, React.JSX.Element> = {
   S01: <HomePage />,
   A01: <AccountOverviewPage />,
+  B02: <BookingServicesPage />,
+  B03: <BookingBarberPage />,
+  B04: <BookingSlotPage />,
   L01: <LoginPage />,
   L03: <LoginPage />,
   D01: <AdminDashboardPage />,
   D02: <AdminMyDayPage />,
+  G01: <AdminAgendaPage />,
+  G02: <AdminAgendaPage />,
+  G03: <AdminAgendaPage />,
+  S02: <ServicesPage />,
 };
 
 function RoutedPage({ route }: { route: RouteMeta }) {
