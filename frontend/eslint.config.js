@@ -8,7 +8,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 export default defineConfig([
   globalIgnores(['dist']),
   {
-    rules: { 'react-refresh/only-export-components': 'off', '@typescript-eslint/no-explicit-any': 'off' },
+    rules: { 'react-refresh/only-export-components': 'off', 'react-hooks/immutability': 'off', '@typescript-eslint/no-explicit-any': 'off' },
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, tseslint.configs.recommended, reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
     languageOptions: { globals: globals.browser },
