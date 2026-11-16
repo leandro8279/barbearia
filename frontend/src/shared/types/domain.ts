@@ -1,4 +1,4 @@
-export type UserRole = 'customer' | 'barber' | 'reception' | 'manager' | 'admin'
+export type UserRole = 'customer' | 'barber' | 'reception' | 'manager' | 'admin';
 
 export type Permission =
   | 'agenda.read'
@@ -20,16 +20,16 @@ export type Permission =
   | 'finance.manage'
   | 'settings.read'
   | 'settings.write'
-  | 'settings.manage'
+  | 'settings.manage';
 
 export interface SessionUser {
-  id: string
-  name: string
-  role: UserRole
-  permissions: Permission[]
+  id: number;
+  name: string;
+  role: UserRole;
+  permissions: Permission[];
 }
 
 export interface TimeInterval {
-  start: number
-  end: number
+  start: number;
+  end: number;
 }
