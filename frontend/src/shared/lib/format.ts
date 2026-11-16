@@ -34,6 +34,17 @@ export function formatBRL(cents: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
 }
 
+export function normalize(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+export function formatDurationRange(minimum: number, maximum: number): string {
+  return minimum === maximum ? formatDuration(minimum) : `${formatDuration(minimum)}–${formatDuration(maximum)}`;
+}
+
 export function formatDuration(minutes: number): string {
   if (!Number.isFinite(minutes) || minutes < 0) return '0 min';
   const hours = Math.floor(minutes / 60);
@@ -137,4 +148,21 @@ export function footerHours(unit?: ReturnType<typeof usePublicUnit>['unit']) {
 export function shiftDate(value: string, days: number) {
   const [year, month, day] = value.split('-').map(Number);
   return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
+export function shiftMonth(value: string, amount: number): string {
+  const [year, month] = value.split('-').map(Number);
+  const shifted = new Date(Date.UTC(year, month - 1 + amount, 1));
+  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+export function weekdayOffset(date: string): number {
+  const [year, month, day] = date.split('-').map(Number);
+  return (new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7;
+}
+
+export function businessTime(value: string): string {
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(
+    new Date(value),
+  );
 }
