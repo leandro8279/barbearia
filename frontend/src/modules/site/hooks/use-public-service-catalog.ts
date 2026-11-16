@@ -14,16 +14,13 @@ const EMPTY_CATALOG: PublicServiceCatalog = { services: [], prices: [], categori
 type CatalogKey = readonly ['services', { scope: 'public-catalog'; featuredOnly?: boolean }];
 
 class PublicServiceCatalogStore {
-  private featuredOnly: boolean;
-
   #query = new MobxQuery({
     staleTime: STALE_TIME,
     queryFn: ({ queryKey }: { queryKey: CatalogKey }) => getPublicServiceCatalog(queryKey[1].featuredOnly),
   });
 
-  constructor(featuredOnly = false) {
-    this.featuredOnly = featuredOnly;
-    makeAutoObservable(this);
+  constructor(private readonly featuredOnly = false) {
+    makeAutoObservable<PublicServiceCatalogStore, 'featuredOnly'>(this, { featuredOnly: false });
   }
 
   get result() {
@@ -42,8 +39,30 @@ class PublicServiceCatalogStore {
     return new Map(this.catalog.prices.map((p) => [p.serviceId, p]));
   }
 
-  setFeaturedOnly(featuredOnly: boolean) {
-    this.featuredOnly = featuredOnly;
+  get services() {
+    return this.catalog.services || [];
+  }
+
+  get categories() {
+    return this.catalog.categories || [];
+  }
+
+  get categoryGroups() {
+    return this.categories
+      .map((category) => ({ ...category, services: this.services.filter((service) => service.categoryId === category.id) }))
+      .filter((category) => category.services.length > 0);
+  }
+
+  get isPending() {
+    return this.result.isPending;
+  }
+
+  get isError() {
+    return this.result.isError;
+  }
+
+  get isSuccess() {
+    return this.result.isSuccess;
   }
 }
 
