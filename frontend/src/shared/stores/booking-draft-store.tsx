@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
-import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
+import { IReactionDisposer, makeAutoObservable, reaction } from 'mobx';
 
 export type BookingStep = 'services' | 'barber' | 'slot' | 'details' | 'review';
 
@@ -34,20 +34,43 @@ const createInitialState = (): BookingDraftState => ({
   customerPhone: '',
 });
 
-const emptySlot = () =>
-  ({ date: null, time: null, holdKey: null, holdExpiresAt: null }) as const;
+const emptySlot = () => ({ date: null, time: null, holdKey: null, holdExpiresAt: null }) as const;
 
 export class BookingDraftStore {
   state: BookingDraftState = createInitialState();
   private disposePersist: IReactionDisposer | null = null;
 
   constructor() {
-    makeAutoObservable<BookingDraftStore, 'disposePersist'>(
-      this,
-      { },
-      { autoBind: true },
-    );
+    makeAutoObservable(this, {}, { autoBind: true });
     this.hydrate();
+  }
+
+  get serviceIds() {
+    return this.state.serviceIds;
+  }
+
+  get step() {
+    return this.state.step;
+  }
+
+  get barberId() {
+    return this.state.barberId;
+  }
+
+  get date() {
+    return this.state.date;
+  }
+
+  get holdKey() {
+    return this.state.holdKey;
+  }
+
+  get holdExpiresAt() {
+    return this.state.holdExpiresAt;
+  }
+
+  get time() {
+    return this.state.time;
   }
 
   get persistedSnapshot(): BookingDraftPersisted {
@@ -65,9 +88,7 @@ export class BookingDraftStore {
   }
 
   setServiceIds(value: string[]) {
-    const unchanged =
-      value.length === this.state.serviceIds.length &&
-      value.every((id, i) => id === this.state.serviceIds[i]);
+    const unchanged = value.length === this.state.serviceIds.length && value.every((id, i) => id === this.state.serviceIds[i]);
     if (unchanged) return;
 
     this.state.serviceIds = value.slice();
@@ -81,11 +102,7 @@ export class BookingDraftStore {
     Object.assign(this.state, emptySlot());
   }
 
-  setSlot(
-    date: string | null,
-    time: string | null,
-    hold: { key: string; expiresAt: string } | null = null,
-  ) {
+  setSlot(date: string | null, time: string | null, hold: { key: string; expiresAt: string } | null = null) {
     this.state.date = date;
     this.state.time = time;
     this.state.holdKey = hold?.key ?? null;
@@ -96,13 +113,14 @@ export class BookingDraftStore {
     this.state.customerName = name;
     this.state.customerPhone = phone;
   }
+
   start(): () => void {
     return reaction(
       () => this.persistedSnapshot,
       (snapshot) => this.persist(snapshot),
     );
   }
-  
+
   reset() {
     this.state = createInitialState();
   }
@@ -146,10 +164,7 @@ export class BookingDraftStore {
   private persist(snapshot: BookingDraftPersisted) {
     if (typeof window === 'undefined') return;
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ state: snapshot, version: STORAGE_VERSION }),
-      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: snapshot, version: STORAGE_VERSION }));
     } catch {
       /* quota cheia ou storage bloqueado: ignora */
     }
@@ -163,11 +178,7 @@ export function BookingDraftProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => store.start(), [store]);
 
-  return (
-    <BookingDraftContext.Provider value={store}>
-      {children}
-    </BookingDraftContext.Provider>
-  );
+  return <BookingDraftContext.Provider value={store}>{children}</BookingDraftContext.Provider>;
 }
 
 export const useBookingDraftStore = (): BookingDraftStore => {
