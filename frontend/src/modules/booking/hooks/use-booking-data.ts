@@ -2,12 +2,17 @@ import { useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
+import { createGuestSession } from '@/modules/auth/api/auth';
 import {
+  createAppointment,
+  CreateAppointmentInput,
+  CreatedAppointment,
   createSlotHold,
   getAvailabilityDays,
   getAvailabilitySlots,
   getAvailableBarbers,
   getBookingEstimate,
+  getBookingPolicy,
   HoldVariables,
   releaseHold,
 } from '@/modules/booking/api/booking';
@@ -16,6 +21,7 @@ import { MobxMutation } from '@/shared/lib/mutation';
 import { MobxQuery } from '@/shared/lib/query';
 
 import { makeAutoObservable } from 'mobx';
+import { useLocation } from 'wouter';
 
 type BookingEstimateParams = {
   serviceIds: string[];
@@ -53,6 +59,14 @@ class BookingEstimateStore {
 
   get isPending() {
     return this.result.isPending;
+  }
+
+  get isError() {
+    return this.result.isError;
+  }
+
+  get isSuccess() {
+    return this.result.isSuccess;
   }
 }
 
@@ -249,5 +263,68 @@ export const useReleaseMutation = () => {
         },
       }),
   );
+  return store;
+};
+
+export const useBookingMutation = () => {
+  const [, navigate] = useLocation();
+  const queryClient = useQueryClient();
+
+  const [store] = useState(
+    () =>
+      new MobxMutation<CreatedAppointment, Error, CreateAppointmentInput & { hasCreateSession?: boolean; customerName?: string; customerPhone?: string }>({
+        mutationFn: async ({ hasCreateSession, customerName, customerPhone, ...variables }) => {
+          if (hasCreateSession) variables.authorizationToken = (await createGuestSession({ name: customerName!, phone: customerPhone! })).token;
+
+          return createAppointment(variables);
+        },
+        onSuccess: (appointment) => {
+          queryClient.invalidateQueries({ queryKey: ['availability-days'] });
+          queryClient.invalidateQueries({ queryKey: ['availability-slots'] });
+          queryClient.invalidateQueries({ queryKey: ['appointments'] });
+
+          const tokenFragment = appointment.guestToken ? `#token=${encodeURIComponent(appointment.guestToken)}` : '';
+          navigate(`/agendar/confirmado/${appointment.id}${tokenFragment}`);
+        },
+      }),
+  );
+
+  return store;
+};
+
+class BookingPolicyStore {
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  #query = new MobxQuery({
+    staleTime: 60_000,
+    queryFn: getBookingPolicy,
+  });
+
+  get result() {
+    return this.#query.query({ queryKey: ['booking-policy'] });
+  }
+
+  get policy() {
+    return this.result.data;
+  }
+
+  get isPending() {
+    return this.result.isPending;
+  }
+
+  get isError() {
+    return this.result.isError;
+  }
+
+  get isSuccess() {
+    return this.result.isSuccess;
+  }
+}
+
+export const useBookingPolicy = () => {
+  const [store] = useState(() => new BookingPolicyStore());
+
   return store;
 };
