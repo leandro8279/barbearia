@@ -1,3 +1,4 @@
+import '@/config/zod';
 import { buildOpenApiDocument } from '@/docs';
 
 import { env } from '@/config/env';
