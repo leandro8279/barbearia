@@ -78,14 +78,19 @@ export async function getBookingPolicy(): Promise<BookingPolicy> {
   return apiRequest<BookingPolicy>('/public/booking-policy');
 }
 
-export async function createAppointment(
-  input: { serviceIds: string[]; barberId: number; start: string; holdKey: string },
-  authorizationToken?: string,
-): Promise<CreatedAppointment> {
+export interface CreateAppointmentInput {
+  start: string;
+  holdKey: string;
+  barberId: number;
+  serviceIds: string[];
+  authorizationToken?: string;
+}
+
+export async function createAppointment({ authorizationToken, ...data }: CreateAppointmentInput): Promise<CreatedAppointment> {
   return apiRequest<CreatedAppointment>('/appointments', {
     method: 'POST',
     ...(authorizationToken ? { headers: { Authorization: `Bearer ${authorizationToken}` } } : {}),
-    data: input,
+    data,
   });
 }
 
@@ -100,9 +105,7 @@ export async function getAvailableBarbers(serviceIds: string[]): Promise<Availab
 }
 
 export async function getAvailabilityDays(serviceIds: string[], month: string, barberId: string | null): Promise<AvailabilityDay[]> {
-  return apiRequest<AvailabilityDay[]>(
-    `/availability/days${buildQuery({ serviceIds: serviceIds.join(','), month, barberId: barberId ?? undefined })}`,
-  );
+  return apiRequest<AvailabilityDay[]>(`/availability/days${buildQuery({ serviceIds: serviceIds.join(','), month, barberId: barberId ?? undefined })}`);
 }
 
 export async function getAvailabilitySlots(serviceIds: string[], date: string, barberId: string | null): Promise<AvailabilitySlot[]> {
