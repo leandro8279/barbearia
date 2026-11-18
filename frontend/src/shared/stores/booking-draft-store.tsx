@@ -73,6 +73,14 @@ export class BookingDraftStore {
     return this.state.time;
   }
 
+  get customerName() {
+    return this.state.customerName;
+  }
+
+  get customerPhone() {
+    return this.state.customerPhone;
+  }
+
   get persistedSnapshot(): BookingDraftPersisted {
     const { serviceIds, barberId, date, time, holdKey, holdExpiresAt } = this.state;
     return { serviceIds: serviceIds.slice(), barberId, date, time, holdKey, holdExpiresAt };
@@ -81,6 +89,19 @@ export class BookingDraftStore {
   get isHoldExpired(): boolean {
     const { holdExpiresAt } = this.state;
     return !!holdExpiresAt && new Date(holdExpiresAt).getTime() <= Date.now();
+  }
+
+  get hasBookingDetails() {
+    return Boolean(
+      this.state.serviceIds.length &&
+      this.state.barberId &&
+      this.state.date &&
+      this.state.time &&
+      this.state.holdKey &&
+      this.state.holdExpiresAt &&
+      this.state.customerName &&
+      this.state.customerPhone,
+    );
   }
 
   setStep(value: BookingStep) {
