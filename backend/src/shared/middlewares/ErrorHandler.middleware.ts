@@ -4,12 +4,12 @@ import { HttpStatus } from '@/shared/constants/HttpStatus';
 import { AppError } from '@/shared/errors/AppError';
 
 import { ErrorRequestHandler } from 'express';
-import { ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   if (err instanceof ZodError) {
     res.status(HttpStatus.UNPROCESSABLE_ENTITY).json({
-      error: { code: 'VALIDATION_ERROR', message: 'Dados inválidos', details: err.flatten().fieldErrors },
+      error: { code: 'VALIDATION_ERROR', message: 'Dados inválidos', details: z.flattenError(err).fieldErrors },
     });
     return;
   }
