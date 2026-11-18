@@ -27,6 +27,8 @@ const ServicesPage = lazy(() => import('@/modules/site/pages/services-page'));
 const BookingServicesPage = lazy(() => import('@/modules/booking/pages/services-step-page'));
 const BookingBarberPage = lazy(() => import('@/modules/booking/pages/barber-step-page'));
 const BookingSlotPage = lazy(() => import('@/modules/booking/pages/slot-step-page'));
+const BookingCustomerDetailsPage = lazy(() => import('@/modules/booking/pages/customer-details-step-page'));
+const BookingReviewPaymentPage = lazy(() => import('@/modules/booking/pages/review-payment-step-page'));
 
 function Layout({ kind, children }: { kind: RouteMeta['layout']; children: ReactNode }) {
   switch (kind) {
@@ -610,6 +612,8 @@ const pages: Record<string, React.JSX.Element> = {
   B02: <BookingServicesPage />,
   B03: <BookingBarberPage />,
   B04: <BookingSlotPage />,
+  B05: <BookingCustomerDetailsPage />,
+  B06: <BookingReviewPaymentPage />,
   L01: <LoginPage />,
   L03: <LoginPage />,
   D01: <AdminDashboardPage />,
