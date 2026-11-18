@@ -3,6 +3,8 @@ import { app } from '@/app';
 import { env } from '@/config/env';
 import { logger } from '@/config/logger';
 
+import 'reflect-metadata';
+
 async function bootstrap() {
   //  await connectDatabase();
 
