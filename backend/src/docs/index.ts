@@ -1,8 +1,6 @@
 import '@/docs/health.docs';
 
-import '@/modules/auth/presentation/docs/guest.docs';
-import '@/modules/auth/presentation/docs/me.docs';
-import '@/modules/auth/presentation/docs/register.docs';
+import '@/modules/auth/presentation/docs';
 
 import { generateOpenApiDocument } from '@/shared/openapi/generate-openapi-document';
 
