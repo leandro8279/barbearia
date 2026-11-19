@@ -10,8 +10,8 @@ export class JwtTokenProvider implements ITokenProvider {
     private readonly expiresIn: string,
   ) {}
 
-  sign({ id }: ITokenPayload): string {
-    return jwt.sign({}, this.secret, {
+  sign({ id, tokenVersion = 0 }: ITokenPayload): string {
+    return jwt.sign({ ver: tokenVersion }, this.secret, {
       subject: id,
       algorithm: 'HS256',
       expiresIn: this.expiresIn as SignOptions['expiresIn'],
@@ -22,7 +22,7 @@ export class JwtTokenProvider implements ITokenProvider {
     try {
       const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] });
       if (typeof decoded === 'string' || !decoded.sub) return null;
-      return { id: decoded.sub };
+      return { id: decoded.sub, tokenVersion: typeof decoded.ver === 'number' ? decoded.ver : 0 };
     } catch {
       return null;
     }
