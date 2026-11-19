@@ -1,13 +1,10 @@
-export interface IMailDTO {
-  body: string;
-  from?: string;
-  html?: string;
+export interface MailMessage {
+  to: string;
   subject: string;
-  replyTo?: string;
-  attachments?: any[];
-  to: string | string[];
+  html: string;
+  text: string;
 }
 
 export interface IMailProvider {
-  sendMail(data: IMailDTO): Promise<void>;
+  send(message: MailMessage): Promise<void>;
 }
