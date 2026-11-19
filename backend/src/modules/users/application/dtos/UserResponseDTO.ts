@@ -3,7 +3,7 @@ import { User } from '@/modules/users/domain/entities/User';
 export interface UserResponseDTO {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   role: string;
   cpf: string | null;
