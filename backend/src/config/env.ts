@@ -1,16 +1,22 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
-const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().default(3333),
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
-  DATABASE_PATH: z.string().default('./data/app.sqlite'),
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter no mínimo 32 caracteres'),
-  JWT_EXPIRES_IN: z.string().default('1d'),
-  MAIL_API_KEY: z.string().min(1),
-  MAIL_FROM: z.string().min(1),
-});
+const envSchema = z
+  .object({
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    PORT: z.coerce.number().default(3333),
+    LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+    DATABASE_PATH: z.string().default('./data/app.sqlite'),
+    JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter no mínimo 32 caracteres'),
+    JWT_EXPIRES_IN: z.string().default('1d'),
+    WEB_URL: z.string().url().default('http://localhost:5173'),
+    RESEND_API_KEY: z.string().optional(),
+    RESEND_FROM_EMAIL: z.string().optional(),
+  })
+  .refine((v) => v.NODE_ENV !== 'production' || (v.RESEND_API_KEY && v.RESEND_FROM_EMAIL), {
+    message: 'RESEND_API_KEY e RESEND_FROM_EMAIL são obrigatórias em produção',
+    path: ['RESEND_API_KEY'],
+  });
 
 const parsed = envSchema.safeParse(process.env);
 
