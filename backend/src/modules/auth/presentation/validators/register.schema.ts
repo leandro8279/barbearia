@@ -1,6 +1,6 @@
 import { z } from '@/shared/openapi/zod';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Data real (sem rollover tipo 2026-02-31) e não futura. */
