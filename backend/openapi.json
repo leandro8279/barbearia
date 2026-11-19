@@ -1,0 +1,517 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API Node modular",
+    "version": "1.0.0",
+    "description": "Documentação gerada automaticamente a partir dos schemas zod."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3333"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "NOT_FOUND"
+              },
+              "message": {
+                "type": "string",
+                "example": "Usuário não encontrado"
+              },
+              "details": {
+                "nullable": true
+              }
+            },
+            "required": [
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "GetMeResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "example": "3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f"
+              },
+              "name": {
+                "type": "string",
+                "example": "João Silva"
+              },
+              "email": {
+                "type": "string",
+                "example": "joao@email.com"
+              },
+              "phone": {
+                "type": "string",
+                "nullable": true,
+                "example": "62999998888"
+              },
+              "role": {
+                "type": "string",
+                "example": "customer"
+              },
+              "cpf": {
+                "type": "string",
+                "nullable": true,
+                "example": null
+              },
+              "birthDate": {
+                "type": "string",
+                "nullable": true,
+                "example": "1995-04-20"
+              },
+              "addresses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "nullable": true
+                  }
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "referralSource": {
+                "type": "string",
+                "nullable": true
+              },
+              "avatar": {
+                "type": "string",
+                "nullable": true
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "guest": {
+                "type": "boolean"
+              },
+              "lastAccessAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              },
+              "consent": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "reminders": {
+                    "type": "boolean"
+                  },
+                  "marketing": {
+                    "type": "boolean"
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "reminders",
+                  "marketing",
+                  "at"
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "email",
+              "phone",
+              "role",
+              "cpf",
+              "birthDate",
+              "addresses",
+              "tags",
+              "referralSource",
+              "avatar",
+              "permissions",
+              "active",
+              "guest",
+              "lastAccessAt",
+              "consent",
+              "createdAt",
+              "updatedAt"
+            ]
+          }
+        },
+        "required": [
+          "user"
+        ]
+      },
+      "RegisterResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "example": "3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f"
+              },
+              "name": {
+                "type": "string",
+                "example": "João Silva"
+              },
+              "email": {
+                "type": "string",
+                "example": "joao@email.com"
+              },
+              "phone": {
+                "type": "string",
+                "nullable": true,
+                "example": "62999998888"
+              },
+              "role": {
+                "type": "string",
+                "example": "customer"
+              },
+              "cpf": {
+                "type": "string",
+                "nullable": true,
+                "example": null
+              },
+              "birthDate": {
+                "type": "string",
+                "nullable": true,
+                "example": "1995-04-20"
+              },
+              "addresses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "nullable": true
+                  }
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "referralSource": {
+                "type": "string",
+                "nullable": true
+              },
+              "avatar": {
+                "type": "string",
+                "nullable": true
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "guest": {
+                "type": "boolean"
+              },
+              "tokenVersion": {
+                "type": "integer"
+              },
+              "lastAccessAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              },
+              "consent": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "reminders": {
+                    "type": "boolean"
+                  },
+                  "marketing": {
+                    "type": "boolean"
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "reminders",
+                  "marketing",
+                  "at"
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "email",
+              "phone",
+              "role",
+              "cpf",
+              "birthDate",
+              "addresses",
+              "tags",
+              "referralSource",
+              "avatar",
+              "permissions",
+              "active",
+              "guest",
+              "tokenVersion",
+              "lastAccessAt",
+              "consent",
+              "createdAt",
+              "updatedAt"
+            ]
+          },
+          "token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIs..."
+          }
+        },
+        "required": [
+          "user",
+          "token"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Healthcheck",
+        "responses": {
+          "200": {
+            "description": "API no ar",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "uptime": {
+                      "type": "number",
+                      "example": 123.45
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "uptime"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Usuário autenticado",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do usuário logado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Cadastro de cliente",
+        "description": "Cria a conta. Se já existir um convidado (guest) com o mesmo telefone, ele é promovido e a resposta é 200.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120,
+                    "example": "João Silva"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+                    "example": "joao@email.com"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "(62) 99999-8888"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 72,
+                    "example": "senha-forte-123"
+                  },
+                  "birthDate": {
+                    "type": "string",
+                    "example": "1995-04-20"
+                  },
+                  "termsAccepted": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ],
+                    "example": true
+                  },
+                  "reminders": {
+                    "type": "boolean",
+                    "default": false,
+                    "example": true
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "phone",
+                  "password",
+                  "termsAccepted"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Convidado promovido a cliente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Conta criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "E-mail ou telefone já cadastrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Muitas tentativas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
