@@ -8,6 +8,8 @@ const envSchema = z.object({
   DATABASE_PATH: z.string().default('./data/app.sqlite'),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter no mínimo 32 caracteres'),
   JWT_EXPIRES_IN: z.string().default('1d'),
+  MAIL_API_KEY: z.string().min(1),
+  MAIL_FROM: z.string().min(1),
 });
 
 const parsed = envSchema.safeParse(process.env);
