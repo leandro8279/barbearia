@@ -4,6 +4,7 @@ import { EmailAlreadyExistsError, IUserRepository, PhoneAlreadyExistsError, User
 
 import { Either, left, right } from '@/shared/core/Either';
 import { IUseCase } from '@/shared/interfaces/UseCaseInterface';
+import { IAuditLogger } from '@/shared/providers/audit/AuditLoggerInterface';
 import { IHashProvider } from '@/shared/providers/hash/HashProviderInterface';
 import { ITokenProvider } from '@/shared/providers/token/TokenProviderInterface';
 
@@ -15,6 +16,7 @@ export class RegisterUseCase implements IUseCase<RegisterDTO, RegisterOutput> {
     private readonly userRepository: IUserRepository,
     private readonly hashProvider: IHashProvider,
     private readonly tokenProvider: ITokenProvider,
+    private readonly auditLogger: IAuditLogger,
   ) {}
 
   async execute(input: RegisterDTO): Promise<RegisterOutput> {
@@ -32,17 +34,35 @@ export class RegisterUseCase implements IUseCase<RegisterDTO, RegisterOutput> {
     const birthDate = input.birthDate ? new Date(`${input.birthDate}T00:00:00.000Z`) : null;
     const consent = { reminders: input.reminders, marketing: false, at: new Date() };
 
-    const user = phoneGuest
-      ? await this.promoteGuest(phoneGuest, { name: input.name, email, phone, passwordHash, birthDate, consent })
-      : await this.userRepository.create(User.create({ name: input.name, email, phone, passwordHash, birthDate, consent }));
+    let user: User | null;
+
+    try {
+      user = phoneGuest
+        ? await this.promoteGuest(phoneGuest, { name: input.name, email, phone, passwordHash, birthDate, consent })
+        : await this.userRepository.create(User.create({ name: input.name, email, phone, passwordHash, birthDate, consent }));
+    } catch (error) {
+      if (error instanceof EmailAlreadyExistsError || error instanceof PhoneAlreadyExistsError) return left(error);
+      throw error;
+    }
+
+    if (!user) return left(new PhoneAlreadyExistsError());
 
     const token = this.tokenProvider.sign({ id: user.id, tokenVersion: user.tokenVersion });
+
+    await this.auditLogger.log({
+      actorId: user.id,
+      action: 'auth.register',
+      entity: 'users',
+      entityId: user.id,
+      details: { email, guestPromoted: Boolean(phoneGuest) },
+    });
 
     return right({ created: !phoneGuest, auth: toRegisterResponse(user, token) });
   }
 
-  private promoteGuest(guest: User, data: Parameters<User['completeRegistration']>[0]): Promise<User> {
+  private promoteGuest(guest: User, data: Parameters<User['completeRegistration']>[0]): Promise<User | null> {
     guest.completeRegistration(data);
-    return this.userRepository.update(guest);
+
+    return this.userRepository.promoteGuest(guest);
   }
 }
