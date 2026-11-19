@@ -1,3 +1,5 @@
+import { EmailAlreadyExistsError } from '@/modules/users/application/errors/EmailAlreadyExistsError';
+import { PhoneAlreadyExistsError } from '@/modules/users/application/errors/PhoneAlreadyExistsError';
 import { User } from '@/modules/users/domain/entities/User';
 import { IUserRepository } from '@/modules/users/domain/repositories/UserRepositoryInterface';
 import { UserEntity } from '@/modules/users/infra/database/typeorm/entities/UserEntity';
@@ -6,7 +8,7 @@ import { UserMapper } from '@/modules/users/infra/database/typeorm/mappers/UserM
 import { PaginatedResult, PaginationParams } from '@/shared/types/pagination.types';
 import { buildPaginatedResult, getSkip } from '@/shared/utils/pagination';
 
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryDeepPartialEntity, QueryFailedError, Repository } from 'typeorm';
 
 export class TypeOrmUserRepository implements IUserRepository {
   private readonly repository: Repository<UserEntity>;
@@ -34,11 +36,13 @@ export class TypeOrmUserRepository implements IUserRepository {
   }
 
   async create(user: User): Promise<User> {
-    const entity = this.repository.create(UserMapper.toPersistence(user));
+    try {
+      const saved = await this.repository.save(this.repository.create(UserMapper.toPersistence(user)));
 
-    const saved = await this.repository.save(entity);
-
-    return UserMapper.toDomain(saved);
+      return UserMapper.toDomain(saved);
+    } catch (error) {
+      throw this.translateConstraintError(error);
+    }
   }
 
   async findGuestByPhone(phone: string): Promise<User | null> {
@@ -54,8 +58,37 @@ export class TypeOrmUserRepository implements IUserRepository {
   }
 
   async update(user: User): Promise<User> {
-    const saved = await this.repository.save(this.repository.create(UserMapper.toPersistence(user)));
+    try {
+      const saved = await this.repository.save(this.repository.create(UserMapper.toPersistence(user)));
 
-    return UserMapper.toDomain(saved);
+      return UserMapper.toDomain(saved);
+    } catch (error) {
+      throw this.translateConstraintError(error);
+    }
+  }
+
+  async promoteGuest(user: User): Promise<User | null> {
+    const { id, createdAt: _createdAt, ...data } = UserMapper.toPersistence(user);
+
+    try {
+      const result = await this.repository.update({ id: user.id, guest: true }, data as QueryDeepPartialEntity<UserEntity>);
+      if (!result.affected) return null;
+    } catch (error) {
+      throw this.translateConstraintError(error);
+    }
+
+    return this.findById(id as string);
+  }
+
+  private translateConstraintError(error: unknown): unknown {
+    if (!(error instanceof QueryFailedError)) return error;
+
+    const { code, message } = error.driverError as { code?: string; message?: string };
+    if (code !== 'SQLITE_CONSTRAINT_UNIQUE') return error;
+
+    if (message?.includes('users.email')) return new EmailAlreadyExistsError();
+    if (message?.includes('users.phone')) return new PhoneAlreadyExistsError();
+
+    return error;
   }
 }
