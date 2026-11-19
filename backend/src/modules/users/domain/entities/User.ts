@@ -104,6 +104,28 @@ export class User {
     });
   }
 
+  completeRegistration(input: {
+    name: string;
+    email: string;
+    phone: string;
+    passwordHash: string;
+    birthDate: Date | null;
+    consent: UserConsent;
+  }): void {
+    if (!this.props.guest) throw new Error('Apenas convidados podem concluir o cadastro');
+
+    Object.assign(this.props, {
+      name: input.name.trim(),
+      email: input.email.trim().toLowerCase(),
+      phone: input.phone,
+      passwordHash: input.passwordHash,
+      birthDate: input.birthDate,
+      consent: input.consent,
+      guest: false,
+      updatedAt: new Date(),
+    });
+  }
+
   get id(): string {
     return this.props.id;
   }
