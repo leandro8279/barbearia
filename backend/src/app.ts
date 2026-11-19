@@ -3,7 +3,8 @@ import { buildOpenApiDocument } from '@/docs';
 import { env } from '@/config/env';
 import { logger } from '@/config/logger';
 
-// import { registerModules } from './modules';
+import { registerModules } from '@/modules';
+
 import { NotFoundError } from '@/shared/errors/NotFoundError';
 import { errorHandler } from '@/shared/middlewares/ErrorHandler.middleware';
 import { rateLimits } from '@/shared/middlewares/RateLimit.middleware';
@@ -36,7 +37,7 @@ export function createApp() {
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(document));
   }
 
-  // app.use('/api', registerModules());
+  app.use('/api', registerModules());
 
   app.use((_req, _res, next) => next(new NotFoundError('Rota')));
   app.use(errorHandler); // sempre o último
