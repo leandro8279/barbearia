@@ -126,6 +126,11 @@ export class User {
     });
   }
 
+  revokeTokens(): void {
+    this.props.tokenVersion += 1;
+    this.props.updatedAt = new Date();
+  }
+
   get id(): string {
     return this.props.id;
   }
