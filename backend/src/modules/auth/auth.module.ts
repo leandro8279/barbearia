@@ -7,12 +7,14 @@ import { GetMeUseCase } from '@/modules/auth/application/use-cases/GetMeUseCase'
 import { GuestUseCase } from '@/modules/auth/application/use-cases/GuestUseCase';
 import { LogoutUseCase } from '@/modules/auth/application/use-cases/LogoutUseCase';
 import { RegisterUseCase } from '@/modules/auth/application/use-cases/RegisterUseCase';
+import { ResetPasswordUseCase } from '@/modules/auth/application/use-cases/ResetPasswordUseCase';
 import { TypeOrmPasswordResetRepository } from '@/modules/auth/infra/database/typeorm/repositories/TypeOrmPasswordResetRepository';
 import { ForgotPasswordController } from '@/modules/auth/presentation/controllers/ForgotPasswordController';
 import { GetMeController } from '@/modules/auth/presentation/controllers/GetMeController';
 import { GuestController } from '@/modules/auth/presentation/controllers/GuestController';
 import { LogoutController } from '@/modules/auth/presentation/controllers/LogoutController';
 import { RegisterController } from '@/modules/auth/presentation/controllers/RegisterController';
+import { ResetPasswordController } from '@/modules/auth/presentation/controllers/ResetPasswordController';
 import { buildRegisterRoutes } from '@/modules/auth/presentation/routes/auth.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
 
@@ -36,6 +38,7 @@ export function makeAuthModule(): Router {
       forgot: new ForgotPasswordController(
         new ForgotPasswordUseCase(userRepository, passwordResetRepository, mailProvider, auditLogger, `${env.WEB_URL}/reset-password`),
       ),
+      reset: new ResetPasswordController(new ResetPasswordUseCase(userRepository, passwordResetRepository, hashProvider, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );

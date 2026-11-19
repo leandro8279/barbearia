@@ -35,4 +35,6 @@ export const rateLimits = {
   register: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 5 })),
   /** Recuperação de senha. */
   forgot: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 5 })),
+  /** Redefinição de senha. */
+  reset: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 5 })),
 };
