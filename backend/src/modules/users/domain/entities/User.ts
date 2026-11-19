@@ -24,10 +24,10 @@ export interface UserConsent {
 export interface UserProps {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   role: UserRole;
-  passwordHash: string;
+  passwordHash: string | null;
   cpf: string | null;
   birthDate: Date | null;
   addresses: UserAddress[];
@@ -46,8 +46,8 @@ export interface UserProps {
 
 export interface CreateUserInput {
   name: string;
-  email: string;
-  passwordHash: string;
+  email?: string | null;
+  passwordHash?: string | null;
   phone?: string | null;
   role?: UserRole;
   cpf?: string | null;
@@ -73,10 +73,10 @@ export class User {
     return new User({
       id: randomUUID(),
       name: input.name.trim(),
-      email: input.email.trim().toLowerCase(),
+      email: input.email?.trim().toLowerCase() ?? null,
       phone: input.phone ?? null,
       role: input.role ?? 'customer',
-      passwordHash: input.passwordHash,
+      passwordHash: input.passwordHash ?? null,
       cpf: input.cpf ?? null,
       birthDate: input.birthDate ?? null,
       addresses: input.addresses ?? [],
@@ -116,9 +116,9 @@ export class User {
 
     Object.assign(this.props, {
       name: input.name.trim(),
-      email: input.email.trim().toLowerCase(),
+      email: input.email?.trim().toLowerCase() ?? null,
       phone: input.phone,
-      passwordHash: input.passwordHash,
+      passwordHash: input.passwordHash ?? null,
       birthDate: input.birthDate,
       consent: input.consent,
       guest: false,
@@ -134,7 +134,7 @@ export class User {
     return this.props.name;
   }
 
-  get email(): string {
+  get email(): string | null {
     return this.props.email;
   }
 
@@ -146,7 +146,7 @@ export class User {
     return this.props.role;
   }
 
-  get passwordHash(): string {
+  get passwordHash(): string | null {
     return this.props.passwordHash;
   }
 
