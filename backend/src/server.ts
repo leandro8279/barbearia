@@ -1,12 +1,13 @@
 import { app } from '@/app';
 
+import { connectDatabase, disconnectDatabase } from '@/config/database';
 import { env } from '@/config/env';
 import { logger } from '@/config/logger';
 
 import 'reflect-metadata';
 
 async function bootstrap() {
-  //  await connectDatabase();
+  await connectDatabase();
 
   const server = app.listen(env.PORT, () => {
     logger.info(`🚀 Servidor rodando em http://localhost:${env.PORT}`);
@@ -15,7 +16,7 @@ async function bootstrap() {
   const shutdown = async (signal: string) => {
     logger.info(`${signal} recebido, encerrando...`);
     server.close(async () => {
-      // await disconnectDatabase();
+      await disconnectDatabase();
       process.exit(0);
     });
     // força saída se algo travar
