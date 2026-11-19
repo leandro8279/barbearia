@@ -5,5 +5,8 @@ import { PaginatedResult, PaginationParams } from '@/shared/types/pagination.typ
 
 export interface IUserRepository extends IRepository<User> {
   findByEmail(email: string): Promise<User | null>;
+  findGuestByPhone(phone: string): Promise<User | null>;
+  findRegisteredByPhone(phone: string): Promise<User | null>;
   findAll(params: PaginationParams): Promise<PaginatedResult<User>>;
+  update(user: User): Promise<User>;
 }
