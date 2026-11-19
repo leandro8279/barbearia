@@ -1,10 +1,14 @@
+import { env } from '@/config';
 import { AppDataSource } from '@/config/database';
 import { logger } from '@/config/logger';
 
+import { ForgotPasswordUseCase } from '@/modules/auth/application/use-cases/ForgotPasswordUseCase';
 import { GetMeUseCase } from '@/modules/auth/application/use-cases/GetMeUseCase';
 import { GuestUseCase } from '@/modules/auth/application/use-cases/GuestUseCase';
 import { LogoutUseCase } from '@/modules/auth/application/use-cases/LogoutUseCase';
 import { RegisterUseCase } from '@/modules/auth/application/use-cases/RegisterUseCase';
+import { TypeOrmPasswordResetRepository } from '@/modules/auth/infra/database/typeorm/repositories/TypeOrmPasswordResetRepository';
+import { ForgotPasswordController } from '@/modules/auth/presentation/controllers/ForgotPasswordController';
 import { GetMeController } from '@/modules/auth/presentation/controllers/GetMeController';
 import { GuestController } from '@/modules/auth/presentation/controllers/GuestController';
 import { LogoutController } from '@/modules/auth/presentation/controllers/LogoutController';
@@ -13,7 +17,7 @@ import { buildRegisterRoutes } from '@/modules/auth/presentation/routes/auth.rou
 import { TypeOrmUserRepository } from '@/modules/users';
 
 import { makeAuthMiddleware } from '@/shared/middlewares/Auth.middleware';
-import { hashProvider, tokenProvider } from '@/shared/providers';
+import { hashProvider, mailProvider, tokenProvider } from '@/shared/providers';
 import { TypeOrmAuditLogger } from '@/shared/providers/audit/TypeOrmAuditLogger';
 
 import { Router } from 'express';
@@ -21,6 +25,7 @@ import { Router } from 'express';
 export function makeAuthModule(): Router {
   const userRepository = new TypeOrmUserRepository(AppDataSource);
   const auditLogger = new TypeOrmAuditLogger(AppDataSource, logger);
+  const passwordResetRepository = new TypeOrmPasswordResetRepository(AppDataSource);
 
   return buildRegisterRoutes(
     {
@@ -28,7 +33,10 @@ export function makeAuthModule(): Router {
       me: new GetMeController(new GetMeUseCase(userRepository)),
       guest: new GuestController(new GuestUseCase(userRepository, tokenProvider, auditLogger)),
       logout: new LogoutController(new LogoutUseCase(userRepository, auditLogger)),
+      forgot: new ForgotPasswordController(
+        new ForgotPasswordUseCase(userRepository, passwordResetRepository, mailProvider, auditLogger, `${env.WEB_URL}/reset-password`),
+      ),
     },
-    makeAuthMiddleware(tokenProvider),
+    makeAuthMiddleware(tokenProvider, userRepository),
   );
 }

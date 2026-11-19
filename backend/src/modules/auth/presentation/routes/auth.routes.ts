@@ -9,6 +9,7 @@ export interface AuthControllers {
   guest: IController;
   logout: IController;
   register: IController;
+  forgot: IController;
 }
 
 export function buildRegisterRoutes(controllers: AuthControllers, auth: RequestHandler): Router {
@@ -18,6 +19,7 @@ export function buildRegisterRoutes(controllers: AuthControllers, auth: RequestH
   router.get('/auth/me', auth, ExpressControllerAdapter(controllers.me));
   router.post('/auth/guest', rateLimits.guest, ExpressControllerAdapter(controllers.guest));
   router.post('/auth/logout', auth, ExpressControllerAdapter(controllers.logout));
+  router.post('/auth/forgot', rateLimits.forgot, ExpressControllerAdapter(controllers.forgot));
 
   return router;
 }
