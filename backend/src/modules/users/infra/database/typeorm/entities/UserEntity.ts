@@ -5,6 +5,7 @@ import type { UserAddress, UserConsent, UserRole } from '@/modules/users/domain/
 @Entity('users')
 @Index('UQ_users_email', ['email'], { unique: true })
 @Index('UQ_users_cpf', ['cpf'], { unique: true })
+@Index('UQ_users_phone_guest', ['phone'], { unique: true, where: '"guest" = 1 AND "phone" IS NOT NULL' })
 @Index('UQ_users_phone_registered', ['phone'], { unique: true, where: '"guest" = 0 AND "phone" IS NOT NULL' })
 export class UserEntity {
   @PrimaryColumn({ type: 'varchar', length: 36 })
@@ -13,8 +14,8 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 120 })
   name!: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  email!: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  email!: string | null;
 
   @Column({ type: 'varchar', length: 20, nullable: true })
   phone!: string | null;
@@ -22,8 +23,8 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 30, default: 'customer' })
   role!: UserRole;
 
-  @Column({ type: 'varchar', name: 'password_hash' })
-  passwordHash!: string;
+  @Column({ type: 'varchar', name: 'password_hash', nullable: true })
+  passwordHash!: string | null;
 
   @Column({ type: 'varchar', length: 14, nullable: true })
   cpf!: string | null;
