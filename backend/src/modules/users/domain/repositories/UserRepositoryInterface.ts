@@ -9,4 +9,5 @@ export interface IUserRepository extends IRepository<User> {
   findRegisteredByPhone(phone: string): Promise<User | null>;
   findAll(params: PaginationParams): Promise<PaginatedResult<User>>;
   update(user: User): Promise<User>;
+  promoteGuest(user: User): Promise<User | null>;
 }
