@@ -28,13 +28,7 @@ export class TypeOrmUserRepository implements IUserRepository {
   }
 
   async findAll(params: PaginationParams): Promise<PaginatedResult<User>> {
-    const [entities, total] = await this.repository.findAndCount({
-      skip: getSkip(params),
-      take: params.limit,
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    const [entities, total] = await this.repository.findAndCount({ skip: getSkip(params), take: params.limit, order: { createdAt: 'DESC' } });
 
     return buildPaginatedResult(entities.map(UserMapper.toDomain), total, params);
   }
@@ -43,6 +37,24 @@ export class TypeOrmUserRepository implements IUserRepository {
     const entity = this.repository.create(UserMapper.toPersistence(user));
 
     const saved = await this.repository.save(entity);
+
+    return UserMapper.toDomain(saved);
+  }
+
+  async findGuestByPhone(phone: string): Promise<User | null> {
+    const entity = await this.repository.findOneBy({ phone, guest: true });
+
+    return entity ? UserMapper.toDomain(entity) : null;
+  }
+
+  async findRegisteredByPhone(phone: string): Promise<User | null> {
+    const entity = await this.repository.findOneBy({ phone, guest: false });
+
+    return entity ? UserMapper.toDomain(entity) : null;
+  }
+
+  async update(user: User): Promise<User> {
+    const saved = await this.repository.save(this.repository.create(UserMapper.toPersistence(user)));
 
     return UserMapper.toDomain(saved);
   }
