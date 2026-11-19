@@ -7,7 +7,7 @@ import { z } from '@/shared/openapi/zod';
 const UserSchema = z.object({
   id: z.string().uuid().openapi({ example: '3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f' }),
   name: z.string().openapi({ example: 'João Silva' }),
-  email: z.string().openapi({ example: 'joao@email.com' }),
+  email: z.string().nullable().openapi({ example: 'joao@email.com' }),
   phone: z.string().nullable().openapi({ example: '62999998888' }),
   role: z.string().openapi({ example: 'customer' }),
   cpf: z.string().nullable().openapi({ example: null }),
