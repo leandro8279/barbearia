@@ -1,5 +1,6 @@
 import { env } from '@/config/env';
 
+import { PasswordResetEntity } from '@/modules/auth/infra/database/typeorm/entities/PasswordResetEntity';
 import { UserEntity } from '@/modules/users/infra/database/typeorm/entities/UserEntity';
 
 import { AuditLogEntity } from '@/shared/database/entities/AuditLogEntity';
@@ -11,7 +12,7 @@ export const AppDataSource = new DataSource({
   type: 'better-sqlite3',
   database: env.DATABASE_PATH,
 
-  entities: [UserEntity, AuditLogEntity],
+  entities: [UserEntity, AuditLogEntity, PasswordResetEntity],
   migrations: ['src/shared/database/migrations/*{.ts,.js}'],
 
   synchronize: true,
