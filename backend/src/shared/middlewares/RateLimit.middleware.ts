@@ -33,4 +33,6 @@ export const rateLimits = {
   guest: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 10 })),
   /** Cadastro. */
   register: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 5 })),
+  /** Recuperação de senha. */
+  forgot: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 5 })),
 };
