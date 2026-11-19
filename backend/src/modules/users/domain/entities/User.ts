@@ -131,6 +131,10 @@ export class User {
     this.props.updatedAt = new Date();
   }
 
+  changePassword(passwordHash: string): void {
+    Object.assign(this.props, { passwordHash, tokenVersion: this.props.tokenVersion + 1, updatedAt: new Date() });
+  }
+
   get id(): string {
     return this.props.id;
   }
