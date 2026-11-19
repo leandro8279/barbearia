@@ -7,6 +7,7 @@ import { RequestHandler, Router } from 'express';
 export interface AuthControllers {
   me: IController;
   guest: IController;
+  logout: IController;
   register: IController;
 }
 
@@ -16,6 +17,7 @@ export function buildRegisterRoutes(controllers: AuthControllers, auth: RequestH
   router.post('/auth/register', rateLimits.register, ExpressControllerAdapter(controllers.register));
   router.get('/auth/me', auth, ExpressControllerAdapter(controllers.me));
   router.post('/auth/guest', rateLimits.guest, ExpressControllerAdapter(controllers.guest));
+  router.post('/auth/logout', auth, ExpressControllerAdapter(controllers.logout));
 
   return router;
 }
