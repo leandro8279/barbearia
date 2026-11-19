@@ -1,7 +1,9 @@
 import { AppDataSource } from '@/config/database';
 import { logger } from '@/config/logger';
 
+import { GetMeUseCase } from '@/modules/auth/application/use-cases/GetMeUseCase';
 import { RegisterUseCase } from '@/modules/auth/application/use-cases/RegisterUseCase';
+import { GetMeController } from '@/modules/auth/presentation/controllers/GetMeController';
 import { RegisterController } from '@/modules/auth/presentation/controllers/RegisterController';
 import { buildRegisterRoutes } from '@/modules/auth/presentation/routes/auth.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
@@ -19,6 +21,7 @@ export function makeAuthModule(): Router {
   return buildRegisterRoutes(
     {
       register: new RegisterController(new RegisterUseCase(userRepository, hashProvider, tokenProvider, auditLogger)),
+      me: new GetMeController(new GetMeUseCase(userRepository)),
     },
     makeAuthMiddleware(tokenProvider),
   );
