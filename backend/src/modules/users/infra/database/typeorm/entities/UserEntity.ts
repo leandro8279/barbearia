@@ -5,6 +5,7 @@ import type { UserAddress, UserConsent, UserRole } from '@/modules/users/domain/
 @Entity('users')
 @Index('UQ_users_email', ['email'], { unique: true })
 @Index('UQ_users_cpf', ['cpf'], { unique: true })
+@Index('UQ_users_phone_registered', ['phone'], { unique: true, where: '"guest" = 0 AND "phone" IS NOT NULL' })
 export class UserEntity {
   @PrimaryColumn({ type: 'varchar', length: 36 })
   id!: string;
