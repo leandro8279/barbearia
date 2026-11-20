@@ -3,8 +3,8 @@ import { SERVICE_SORT_FIELDS } from '@/modules/catalog/domain/repositories/Servi
 import { z } from '@/shared/openapi/zod';
 
 export const listAdminServicesQuerySchema = z.object({
-  _page: z.coerce.number().int().positive().catch(1),
-  _limit: z.coerce
+  page: z.coerce.number().int().positive().catch(1),
+  limit: z.coerce
     .number()
     .int()
     .positive()
@@ -17,6 +17,6 @@ export const listAdminServicesQuerySchema = z.object({
     .transform((v) => v === 'true')
     .optional()
     .catch(undefined),
-  _sort: z.enum(SERVICE_SORT_FIELDS).catch('name'),
-  _order: z.enum(['asc', 'desc']).catch('asc'),
+  sort: z.enum(SERVICE_SORT_FIELDS).catch('name'),
+  order: z.enum(['asc', 'desc']).catch('asc'),
 });
