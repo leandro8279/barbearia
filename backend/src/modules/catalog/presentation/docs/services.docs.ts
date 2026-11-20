@@ -3,6 +3,16 @@ import { SERVICE_SORT_FIELDS } from '@/modules/catalog/domain/repositories/Servi
 
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
 import { z } from '@/shared/openapi/zod';
+import type { GetAdminServiceResponseDTO } from '@/modules/catalog/application/dtos/GetAdminServiceDTO';
+import { getAdminServiceParamsSchema } from '@/modules/catalog/presentation/validators/getAdminService.schema';
+
+const BarberAssignmentSchema = z.object({
+  barberId: z.string().uuid(),
+  name: z.string().openapi({ example: 'Rafael Nogueira' }),
+  photo: z.string().nullable(),
+  assigned: z.boolean(),
+  commissionPct: z.number().nullable().openapi({ example: 45 }),
+});
 
 const AdminServiceSchema = z.object({
   id: z.string().uuid(),
@@ -54,5 +64,33 @@ registry.registerPath({
     200: { description: 'Página de serviços', content: jsonContent(AdminServicePageSchema) },
     401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
     403: { description: 'Sem permissão', content: errorContent },
+  },
+});
+
+export const AdminServiceDetailSchema = registry.register(
+  'AdminServiceDetail',
+  AdminServiceSchema.extend({
+    image: z.string(),
+    barberAssignments: z.array(BarberAssignmentSchema),
+  }),
+);
+
+type AssertDetailDocMatchesDTO = GetAdminServiceResponseDTO extends z.infer<typeof AdminServiceDetailSchema> ? true : never;
+export const assertAdminServiceDetailDocMatchesDTO: AssertDetailDocMatchesDTO = true;
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/admin/catalog/services/{id}',
+  tags: ['Catálogo'],
+  summary: 'Detalhar serviço (admin)',
+  description: 'Devolve o serviço e a atribuição de cada barbeiro ativo. Barbeiro sem vínculos aparece como atribuído. Exige a permissão catalog.write.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: { params: getAdminServiceParamsSchema },
+  responses: {
+    200: { description: 'Serviço com atribuições', content: jsonContent(AdminServiceDetailSchema) },
+    401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
+    403: { description: 'Sem permissão', content: errorContent },
+    404: { description: 'Serviço não encontrado', content: errorContent },
+    422: { description: 'Id inválido', content: errorContent },
   },
 });
