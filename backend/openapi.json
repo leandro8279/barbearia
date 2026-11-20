@@ -323,6 +323,336 @@
         "required": [
           "user"
         ]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "example": "3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f"
+              },
+              "name": {
+                "type": "string",
+                "example": "João Silva"
+              },
+              "email": {
+                "type": "string",
+                "example": "joao@email.com"
+              },
+              "phone": {
+                "type": "string",
+                "nullable": true,
+                "example": "62999998888"
+              },
+              "role": {
+                "type": "string",
+                "example": "customer"
+              },
+              "cpf": {
+                "type": "string",
+                "nullable": true,
+                "example": null
+              },
+              "birthDate": {
+                "type": "string",
+                "nullable": true,
+                "example": "1995-04-20"
+              },
+              "addresses": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "nullable": true
+                  }
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "referralSource": {
+                "type": "string",
+                "nullable": true
+              },
+              "avatar": {
+                "type": "string",
+                "nullable": true
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "guest": {
+                "type": "boolean"
+              },
+              "lastAccessAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              },
+              "consent": {
+                "type": "object",
+                "nullable": true,
+                "properties": {
+                  "reminders": {
+                    "type": "boolean"
+                  },
+                  "marketing": {
+                    "type": "boolean"
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "reminders",
+                  "marketing",
+                  "at"
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "email",
+              "phone",
+              "role",
+              "cpf",
+              "birthDate",
+              "addresses",
+              "tags",
+              "referralSource",
+              "avatar",
+              "permissions",
+              "active",
+              "guest",
+              "lastAccessAt",
+              "consent",
+              "createdAt",
+              "updatedAt"
+            ]
+          },
+          "token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIs..."
+          }
+        },
+        "required": [
+          "user",
+          "token"
+        ]
+      },
+      "AdminServicePage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "Corte infantil"
+                },
+                "slug": {
+                  "type": "string",
+                  "example": "corte-infantil"
+                },
+                "categoryId": {
+                  "type": "string",
+                  "example": "3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f"
+                },
+                "categoryName": {
+                  "type": "string",
+                  "example": "Cortes"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "durationMin": {
+                  "type": "integer",
+                  "example": 40
+                },
+                "bufferMin": {
+                  "type": "integer"
+                },
+                "price": {
+                  "type": "integer",
+                  "example": 6000,
+                  "description": "Em centavos"
+                },
+                "commissionPct": {
+                  "type": "number",
+                  "example": 45
+                },
+                "active": {
+                  "type": "boolean"
+                },
+                "featured": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "slug",
+                "categoryId",
+                "categoryName",
+                "description",
+                "durationMin",
+                "bufferMin",
+                "price",
+                "commissionPct",
+                "active",
+                "featured"
+              ]
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "AdminServiceDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Corte infantil"
+          },
+          "slug": {
+            "type": "string",
+            "example": "corte-infantil"
+          },
+          "categoryId": {
+            "type": "string",
+            "example": "3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f"
+          },
+          "categoryName": {
+            "type": "string",
+            "example": "Cortes"
+          },
+          "description": {
+            "type": "string"
+          },
+          "durationMin": {
+            "type": "integer",
+            "example": 40
+          },
+          "bufferMin": {
+            "type": "integer"
+          },
+          "price": {
+            "type": "integer",
+            "example": 6000,
+            "description": "Em centavos"
+          },
+          "commissionPct": {
+            "type": "number",
+            "example": 45
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "image": {
+            "type": "string"
+          },
+          "barberAssignments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "barberId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "Rafael Nogueira"
+                },
+                "photo": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "assigned": {
+                  "type": "boolean"
+                },
+                "commissionPct": {
+                  "type": "number",
+                  "nullable": true,
+                  "example": 45
+                }
+              },
+              "required": [
+                "barberId",
+                "name",
+                "photo",
+                "assigned",
+                "commissionPct"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "categoryId",
+          "categoryName",
+          "description",
+          "durationMin",
+          "bufferMin",
+          "price",
+          "commissionPct",
+          "active",
+          "featured",
+          "image",
+          "barberAssignments"
+        ]
       }
     },
     "parameters": {}
@@ -639,6 +969,461 @@
           },
           "401": {
             "description": "Token ausente, inválido ou expirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/forgot": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Solicitar recuperação de senha",
+        "description": "Resposta sempre genérica, exista o e-mail ou não. Se existir e a conta estiver ativa, envia um link válido por 30 minutos.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+                    "example": "joao@email.com"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Solicitação recebida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Se o e-mail estiver cadastrado, enviaremos as instruções de recuperação."
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Muitas tentativas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/reset": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Redefinir senha",
+        "description": "Troca a senha usando o token enviado por e-mail (uso único, expira em 30 min). Invalida os tokens JWT anteriores.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "a1b2c3..."
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 72,
+                    "example": "nova-senha-123"
+                  }
+                },
+                "required": [
+                  "token",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha alterada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Senha alterada com sucesso"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Token inválido ou expirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Muitas tentativas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login",
+        "description": "Autentica por e-mail ou telefone. Com `staffOnly`, só perfis de equipe entram (e só por e-mail). Apenas tentativas inválidas contam no limite.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "joao@email.com",
+                    "description": "E-mail ou telefone (telefone não vale com staffOnly)."
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 72,
+                    "example": "senha-forte-123"
+                  },
+                  "staffOnly": {
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciais inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Usuário inativo ou bloqueado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Muitas tentativas inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/catalog/services": {
+      "get": {
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Listar serviços (admin)",
+        "description": "Lista paginada. Valores inválidos de paginação/ordenação voltam ao padrão. Exige a permissão catalog.read.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "example": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "example": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Busca pelo nome"
+            },
+            "required": false,
+            "description": "Busca pelo nome",
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "categoryId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "required": false,
+            "name": "active",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "categoryId",
+                "categoryName",
+                "durationMin",
+                "price",
+                "commissionPct",
+                "active"
+              ]
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página de serviços",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminServicePage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/catalog/services/{id}": {
+      "get": {
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Detalhar serviço (admin)",
+        "description": "Devolve o serviço e a atribuição de cada barbeiro ativo. Barbeiro sem vínculos aparece como atribuído. Exige a permissão catalog.write.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serviço com atribuições",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminServiceDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente, inválido ou expirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sem permissão",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Serviço não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Id inválido",
             "content": {
               "application/json": {
                 "schema": {
