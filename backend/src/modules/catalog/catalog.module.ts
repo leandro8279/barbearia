@@ -13,10 +13,14 @@ import { Router } from 'express';
 
 export function makeCatalogModule(): Router {
   const serviceRepository = new TypeOrmServiceRepository(AppDataSource);
+  const barberRepository = new TypeOrmBarberRepository(AppDataSource);
   const userRepository = new TypeOrmUserRepository(AppDataSource);
 
   return buildCatalogRoutes(
-    { listAdminServices: new ListAdminServicesController(new ListAdminServicesUseCase(serviceRepository)) },
+    { 
+      listAdminServices: new ListAdminServicesController(new ListAdminServicesUseCase(serviceRepository)),
+      getAdminService: new GetAdminServiceController(new GetAdminServiceUseCase(serviceRepository, barberRepository)),
+    },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
 }
