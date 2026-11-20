@@ -18,9 +18,44 @@ export interface ServiceProps {
   updatedAt: Date;
 }
 
+export interface CreateServiceInput {
+  name: string;
+  slug: string;
+  category: ServiceCategory;
+  description?: string;
+  image?: string;
+  durationMin: number;
+  bufferMin?: number;
+  price: number;
+  commissionPct: number;
+  active?: boolean;
+  featured?: boolean;
+ }
+
 export class Service {
   private constructor(private readonly props: ServiceProps) {}
+  
+  static create(input: CreateServiceInput): Service {
+    const now = new Date();
 
+    return new Service({
+      id: randomUUID(),
+      name: input.name.trim(),
+      slug: input.slug,
+      category: input.category,
+      description: (input.description ?? '').trim(),
+      image: input.image ?? '',
+      durationMin: input.durationMin,
+      bufferMin: input.bufferMin ?? 0,
+      price: input.price,
+      commissionPct: input.commissionPct,
+      active: input.active ?? true,
+      featured: input.featured ?? false,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+  
   static restore(props: ServiceProps): Service {
     return new Service({ ...props });
   }
