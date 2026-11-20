@@ -21,8 +21,7 @@ export class TypeOrmServiceRepository implements IServiceRepository {
     { search, categoryId, active, sortField, direction }: AdminServiceFilters,
     pagination: PaginationParams,
   ): Promise<{ items: AdminServiceItem[]; total: number }> {
-    const qb = this.repository.createQueryBuilder('service');
-
+    const qb = this.repository.createQueryBuilder('service').innerJoinAndSelect('service.category', 'category');
     if (search) {
       const escaped = search.toLowerCase().replace(/[\\%_]/g, '\\$&');
       qb.andWhere("LOWER(service.name) LIKE :search ESCAPE '\\'", { search: `%${escaped}%` });
@@ -47,6 +46,7 @@ export class TypeOrmServiceRepository implements IServiceRepository {
       name: e.name,
       slug: e.slug,
       categoryId: e.categoryId,
+      categoryName: e.category.name,
       description: e.description ?? '',
       durationMin: e.durationMin,
       bufferMin: e.bufferMin,
