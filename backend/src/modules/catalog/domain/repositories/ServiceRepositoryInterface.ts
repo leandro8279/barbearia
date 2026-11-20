@@ -16,4 +16,5 @@ export interface ServiceFilters {
 export interface IServiceRepository {
   findById(id: string): Promise<Service | null>;
   findPage(filters: ServiceFilters, pagination: PaginationParams): Promise<{ items: Service[]; total: number }>;
+  updateActive(service: Service): Promise<void>;
 }
