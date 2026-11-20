@@ -3,4 +3,7 @@ export type RateLimitResult = { allowed: true } | { allowed: false; retryAfterMs
 export interface IRateLimiter {
   /** Registra uma tentativa para a chave (ex.: IP) e diz se ela é permitida. */
   consume(key: string): Promise<RateLimitResult>;
+
+  /** Consulta sem registrar tentativa. */
+  status(key: string): Promise<RateLimitResult>;
 }

@@ -55,4 +55,13 @@ export class InMemoryRateLimiter implements IRateLimiter {
       if (bucket.resetAt <= now) this.buckets.delete(key);
     }
   }
+
+  async status(key: string): Promise<RateLimitResult> {
+    const now = this.now();
+    const bucket = this.buckets.get(key);
+
+    if (!bucket || bucket.resetAt <= now || bucket.count < this.maxAttempts) return { allowed: true };
+
+    return { allowed: false, retryAfterMs: bucket.resetAt - now };
+  }
 }
