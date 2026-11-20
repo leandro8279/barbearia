@@ -1,11 +1,15 @@
 import type { IncomingHttpHeaders } from 'node:http';
+import type { UserRole } from '@/modules/users/domain/entities/User';
 
 export interface ITokenPayload {
   id: string;
   tokenVersion?: number;
+  role?: UserRole; 
+  permissions?: string[]
 }
 
 export interface IRequest {
+  ip?: string;
   body?: unknown;
   params?: Record<string, string>;
   query?: Record<string, unknown>;
