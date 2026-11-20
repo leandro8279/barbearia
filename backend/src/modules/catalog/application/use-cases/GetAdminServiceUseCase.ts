@@ -1,4 +1,8 @@
-import { GetAdminServiceDTO, GetAdminServiceResponseDTO } from '@/modules/catalog/application/dtos/GetAdminServiceDTO';
+import {
+  GetAdminServiceDTO,
+  GetAdminServiceResponseDTO,
+  toGetAdminServiceResponse,
+} from '@/modules/catalog/application/dtos/GetAdminServiceDTO';
 import { IBarberRepository } from '@/modules/catalog/domain/repositories/BarberRepositoryInterface';
 import { IServiceRepository } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
 
@@ -15,25 +19,11 @@ export class GetAdminServiceUseCase implements IUseCase<GetAdminServiceDTO, GetA
   ) {}
 
   async execute({ id }: GetAdminServiceDTO): Promise<GetAdminServiceOutput> {
-    const service = await this.serviceRepository.findAdminById(id);
+    const service = await this.serviceRepository.findById(id);
     if (!service) return left(new NotFoundError('Serviço'));
 
-    const barbers = await this.barberRepository.findActiveForAdmin();
+    const barbers = await this.barberRepository.findActive();
 
-    const barberAssignments = barbers
-      .map((barber) => {
-        const link = barber.serviceLinks.find((item) => item.serviceId === service.id);
-
-        return {
-          barberId: barber.id,
-          name: barber.name,
-          photo: barber.photo,
-          assigned: Boolean(link) || barber.serviceLinks.length === 0,
-          commissionPct: link?.commissionPct ?? null,
-        };
-      })
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-
-    return right({ ...service, barberAssignments });
+    return right(toGetAdminServiceResponse(service, barbers));
   }
 }
