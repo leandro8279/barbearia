@@ -1,5 +1,5 @@
 import { ServiceCategory } from '@/modules/catalog/domain/entities/ServiceCategory';
-import { ServiceCategoryEntity } from '@/modules/catalog/infra/database/typeorm/entities/ServiceCategoryEntity';
+import { ServiceCategoryEntity } from '@/modules/catalog/infra/entities/ServiceCategoryEntity';
 
 export class ServiceCategoryMapper {
   static toDomain(entity: ServiceCategoryEntity): ServiceCategory {

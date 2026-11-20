@@ -1,9 +1,9 @@
 import { Barber } from '@/modules/catalog/domain/entities/Barber';
 import { IBarberRepository } from '@/modules/catalog/domain/repositories/BarberRepositoryInterface';
-import { BarberEntity } from '@/modules/catalog/infra/database/typeorm/entities/BarberEntity';
-import { BarberServiceEntity } from '@/modules/catalog/infra/database/typeorm/entities/BarberServiceEntity';
-import { BarberMapper } from '@/modules/catalog/infra/database/typeorm/mappers/BarberMapper';
-import { UserEntity } from '@/modules/users/infra/database/typeorm/entities/UserEntity';
+import { BarberEntity } from '@/modules/catalog/infra/entities/BarberEntity';
+import { BarberServiceEntity } from '@/modules/catalog/infra/entities/BarberServiceEntity';
+import { BarberMapper } from '@/modules/catalog/infra/mappers/BarberMapper';
+import { UserEntity } from '@/modules/users/infra/entities/UserEntity';
 
 import { DataSource, In, Repository } from 'typeorm';
 

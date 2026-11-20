@@ -1,7 +1,7 @@
 import { Service } from '@/modules/catalog/domain/entities/Service';
 import { IServiceRepository, ServiceFilters, ServiceSortField } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
-import { ServiceEntity } from '@/modules/catalog/infra/database/typeorm/entities/ServiceEntity';
-import { ServiceMapper } from '@/modules/catalog/infra/database/typeorm/mappers/ServiceMapper';
+import { ServiceEntity } from '@/modules/catalog/infra/entities/ServiceEntity';
+import { ServiceMapper } from '@/modules/catalog/infra/mappers/ServiceMapper';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';

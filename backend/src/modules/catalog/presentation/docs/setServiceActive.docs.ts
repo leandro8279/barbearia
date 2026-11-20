@@ -1,5 +1,9 @@
 import type { SetServiceActiveResponseDTO } from '@/modules/catalog/application/dtos/SetServiceActiveDTO';
+import { getAdminServiceParamsSchema } from '@/modules/catalog/presentation/validators/getAdminService.schema';
 import { setServiceActiveBodySchema } from '@/modules/catalog/presentation/validators/setServiceActive.schema';
+
+import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
+import { z } from '@/shared/openapi/zod';
 
 export const ServiceActiveSchema = registry.register(
   'ServiceActive',

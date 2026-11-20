@@ -1,6 +1,6 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { ServiceCategoryEntity } from '@/modules/catalog/infra/entities/ServiceCategoryEntity';
 
-import { ServiceCategoryEntity } from '@/modules/catalog/infra/database/typeorm/entities/ServiceCategoryEntity';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('services')
 @Index('UQ_services_slug', ['slug'], { unique: true })

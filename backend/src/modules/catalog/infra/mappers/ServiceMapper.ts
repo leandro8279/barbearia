@@ -1,6 +1,6 @@
 import { Service } from '@/modules/catalog/domain/entities/Service';
-import { ServiceEntity } from '@/modules/catalog/infra/database/typeorm/entities/ServiceEntity';
-import { ServiceCategoryMapper } from '@/modules/catalog/infra/database/typeorm/mappers/ServiceCategoryMapper';
+import { ServiceEntity } from '@/modules/catalog/infra/entities/ServiceEntity';
+import { ServiceCategoryMapper } from '@/modules/catalog/infra/mappers/ServiceCategoryMapper';
 
 export class ServiceMapper {
   /** Exige `entity.category` carregada (join/relations). */
