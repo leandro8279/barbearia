@@ -1,15 +1,5 @@
-export interface BarberServiceLink {
-  serviceId: string;
-  commissionPct: number;
-}
-
-export interface AdminBarber {
-  id: string;
-  name: string;
-  photo: string | null;
-  serviceLinks: BarberServiceLink[]; // todos os vínculos do barbeiro
-}
+import type { Barber } from '@/modules/catalog/domain/entities/Barber';
 
 export interface IBarberRepository {
-  findActiveForAdmin(): Promise<AdminBarber[]>;
+  findActive(): Promise<Barber[]>;
 }
