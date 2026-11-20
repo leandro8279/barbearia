@@ -49,4 +49,6 @@ export const rateLimits = {
   reset: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 5 })),
   /** Login: só tentativas inválidas contam (ver LoginUseCase). */
   login: makeAttemptGuardMiddleware(loginFailedAttempts, 'Muitas tentativas inválidas. Aguarde antes de tentar novamente.'),
+  /** Troca de senha (usuário autenticado). */
+  changePassword: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 5 })),
 };
