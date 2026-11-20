@@ -11,6 +11,7 @@ export interface AuthControllers {
   register: IController;
   forgot: IController;
   reset: IController;
+  login: IController;
 }
 
 export function buildRegisterRoutes(controllers: AuthControllers, auth: RequestHandler): Router {
@@ -22,6 +23,7 @@ export function buildRegisterRoutes(controllers: AuthControllers, auth: RequestH
   router.post('/auth/logout', auth, ExpressControllerAdapter(controllers.logout));
   router.post('/auth/forgot', rateLimits.forgot, ExpressControllerAdapter(controllers.forgot));
   router.post('/auth/reset', rateLimits.reset, ExpressControllerAdapter(controllers.reset));
+  router.post('/auth/login', rateLimits.login, ExpressControllerAdapter(controllers.login));
 
   return router;
 }
