@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import { ServiceCategoryEntity } from './ServiceCategoryEntity';
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+
+import { ServiceCategoryEntity } from '@/modules/catalog/infra/database/typeorm/entities/ServiceCategoryEntity';
 
 @Entity('services')
 @Index('UQ_services_slug', ['slug'], { unique: true })
@@ -14,7 +15,7 @@ export class ServiceEntity {
   @Column({ type: 'varchar', length: 140 })
   slug!: string;
 
-  @Column({ type: 'varchar', name: 'category_id' })
+  @Column({ type: 'varchar', length: 36, name: 'category_id' })
   categoryId!: string;
 
   @ManyToOne(() => ServiceCategoryEntity, { onDelete: 'RESTRICT', nullable: false })
