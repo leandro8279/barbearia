@@ -2,8 +2,8 @@ import { EmailAlreadyExistsError } from '@/modules/users/application/errors/Emai
 import { PhoneAlreadyExistsError } from '@/modules/users/application/errors/PhoneAlreadyExistsError';
 import { User } from '@/modules/users/domain/entities/User';
 import { IUserRepository } from '@/modules/users/domain/repositories/UserRepositoryInterface';
-import { UserEntity } from '@/modules/users/infra/database/typeorm/entities/UserEntity';
-import { UserMapper } from '@/modules/users/infra/database/typeorm/mappers/UserMapper';
+import { UserEntity } from '@/modules/users/infra/entities/UserEntity';
+import { UserMapper } from '@/modules/users/infra/mappers/UserMapper';
 
 import { PaginatedResult, PaginationParams } from '@/shared/types/pagination.types';
 import { buildPaginatedResult, getSkip } from '@/shared/utils/pagination';

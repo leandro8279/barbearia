@@ -5,4 +5,4 @@ export { toUserResponse } from '@/modules/users/application/dtos/UserResponseDTO
 export { User } from '@/modules/users/domain/entities/User';
 export { EmailAlreadyExistsError } from '@/modules/users/application/errors/EmailAlreadyExistsError';
 export { PhoneAlreadyExistsError } from '@/modules/users/application/errors/PhoneAlreadyExistsError';
-export { TypeOrmUserRepository } from '@/modules/users/infra/database/typeorm/repositories/TypeOrmUserRepository';
+export { TypeOrmUserRepository } from '@/modules/users/infra/repositories/TypeOrmUserRepository';

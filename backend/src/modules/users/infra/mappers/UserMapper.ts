@@ -1,5 +1,5 @@
 import { User, UserProps } from '@/modules/users/domain/entities/User';
-import { UserEntity } from '@/modules/users/infra/database/typeorm/entities/UserEntity';
+import { UserEntity } from '@/modules/users/infra/entities/UserEntity';
 
 export class UserMapper {
   static toDomain(entity: UserEntity): User {
