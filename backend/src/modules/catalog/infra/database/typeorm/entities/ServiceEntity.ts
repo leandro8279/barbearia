@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, Index, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { ServiceCategoryEntity } from './ServiceCategoryEntity';
 
 @Entity('services')
 @Index('UQ_services_slug', ['slug'], { unique: true })
@@ -13,8 +14,12 @@ export class ServiceEntity {
   @Column({ type: 'varchar', length: 140 })
   slug!: string;
 
-  @Column({ type: 'integer', name: 'category_id' })
-  categoryId!: number;
+  @Column({ type: 'varchar', name: 'category_id' })
+  categoryId!: string;
+
+  @ManyToOne(() => ServiceCategoryEntity, { onDelete: 'RESTRICT', nullable: false })
+  @JoinColumn({ name: 'category_id' })
+  category!: ServiceCategoryEntity;
 
   @Column({ type: 'text', default: '' })
   description!: string;
