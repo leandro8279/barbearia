@@ -1,10 +1,7 @@
-import {
-  AdminServiceFilters,
-  AdminServiceItem,
-  IServiceRepository,
-  ServiceSortField
-} from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
+import { Service } from '@/modules/catalog/domain/entities/Service';
+import { IServiceRepository, ServiceFilters, ServiceSortField } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
 import { ServiceEntity } from '@/modules/catalog/infra/database/typeorm/entities/ServiceEntity';
+import { ServiceMapper } from '@/modules/catalog/infra/database/typeorm/mappers/ServiceMapper';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
@@ -28,11 +25,18 @@ export class TypeOrmServiceRepository implements IServiceRepository {
     this.repository = dataSource.getRepository(ServiceEntity);
   }
 
-  async findAdminPage(
-    { search, categoryId, active, sortField, direction }: AdminServiceFilters,
+  async findById(id: string): Promise<Service | null> {
+    const entity = await this.repository.findOne({ where: { id }, relations: { category: true } });
+
+    return entity ? ServiceMapper.toDomain(entity) : null;
+  }
+
+  async findPage(
+    { search, categoryId, active, sortField, direction }: ServiceFilters,
     pagination: PaginationParams,
-  ): Promise<{ items: AdminServiceItem[]; total: number }> {
+  ): Promise<{ items: Service[]; total: number }> {
     const qb = this.repository.createQueryBuilder('service').innerJoinAndSelect('service.category', 'category');
+
     if (search) {
       const escaped = search.toLowerCase().replace(/[\\%_]/g, '\\$&');
       qb.andWhere("LOWER(service.name) LIKE :search ESCAPE '\\'", { search: `%${escaped}%` });
@@ -48,28 +52,6 @@ export class TypeOrmServiceRepository implements IServiceRepository {
       .take(pagination.limit)
       .getManyAndCount();
 
-    return { items: entities.map(TypeOrmServiceRepository.toItem), total };
-  }
-
-  private static toItem(e: ServiceEntity): AdminServiceItem {
-    return {
-      id: e.id,
-      name: e.name,
-      slug: e.slug,
-      categoryId: e.categoryId,
-      categoryName: e.category.name,
-      description: e.description ?? '',
-      durationMin: e.durationMin,
-      bufferMin: e.bufferMin,
-      price: e.price,
-      commissionPct: e.commissionPct,
-      active: e.active,
-      featured: e.featured,
-    };
-  }
-  async findAdminById(id: string): Promise<AdminServiceDetail | null> {
-    const entity = await this.repository.findOne({ where: { id }, relations: { category: true } });
-
-    return entity ? { ...TypeOrmServiceRepository.toItem(entity), image: entity.image } : null;
+    return { items: entities.map(ServiceMapper.toDomain), total };
   }
 }
