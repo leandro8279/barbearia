@@ -1,12 +1,13 @@
-import type { AdminServiceFilters, AdminServiceItem } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
+import type { ServiceResponseDTO } from '@/modules/catalog/application/dtos/ServiceResponseDTO';
+import type { ServiceFilters } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
 
-export interface ListAdminServicesDTO extends AdminServiceFilters {
+export interface ListAdminServicesDTO extends ServiceFilters {
   page: number;
   pageSize: number;
 }
 
 export interface ListAdminServicesResponseDTO {
-  items: AdminServiceItem[];
+  items: ServiceResponseDTO[];
   total: number;
   page: number;
   pageSize: number;
