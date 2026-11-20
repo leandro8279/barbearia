@@ -15,6 +15,9 @@ import { TypeOrmUserRepository } from '@/modules/users';
 import { makeAuthMiddleware } from '@/shared/middlewares/Auth.middleware';
 import { tokenProvider } from '@/shared/providers';
 import { TypeOrmAuditLogger } from '@/shared/providers/audit/TypeOrmAuditLogger';
+import { CreateServiceUseCase } from '@/modules/catalog/application/use-cases/CreateServiceUseCase';
+import { TypeOrmServiceCategoryRepository } from '@/modules/catalog/infra/repositories/TypeOrmServiceCategoryRepository';
+import { CreateServiceController } from '@/modules/catalog/presentation/controllers/CreateServiceController';
 
 import { Router } from 'express';
 
@@ -23,12 +26,14 @@ export function makeCatalogModule(): Router {
   const barberRepository = new TypeOrmBarberRepository(AppDataSource);
   const userRepository = new TypeOrmUserRepository(AppDataSource);
   const auditLogger = new TypeOrmAuditLogger(AppDataSource, logger);
+  const categoryRepository = new TypeOrmServiceCategoryRepository(AppDataSource);
 
   return buildCatalogRoutes(
     {
       listAdminServices: new ListAdminServicesController(new ListAdminServicesUseCase(serviceRepository)),
       getAdminService: new GetAdminServiceController(new GetAdminServiceUseCase(serviceRepository, barberRepository)),
       setServiceActive: new SetServiceActiveController(new SetServiceActiveUseCase(serviceRepository, auditLogger)),
+      createService: new CreateServiceController(new CreateServiceUseCase(serviceRepository, categoryRepository, barberRepository, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
