@@ -2,6 +2,7 @@ import { env } from '@/config';
 import { AppDataSource } from '@/config/database';
 import { logger } from '@/config/logger';
 
+import { ChangePasswordUseCase } from '@/modules/auth/application/use-cases/ChangePasswordUseCase';
 import { ForgotPasswordUseCase } from '@/modules/auth/application/use-cases/ForgotPasswordUseCase';
 import { GetMeUseCase } from '@/modules/auth/application/use-cases/GetMeUseCase';
 import { GuestUseCase } from '@/modules/auth/application/use-cases/GuestUseCase';
@@ -10,6 +11,7 @@ import { LogoutUseCase } from '@/modules/auth/application/use-cases/LogoutUseCas
 import { RegisterUseCase } from '@/modules/auth/application/use-cases/RegisterUseCase';
 import { ResetPasswordUseCase } from '@/modules/auth/application/use-cases/ResetPasswordUseCase';
 import { TypeOrmPasswordResetRepository } from '@/modules/auth/infra/database/typeorm/repositories/TypeOrmPasswordResetRepository';
+import { ChangePasswordController } from '@/modules/auth/presentation/controllers/ChangePasswordController';
 import { ForgotPasswordController } from '@/modules/auth/presentation/controllers/ForgotPasswordController';
 import { GetMeController } from '@/modules/auth/presentation/controllers/GetMeController';
 import { GuestController } from '@/modules/auth/presentation/controllers/GuestController';
@@ -43,6 +45,7 @@ export function makeAuthModule(): Router {
       ),
       reset: new ResetPasswordController(new ResetPasswordUseCase(userRepository, passwordResetRepository, hashProvider, auditLogger)),
       login: new LoginController(new LoginUseCase(userRepository, hashProvider, tokenProvider, auditLogger, loginFailedAttempts)),
+      changePassword: new ChangePasswordController(new ChangePasswordUseCase(userRepository, hashProvider, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );

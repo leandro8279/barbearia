@@ -12,6 +12,7 @@ export interface AuthControllers {
   forgot: IController;
   reset: IController;
   login: IController;
+  changePassword: IController;
 }
 
 export function buildRegisterRoutes(controllers: AuthControllers, auth: RequestHandler): Router {
@@ -24,6 +25,7 @@ export function buildRegisterRoutes(controllers: AuthControllers, auth: RequestH
   router.post('/auth/forgot', rateLimits.forgot, ExpressControllerAdapter(controllers.forgot));
   router.post('/auth/reset', rateLimits.reset, ExpressControllerAdapter(controllers.reset));
   router.post('/auth/login', rateLimits.login, ExpressControllerAdapter(controllers.login));
+  router.post('/auth/change-password', auth, rateLimits.changePassword, ExpressControllerAdapter(controllers.changePassword));
 
   return router;
 }
