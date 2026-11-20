@@ -54,4 +54,8 @@ export class TypeOrmServiceRepository implements IServiceRepository {
 
     return { items: entities.map(ServiceMapper.toDomain), total };
   }
+
+  async updateActive(service: Service): Promise<void> {
+    await this.repository.update({ id: service.id }, { active: service.active, updatedAt: service.updatedAt });
+  }
 }
