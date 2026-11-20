@@ -8,7 +8,7 @@ const AdminServiceSchema = z.object({
   id: z.string().uuid(),
   name: z.string().openapi({ example: 'Corte infantil' }),
   slug: z.string().openapi({ example: 'corte-infantil' }),
-  categoryId: z.number().int().openapi({ example: 1 }),
+  categoryId: z.string().openapi({ example: 1 }),
   description: z.string(),
   durationMin: z.number().int().openapi({ example: 40 }),
   bufferMin: z.number().int(),
