@@ -1,10 +1,10 @@
+import type { GetAdminServiceResponseDTO } from '@/modules/catalog/application/dtos/GetAdminServiceDTO';
 import type { ListAdminServicesResponseDTO } from '@/modules/catalog/application/dtos/ListAdminServicesDTO';
 import { SERVICE_SORT_FIELDS } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
+import { getAdminServiceParamsSchema } from '@/modules/catalog/presentation/validators/getAdminService.schema';
 
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
 import { z } from '@/shared/openapi/zod';
-import type { GetAdminServiceResponseDTO } from '@/modules/catalog/application/dtos/GetAdminServiceDTO';
-import { getAdminServiceParamsSchema } from '@/modules/catalog/presentation/validators/getAdminService.schema';
 
 const BarberAssignmentSchema = z.object({
   barberId: z.string().uuid(),
@@ -18,7 +18,7 @@ const AdminServiceSchema = z.object({
   id: z.string().uuid(),
   name: z.string().openapi({ example: 'Corte infantil' }),
   slug: z.string().openapi({ example: 'corte-infantil' }),
-  categoryId: z.string().openapi({ example: 1 }),
+  categoryId: z.string().openapi({ example: '3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f' }),
   categoryName: z.string().openapi({ example: 'Cortes' }),
   description: z.string(),
   durationMin: z.number().int().openapi({ example: 40 }),
@@ -54,7 +54,7 @@ registry.registerPath({
       page: z.number().int().min(1).optional().openapi({ example: 1 }),
       limit: z.number().int().min(1).max(100).optional().openapi({ example: 20 }),
       q: z.string().optional().openapi({ description: 'Busca pelo nome' }),
-      categoryId: z.number().int().optional(),
+      categoryId: z.string().optional(),
       active: z.enum(['true', 'false']).optional(),
       sort: z.enum(SERVICE_SORT_FIELDS).optional(),
       order: z.enum(['asc', 'desc']).optional(),
