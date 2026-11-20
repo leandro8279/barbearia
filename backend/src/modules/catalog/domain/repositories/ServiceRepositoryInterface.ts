@@ -5,7 +5,7 @@ export type ServiceSortField = (typeof SERVICE_SORT_FIELDS)[number];
 
 export interface AdminServiceFilters {
   search: string;
-  categoryId?: number;
+  categoryId?: string;
   active?: boolean;
   sortField: ServiceSortField;
   direction: 'asc' | 'desc';
@@ -15,7 +15,8 @@ export interface AdminServiceItem {
   id: string;
   name: string;
   slug: string;
-  categoryId: number;
+  categoryId: string;
+  categoryName: string;
   description: string;
   durationMin: number;
   bufferMin: number;
