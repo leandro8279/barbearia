@@ -135,6 +135,11 @@ export class User {
     Object.assign(this.props, { passwordHash, tokenVersion: this.props.tokenVersion + 1, updatedAt: new Date() });
   }
 
+  recordAccess(at: Date = new Date()): void {
+    this.props.lastAccessAt = at;
+    this.props.updatedAt = at;
+  }
+
   get id(): string {
     return this.props.id;
   }
