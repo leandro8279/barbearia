@@ -22,4 +22,23 @@ export class ServiceMapper {
       updatedAt: entity.updatedAt,
     });
   }
+  
+static toPersistence(service: Service): Omit<ServiceEntity, 'category'> {
+  return {
+    id: service.id,
+    name: service.name,
+    slug: service.slug,
+    categoryId: service.categoryId,
+    description: service.description,
+    image: service.image,
+    durationMin: service.durationMin,
+    bufferMin: service.bufferMin,
+    price: service.price,
+    commissionPct: service.commissionPct,
+    active: service.active,
+    featured: service.featured,
+    createdAt: service.createdAt,
+    updatedAt: service.updatedAt,
+  };
+ }
 }
