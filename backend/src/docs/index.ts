@@ -1,6 +1,7 @@
 import '@/docs/health.docs';
 
 import '@/modules/auth/presentation/docs';
+import '@/modules/catalog/presentation/docs';
 
 import { generateOpenApiDocument } from '@/shared/openapi/generate-openapi-document';
 
