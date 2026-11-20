@@ -91,4 +91,8 @@ export class TypeOrmUserRepository implements IUserRepository {
 
     return error;
   }
+
+  async touchLastAccess(id: string, at: Date): Promise<void> {
+    await this.repository.update({ id }, { lastAccessAt: at, updatedAt: at });
+  }
 }

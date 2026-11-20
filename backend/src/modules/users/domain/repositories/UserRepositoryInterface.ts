@@ -10,4 +10,5 @@ export interface IUserRepository extends IRepository<User> {
   findAll(params: PaginationParams): Promise<PaginatedResult<User>>;
   update(user: User): Promise<User>;
   promoteGuest(user: User): Promise<User | null>;
+  touchLastAccess(id: string, at: Date): Promise<void>;
 }
