@@ -67,4 +67,9 @@ export class TypeOrmServiceRepository implements IServiceRepository {
       featured: e.featured,
     };
   }
+  async findAdminById(id: string): Promise<AdminServiceDetail | null> {
+    const entity = await this.repository.findOne({ where: { id }, relations: { category: true } });
+
+    return entity ? { ...TypeOrmServiceRepository.toItem(entity), image: entity.image } : null;
+  }
 }
