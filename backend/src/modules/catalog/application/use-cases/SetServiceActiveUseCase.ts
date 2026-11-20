@@ -17,7 +17,9 @@ export class SetServiceActiveUseCase implements IUseCase<SetServiceActiveDTO, Se
   async execute({ id, active, actorId }: SetServiceActiveDTO): Promise<SetServiceActiveOutput> {
     const service = await this.serviceRepository.findById(id);
     if (!service) return left(new NotFoundError('Serviço'));
-
+   
+    if(service.active === active) return right({ id: service.id, active: service.active });
+    
     service.setActive(active);
     await this.serviceRepository.updateActive(service);
 
