@@ -21,4 +21,8 @@ export class InMemoryServiceRepository implements IServiceRepository {
 
     return { items: filtered.slice(getSkip(pagination), getSkip(pagination) + pagination.limit), total: filtered.length };
   }
+
+  async updateActive(_service: Service) {
+    // o fake guarda a mesma referência, então a mutação do domínio já vale
+  }
 }
