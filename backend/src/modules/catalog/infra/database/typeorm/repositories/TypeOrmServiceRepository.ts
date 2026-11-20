@@ -2,6 +2,7 @@ import {
   AdminServiceFilters,
   AdminServiceItem,
   IServiceRepository,
+  ServiceSortField
 } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
 import { ServiceEntity } from '@/modules/catalog/infra/database/typeorm/entities/ServiceEntity';
 
@@ -9,6 +10,16 @@ import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
 
 import { DataSource, Repository } from 'typeorm';
+
+const SORT_COLUMN: Record<ServiceSortField, string> = {
+  name: 'service.name',
+  categoryId: 'service.categoryId',
+  categoryName: 'category.name',
+  durationMin: 'service.durationMin',
+  price: 'service.price',
+  commissionPct: 'service.commissionPct',
+  active: 'service.active',
+};
 
 export class TypeOrmServiceRepository implements IServiceRepository {
   private readonly repository: Repository<ServiceEntity>;
@@ -31,7 +42,7 @@ export class TypeOrmServiceRepository implements IServiceRepository {
 
     // sortField vem de whitelist (SERVICE_SORT_FIELDS), validada no controller.
     const [entities, total] = await qb
-      .orderBy(`service.${sortField}`, direction === 'desc' ? 'DESC' : 'ASC')
+      .orderBy(SORT_COLUMN[sortField], direction === 'desc' ? 'DESC' : 'ASC')
       .addOrderBy('service.id', 'ASC')
       .skip(getSkip(pagination))
       .take(pagination.limit)
