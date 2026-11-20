@@ -1,4 +1,6 @@
 export interface LoginDTO {
-  email: string;
+  ip?: string;
+  identifier: string; // e-mail ou telefone
   password: string;
+  staffOnly?: boolean;
 }
