@@ -25,7 +25,17 @@ export class InMemoryUserRepository implements IUserRepository {
     this.items.push(user);
     return user;
   }
+
   async update(user: User) {
+    const index = this.items.findIndex((u) => u.id === user.id);
+    if (index !== -1) this.items[index] = user;
     return user;
+  }
+  async promoteGuest(user: User) {
+    return this.update(user);
+  }
+  async touchLastAccess(id: string, at: Date) {
+    const user = this.items.find((u) => u.id === id);
+    user?.recordAccess(at);
   }
 }
