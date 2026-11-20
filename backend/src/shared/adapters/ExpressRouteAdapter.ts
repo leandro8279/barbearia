@@ -11,7 +11,7 @@ export const ExpressControllerAdapter =
         body: req.body,
         params: req.params as Record<string, string>,
         query: req.query,
-
+        ip: req.ip ?? req.socket?.remoteAddress,
         files: (req as { files?: unknown }).files,
         headers: req.headers,
         user: req.user,
