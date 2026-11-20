@@ -26,6 +26,11 @@ export interface AdminServiceItem {
   featured: boolean;
 }
 
+export interface AdminServiceDetail extends AdminServiceItem {
+  image: string;
+}
+
 export interface IServiceRepository {
   findAdminPage(filters: AdminServiceFilters, pagination: PaginationParams): Promise<{ items: AdminServiceItem[]; total: number }>;
+  findAdminById(id: string): Promise<AdminServiceDetail | null>;
 }
