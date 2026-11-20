@@ -84,4 +84,9 @@ export class Service {
   get updatedAt(): Date {
     return this.props.updatedAt;
   }
+
+  setActive(active: boolean): void {
+    this.props.active = active;
+    this.props.updatedAt = new Date();
+  }
 }
