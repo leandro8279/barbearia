@@ -13,8 +13,15 @@ export interface ServiceFilters {
   direction: 'asc' | 'desc';
 }
 
+export interface ServiceBarberAssignment {
+  barberId: string;
+  commissionPct: number;
+}
+
 export interface IServiceRepository {
   findById(id: string): Promise<Service | null>;
+  findBySlug(slug: string): Promise<Service | null>;
   findPage(filters: ServiceFilters, pagination: PaginationParams): Promise<{ items: Service[]; total: number }>;
+  create(service: Service, assignments: ServiceBarberAssignment[]): Promise<void>;
   updateActive(service: Service): Promise<void>;
 }
