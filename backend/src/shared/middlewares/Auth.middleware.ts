@@ -18,7 +18,7 @@ export function makeAuthMiddleware(tokenProvider: ITokenProvider, userRepository
       throw new UnauthorizedError('Token inválido ou expirado');
     }
 
-    req.user = payload;
+    req.user = { id: user.id, tokenVersion: user.tokenVersion, role: user.role, permissions: user.permissions };
     next();
   };
 }
