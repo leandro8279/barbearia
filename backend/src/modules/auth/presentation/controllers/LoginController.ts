@@ -10,9 +10,9 @@ export class LoginController implements IController {
   constructor(private readonly loginUseCase: IUseCase<LoginDTO, LoginOutput>) {}
 
   public async handle(request: IRequest): Promise<IResponse> {
-    const input = loginBodySchema.parse(request.body);
+    const { email, password, staffOnly } = loginBodySchema.parse(request.body);
 
-    const result = await this.loginUseCase.execute(input);
+    const result = await this.loginUseCase.execute({ identifier: email, password, staffOnly, ip: request.ip });
     if (result.isLeft()) throw result.value;
 
     return { statusCode: HttpStatus.OK, body: result.value };
