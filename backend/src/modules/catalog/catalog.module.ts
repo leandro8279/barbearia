@@ -1,7 +1,10 @@
 import { AppDataSource } from '@/config/database';
 
+import { GetAdminServiceUseCase } from '@/modules/catalog/application/use-cases/GetAdminServiceUseCase';
 import { ListAdminServicesUseCase } from '@/modules/catalog/application/use-cases/ListAdminServicesUseCase';
+import { TypeOrmBarberRepository } from '@/modules/catalog/infra/database/typeorm/repositories/TypeOrmBarberRepository';
 import { TypeOrmServiceRepository } from '@/modules/catalog/infra/database/typeorm/repositories/TypeOrmServiceRepository';
+import { GetAdminServiceController } from '@/modules/catalog/presentation/controllers/GetAdminServiceController';
 import { ListAdminServicesController } from '@/modules/catalog/presentation/controllers/ListAdminServicesController';
 import { buildCatalogRoutes } from '@/modules/catalog/presentation/routes/catalog.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
@@ -17,7 +20,7 @@ export function makeCatalogModule(): Router {
   const userRepository = new TypeOrmUserRepository(AppDataSource);
 
   return buildCatalogRoutes(
-    { 
+    {
       listAdminServices: new ListAdminServicesController(new ListAdminServicesUseCase(serviceRepository)),
       getAdminService: new GetAdminServiceController(new GetAdminServiceUseCase(serviceRepository, barberRepository)),
     },
