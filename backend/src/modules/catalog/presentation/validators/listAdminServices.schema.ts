@@ -11,7 +11,12 @@ export const listAdminServicesQuerySchema = z.object({
     .transform((n) => Math.min(n, 100))
     .catch(20),
   q: z.string().trim().catch(''),
-  categoryId: z.string().trim().optional.catch(''),
+  categoryId: z
+    .string()
+    .trim()
+    .transform((v) => v || undefined)
+    .optional()
+    .catch(undefined),
   active: z
     .enum(['true', 'false'])
     .transform((v) => v === 'true')
