@@ -10,7 +10,7 @@ import { LoginUseCase } from '@/modules/auth/application/use-cases/LoginUseCase'
 import { LogoutUseCase } from '@/modules/auth/application/use-cases/LogoutUseCase';
 import { RegisterUseCase } from '@/modules/auth/application/use-cases/RegisterUseCase';
 import { ResetPasswordUseCase } from '@/modules/auth/application/use-cases/ResetPasswordUseCase';
-import { TypeOrmPasswordResetRepository } from '@/modules/auth/infra/database/typeorm/repositories/TypeOrmPasswordResetRepository';
+import { TypeOrmPasswordResetRepository } from '@/modules/auth/infra/repositories/TypeOrmPasswordResetRepository';
 import { ChangePasswordController } from '@/modules/auth/presentation/controllers/ChangePasswordController';
 import { ForgotPasswordController } from '@/modules/auth/presentation/controllers/ForgotPasswordController';
 import { GetMeController } from '@/modules/auth/presentation/controllers/GetMeController';

@@ -1,5 +1,5 @@
 import { IPasswordResetRepository, NewPasswordReset, PasswordReset } from '@/modules/auth/domain/repositories/PasswordResetRepositoryInterface';
-import { PasswordResetEntity } from '@/modules/auth/infra/database/typeorm/entities/PasswordResetEntity';
+import { PasswordResetEntity } from '@/modules/auth/infra/entities/PasswordResetEntity';
 
 import { DataSource, LessThan, Repository } from 'typeorm';
 
