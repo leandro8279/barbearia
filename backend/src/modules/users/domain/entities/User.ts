@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
 export type UserRole = 'admin' | 'customer' | 'barber' | 'reception' | 'manager';
+export const STAFF_ROLES = ['barber', 'reception', 'manager', 'admin'] as const satisfies readonly UserRole[];
+export type StaffRole = (typeof STAFF_ROLES)[number];
 
 export interface UserAddress {
   id?: string;
