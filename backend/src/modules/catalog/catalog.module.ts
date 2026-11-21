@@ -19,6 +19,8 @@ import { ListAdminServicesController } from '@/modules/catalog/presentation/cont
 import { SetServiceActiveController } from '@/modules/catalog/presentation/controllers/SetServiceActiveController';
 import { buildCatalogRoutes } from '@/modules/catalog/presentation/routes/catalog.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
+import { AdjustProductStockUseCase } from '@/modules/catalog/application/use-cases/AdjustProductStockUseCase';
+import { AdjustProductStockController } from '@/modules/catalog/presentation/controllers/AdjustProductStockController';
 
 import { makeAuthMiddleware } from '@/shared/middlewares/Auth.middleware';
 import { tokenProvider } from '@/shared/providers';
@@ -42,6 +44,7 @@ export function makeCatalogModule(): Router {
       createService: new CreateServiceController(new CreateServiceUseCase(serviceRepository, categoryRepository, barberRepository, auditLogger)),
       listAdminProducts: new ListAdminProductsController(new ListAdminProductsUseCase(productRepository)),
       getAdminProduct: new GetAdminProductController(new GetAdminProductUseCase(productRepository)),
+      adjustProductStock: new AdjustProductStockController(new AdjustProductStockUseCase(productRepository, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
