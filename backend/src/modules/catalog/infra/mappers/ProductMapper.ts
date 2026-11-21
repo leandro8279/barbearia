@@ -19,4 +19,21 @@ export class ProductMapper {
       active: entity.active,
     });
   }
+  
+  static toPersistence(product: Product): Omit<ProductEntity, 'category' | 'createdAt' | 'updatedAt'> {
+  return {
+    id: product.id,
+    sku: product.sku,
+    name: product.name,
+    categoryId: product.categoryId,
+    price: product.price,
+    costCents: product.costCents,
+    stock: product.stock,
+    minStock: product.minStock,
+    kind: product.kind,
+    commissionPct: product.commissionPct,
+    image: product.image,
+    active: product.active,
+  };
+}
 }
