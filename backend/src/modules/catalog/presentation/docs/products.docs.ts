@@ -5,7 +5,28 @@ import { getAdminProductParamsSchema } from '@/modules/catalog/presentation/vali
 
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
 import { z } from '@/shared/openapi/zod';
+import type { ProductResponseDTO } from '@/modules/catalog/application/dtos/ProductResponseDTO';
+import { createProductBodySchema } from '@/modules/catalog/presentation/validators/createProduct.schema';
 
+type AssertProductDocMatchesDTO = ProductResponseDTO extends z.infer<typeof AdminProductSchema> ? true : never;
+export const assertAdminProductDocMatchesDTO: AssertProductDocMatchesDTO = true;
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/admin/catalog/products',
+  tags: ['Catálogo'],
+  summary: 'Criar produto (admin)',
+  description: 'Cria o produto. O SKU é normalizado em maiúsculas e deve ser único. Saldo inicial opcional (padrão 0). Registra auditoria. Exige a permissão catalog.write.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: { body: { content: jsonContent(createProductBodySchema) } },
+  responses: {
+    201: { description: 'Produto criado', content: jsonContent(AdminProductSchema) },
+    401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
+    403: { description: 'Sem permissão', content: errorContent },
+    409: { description: 'SKU já cadastrado', content: errorContent },
+    422: { description: 'Dados inválidos ou categoria inexistente', content: errorContent },
+  },
+});
 export const AdminProductSchema = z.object({
   id: z.string().uuid(),
   sku: z.string().openapi({ example: 'BAR-001' }),
