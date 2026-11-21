@@ -24,7 +24,16 @@ export class Product {
   static restore(props: ProductProps): Product {
     return new Product({ ...props });
   }
+  
+  canAdjustStock(delta: number): boolean {
+    return this.props.stock + delta >= 0;
+  }
 
+  adjustStock(delta: number): void {
+    if (!this.canAdjustStock(delta)) throw new Error('O ajuste não pode deixar o estoque negativo');
+    this.props.stock += delta;
+  }
+  
   get id(): string {
     return this.props.id;
   }
