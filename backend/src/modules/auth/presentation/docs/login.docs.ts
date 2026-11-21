@@ -13,8 +13,8 @@ export const LoginResponseSchema = registry.register(
   }),
 );
 
-// type AssertDocMatchesDTO = LoginResponseDTO extends z.infer<typeof LoginResponseSchema> ? true : never;
-// export const assertDocMatchesDTO: AssertDocMatchesDTO = true;
+type AssertDocMatchesDTO = LoginResponseDTO extends z.infer<typeof LoginResponseSchema> ? true : never;
+export const assertLoginDocMatchesDTO: AssertDocMatchesDTO = true;
 
 registry.registerPath({
   method: 'post',
