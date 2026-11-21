@@ -14,6 +14,7 @@ export class StockMovementMapper {
       qty: movement.qty,
       reason: movement.reason,
       userId: movement.userId,
+      tabId: movement.tabId,
       createdAt: movement.createdAt,
     };
   }
