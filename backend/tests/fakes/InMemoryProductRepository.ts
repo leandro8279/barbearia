@@ -1,6 +1,7 @@
 import { Product } from '@/modules/catalog/domain/entities/Product';
 import { IProductRepository, ProductFilters } from '@/modules/catalog/domain/repositories/ProductRepositoryInterface';
 import type { StockMovement } from '@/modules/catalog/domain/entities/StockMovement';
+import { ProductSkuAlreadyExistsError } from '@/modules/catalog/application/errors/ProductSkuAlreadyExistsError';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
@@ -41,5 +42,14 @@ export class InMemoryProductRepository implements IProductRepository {
 
     return product;
   }
+  
+async findBySku(sku: string) {
+  return this.items.find((item) => item.sku === sku) ?? null;
+}
+
+async create(product: Product) {
+  if (this.items.some((item) => item.sku === product.sku)) throw new ProductSkuAlreadyExistsError();
+  this.items.push(product);
+}
   
 }
