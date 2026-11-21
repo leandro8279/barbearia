@@ -1,6 +1,6 @@
 import { AppDataSource } from '@/config/database';
 
-import { makeAuthMiddleware } from '@/shared/middlewares/auth.middleware';
+import { makeAuthMiddleware } from '@/shared/middlewares/Auth.middleware';
 import { hashProvider, tokenProvider } from '@/shared/providers';
 
 import { Router } from 'express';
