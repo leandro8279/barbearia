@@ -7,6 +7,7 @@ import { IUseCase } from '@/shared/interfaces/UseCaseInterface';
 import { IAuditLogger } from '@/shared/providers/audit/AuditLoggerInterface';
 import { IHashProvider } from '@/shared/providers/hash/HashProviderInterface';
 import { ITokenProvider } from '@/shared/providers/token/TokenProviderInterface';
+import { normalizePhone } from '@/shared/utils/phone';
 
 export type RegisterError = EmailAlreadyExistsError | PhoneAlreadyExistsError;
 export type RegisterOutput = Either<RegisterError, { created: boolean; auth: RegisterResponseDTO }>;
@@ -21,7 +22,7 @@ export class RegisterUseCase implements IUseCase<RegisterDTO, RegisterOutput> {
 
   async execute(input: RegisterDTO): Promise<RegisterOutput> {
     const email = input.email.trim().toLowerCase();
-    const phone = input.phone.replace(/\D/g, '');
+    const phone = normalizePhone(input.phone) ?? input.phone.replace(/\D/g, '');
 
     const [emailOwner, phoneGuest] = await Promise.all([this.userRepository.findByEmail(email), this.userRepository.findGuestByPhone(phone)]);
 
