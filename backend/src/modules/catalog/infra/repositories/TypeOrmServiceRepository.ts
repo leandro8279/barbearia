@@ -7,7 +7,9 @@ import { ServiceMapper } from '@/modules/catalog/infra/mappers/ServiceMapper';
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
 
-import { DataSource, Repository } from 'typeorm';
+import { IServiceRepository, ServiceBarberAssignment, ServiceFilters, ServiceSortField } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
+import { BarberServiceEntity } from '@/modules/catalog/infra/entities/BarberServiceEntity';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
 
 const SORT_COLUMN: Record<ServiceSortField, string> = {
   name: 'service.name',
