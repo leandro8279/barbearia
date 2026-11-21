@@ -14,6 +14,7 @@ const StockMovementSchema = z.object({
   qty: z.number().int().openapi({ example: -2 }),
   reason: z.string().openapi({ example: 'Contagem de inventário' }),
   userId: z.string().nullable(),
+  tabId: z.string().uuid().nullable(),
   createdAt: z.string().datetime(),
 });
 
