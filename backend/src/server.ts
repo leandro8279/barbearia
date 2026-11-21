@@ -1,10 +1,10 @@
+import 'reflect-metadata';
 import { app } from '@/app';
 
 import { connectDatabase, disconnectDatabase } from '@/config/database';
 import { env } from '@/config/env';
 import { logger } from '@/config/logger';
 
-import 'reflect-metadata';
 
 async function bootstrap() {
   await connectDatabase();
