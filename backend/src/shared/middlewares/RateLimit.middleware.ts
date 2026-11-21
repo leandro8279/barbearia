@@ -1,7 +1,8 @@
 import { TooManyRequestsError } from '@/shared/errors/TooManyRequestsError';
 import { InMemoryRateLimiter } from '@/shared/providers/rate-limiter/InMemoryRateLimiter';
 import { IRateLimiter } from '@/shared/providers/rate-limiter/RateLimiterInterface';
-
+import { env } from '@/config/env';
+import { Request } from 'express';
 import { RequestHandler, Response } from 'express';
 
 /**
@@ -14,7 +15,7 @@ function reject(res: Response, retryAfterMs: number, message?: string): never {
   throw new TooManyRequestsError(message);
 }
 
-const clientKey = (req: Request | any) => req.ip ?? req.socket?.remoteAddress ?? 'unknown';
+const clientKey = (req: Request) => req.ip ?? req.socket?.remoteAddress ?? 'unknown';
 
 export function makeRateLimitMiddleware(limiter: IRateLimiter): RequestHandler {
   return async (req, res, next) => {
@@ -38,7 +39,7 @@ export const loginFailedAttempts = new InMemoryRateLimiter({ windowMs: minutes(1
 // Cada preset tem o próprio limiter, então os contadores são independentes por endpoint.
 export const rateLimits = {
   /** Proteção geral da API. */
-  global: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(15), maxAttempts: 100 })),
+  global: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(15), maxAttempts: env.RATE_LIMIT_GLOBAL_MAX })),
   /** Rotas públicas sensíveis (login). */
   guest: makeRateLimitMiddleware(new InMemoryRateLimiter({ windowMs: minutes(10), maxAttempts: 10 })),
   /** Cadastro. */
