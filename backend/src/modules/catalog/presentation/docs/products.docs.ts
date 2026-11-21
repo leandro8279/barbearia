@@ -1,6 +1,7 @@
 import type { ListAdminProductsResponseDTO } from '@/modules/catalog/application/dtos/ListAdminProductsDTO';
 import { PRODUCT_KINDS } from '@/modules/catalog/domain/entities/Product';
 import { PRODUCT_SORT_FIELDS } from '@/modules/catalog/domain/repositories/ProductRepositoryInterface';
+import { getAdminProductParamsSchema } from '@/modules/catalog/presentation/validators/getAdminProduct.schema';
 
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
 import { z } from '@/shared/openapi/zod';
@@ -58,5 +59,22 @@ registry.registerPath({
     200: { description: 'Página de produtos', content: jsonContent(AdminProductPageSchema) },
     401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
     403: { description: 'Sem permissão', content: errorContent },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/admin/catalog/products/{id}',
+  tags: ['Catálogo'],
+  summary: 'Detalhar produto (admin)',
+  description: 'Devolve o produto com o nome da categoria. Exige a permissão catalog.write.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: { params: getAdminProductParamsSchema },
+  responses: {
+    200: { description: 'Produto', content: jsonContent(AdminProductSchema) },
+    401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
+    403: { description: 'Sem permissão', content: errorContent },
+    404: { description: 'Produto não encontrado', content: errorContent },
+    422: { description: 'Id inválido', content: errorContent },
   },
 });
