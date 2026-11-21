@@ -23,6 +23,9 @@ export class StockMovementEntity {
   @Column({ type: 'varchar', length: 36, name: 'user_id', nullable: true })
   userId!: string | null;
 
+  @Column({ type: 'varchar', length: 36, name: 'tab_id', nullable: true })
+  tabId!: string | null;
+  
   @CreateDateColumn({ type: 'datetime', name: 'created_at' })
   createdAt!: Date;
 }
