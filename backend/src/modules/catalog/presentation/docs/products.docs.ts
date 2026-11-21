@@ -11,6 +11,22 @@ import { createProductBodySchema } from '@/modules/catalog/presentation/validato
 type AssertProductDocMatchesDTO = ProductResponseDTO extends z.infer<typeof AdminProductSchema> ? true : never;
 export const assertAdminProductDocMatchesDTO: AssertProductDocMatchesDTO = true;
 
+export const AdminProductSchema = z.object({
+  id: z.string().uuid(),
+  sku: z.string().openapi({ example: 'BAR-001' }),
+  name: z.string().openapi({ example: 'Pomada matte' }),
+  categoryId: z.string().uuid().openapi({ example: '3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f' }),
+  categoryName: z.string().openapi({ example: 'Cabelo' }),
+  price: z.number().int().openapi({ example: 3500, description: 'Em centavos' }),
+  costCents: z.number().int().openapi({ example: 1800, description: 'Em centavos' }),
+  stock: z.number().int().openapi({ example: 33 }),
+  minStock: z.number().int().openapi({ example: 5 }),
+  kind: z.enum(PRODUCT_KINDS).openapi({ example: 'resale' }),
+  commissionPct: z.number().openapi({ example: 10 }),
+  image: z.string().openapi({ example: '/seed/product-hair.svg' }),
+  active: z.boolean(),
+});
+
 registry.registerPath({
   method: 'post',
   path: '/api/admin/catalog/products',
@@ -26,21 +42,6 @@ registry.registerPath({
     409: { description: 'SKU já cadastrado', content: errorContent },
     422: { description: 'Dados inválidos ou categoria inexistente', content: errorContent },
   },
-});
-export const AdminProductSchema = z.object({
-  id: z.string().uuid(),
-  sku: z.string().openapi({ example: 'BAR-001' }),
-  name: z.string().openapi({ example: 'Pomada matte' }),
-  categoryId: z.string().uuid().openapi({ example: '3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f' }),
-  categoryName: z.string().openapi({ example: 'Cabelo' }),
-  price: z.number().int().openapi({ example: 3500, description: 'Em centavos' }),
-  costCents: z.number().int().openapi({ example: 1800, description: 'Em centavos' }),
-  stock: z.number().int().openapi({ example: 33 }),
-  minStock: z.number().int().openapi({ example: 5 }),
-  kind: z.enum(PRODUCT_KINDS).openapi({ example: 'resale' }),
-  commissionPct: z.number().openapi({ example: 10 }),
-  image: z.string().openapi({ example: '/seed/product-hair.svg' }),
-  active: z.boolean(),
 });
 
 export const AdminProductPageSchema = registry.register(
