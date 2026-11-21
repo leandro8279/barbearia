@@ -8,9 +8,9 @@ const MeUserSchema = UserSchema.omit({ tokenVersion: true });
 
 export const GetMeResponseSchema = registry.register('GetMeResponse', z.object({ user: MeUserSchema }));
 
-// type AssertDocMatchesDTO = GetMeResponseDTO extends z.infer<typeof GetMeResponseSchema> ? true : never;
+type AssertDocMatchesDTO = GetMeResponseDTO extends z.infer<typeof GetMeResponseSchema> ? true : never;
 
-// export const assertDocMatchesDTO: AssertDocMatchesDTO = true;
+export const assertMeDocMatchesDTO: AssertDocMatchesDTO = true;
 
 registry.registerPath({
   method: 'get',
