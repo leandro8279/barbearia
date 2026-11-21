@@ -3,6 +3,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryColumn } from 'typeorm'
 import type { StockMovementType } from '@/modules/catalog/domain/entities/StockMovement';
 
 @Entity('stock_movements')
+  @Index('IDX_stock_movements_tab', ['tabId'])
 @Index('IDX_stock_movements_product', ['productId'])
 export class StockMovementEntity {
   @PrimaryColumn({ type: 'varchar', length: 36 })
