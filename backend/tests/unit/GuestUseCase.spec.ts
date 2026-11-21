@@ -49,4 +49,12 @@ describe('GuestUseCase', () => {
     expect(result.isLeft()).toBe(true);
     expect(result.value).toMatchObject({ statusCode: 409, code: 'PHONE_BELONGS_TO_ACCOUNT' });
   });
+
+  it('normaliza o DDI 55 antes de gravar', async () => {
+  const { repo, sut } = makeSut();
+
+  await sut.execute({ ...input, phone: '+55 (62) 99999-8888' });
+
+  expect(repo.items[0].phone).toBe('62999998888');
+});
 });
