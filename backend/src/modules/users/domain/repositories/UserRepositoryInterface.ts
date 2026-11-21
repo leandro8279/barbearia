@@ -11,4 +11,5 @@ export interface IUserRepository extends IRepository<User> {
   update(user: User): Promise<User>;
   promoteGuest(user: User): Promise<User | null>;
   touchLastAccess(id: string, at: Date): Promise<void>;
+  findStaff(): Promise<User[]>;
 }

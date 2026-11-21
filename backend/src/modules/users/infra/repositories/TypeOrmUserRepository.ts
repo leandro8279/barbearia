@@ -1,6 +1,6 @@
 import { EmailAlreadyExistsError } from '@/modules/users/application/errors/EmailAlreadyExistsError';
 import { PhoneAlreadyExistsError } from '@/modules/users/application/errors/PhoneAlreadyExistsError';
-import { User } from '@/modules/users/domain/entities/User';
+import { STAFF_ROLES, User } from '@/modules/users/domain/entities/User';
 import { IUserRepository } from '@/modules/users/domain/repositories/UserRepositoryInterface';
 import { UserEntity } from '@/modules/users/infra/entities/UserEntity';
 import { UserMapper } from '@/modules/users/infra/mappers/UserMapper';
@@ -8,7 +8,7 @@ import { UserMapper } from '@/modules/users/infra/mappers/UserMapper';
 import { PaginatedResult, PaginationParams } from '@/shared/types/pagination.types';
 import { buildPaginatedResult, getSkip } from '@/shared/utils/pagination';
 
-import { DataSource, QueryDeepPartialEntity, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, In, QueryDeepPartialEntity, QueryFailedError, Repository } from 'typeorm';
 
 export class TypeOrmUserRepository implements IUserRepository {
   private readonly repository: Repository<UserEntity>;
@@ -94,5 +94,11 @@ export class TypeOrmUserRepository implements IUserRepository {
 
   async touchLastAccess(id: string, at: Date): Promise<void> {
     await this.repository.update({ id }, { lastAccessAt: at, updatedAt: at });
+  }
+
+  async findStaff(): Promise<User[]> {
+    const entities = await this.repository.find({ where: { role: In([...STAFF_ROLES]) }, order: { name: 'ASC' } });
+
+    return entities.map(UserMapper.toDomain);
   }
 }

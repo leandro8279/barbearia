@@ -5,3 +5,5 @@ export { User } from '@/modules/users/domain/entities/User';
 export { EmailAlreadyExistsError } from '@/modules/users/application/errors/EmailAlreadyExistsError';
 export { PhoneAlreadyExistsError } from '@/modules/users/application/errors/PhoneAlreadyExistsError';
 export { TypeOrmUserRepository } from '@/modules/users/infra/repositories/TypeOrmUserRepository';
+export { STAFF_ROLES } from '@/modules/users/domain/entities/User';
+export type { StaffRole, UserRole } from '@/modules/users/domain/entities/User';
