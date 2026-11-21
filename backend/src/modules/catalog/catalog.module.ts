@@ -2,6 +2,7 @@ import { AppDataSource } from '@/config/database';
 import { logger } from '@/config/logger';
 
 import { CreateServiceUseCase } from '@/modules/catalog/application/use-cases/CreateServiceUseCase';
+import { GetAdminProductUseCase } from '@/modules/catalog/application/use-cases/GetAdminProductUseCase';
 import { GetAdminServiceUseCase } from '@/modules/catalog/application/use-cases/GetAdminServiceUseCase';
 import { ListAdminProductsUseCase } from '@/modules/catalog/application/use-cases/ListAdminProductsUseCase';
 import { ListAdminServicesUseCase } from '@/modules/catalog/application/use-cases/ListAdminServicesUseCase';
@@ -11,6 +12,7 @@ import { TypeOrmProductRepository } from '@/modules/catalog/infra/repositories/T
 import { TypeOrmServiceCategoryRepository } from '@/modules/catalog/infra/repositories/TypeOrmServiceCategoryRepository';
 import { TypeOrmServiceRepository } from '@/modules/catalog/infra/repositories/TypeOrmServiceRepository';
 import { CreateServiceController } from '@/modules/catalog/presentation/controllers/CreateServiceController';
+import { GetAdminProductController } from '@/modules/catalog/presentation/controllers/GetAdminProductController';
 import { GetAdminServiceController } from '@/modules/catalog/presentation/controllers/GetAdminServiceController';
 import { ListAdminProductsController } from '@/modules/catalog/presentation/controllers/ListAdminProductsController';
 import { ListAdminServicesController } from '@/modules/catalog/presentation/controllers/ListAdminServicesController';
@@ -39,6 +41,7 @@ export function makeCatalogModule(): Router {
       setServiceActive: new SetServiceActiveController(new SetServiceActiveUseCase(serviceRepository, auditLogger)),
       createService: new CreateServiceController(new CreateServiceUseCase(serviceRepository, categoryRepository, barberRepository, auditLogger)),
       listAdminProducts: new ListAdminProductsController(new ListAdminProductsUseCase(productRepository)),
+      getAdminProduct: new GetAdminProductController(new GetAdminProductUseCase(productRepository)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );

@@ -10,6 +10,7 @@ export interface CatalogControllers {
   createService: IController;
   setServiceActive: IController;
   listAdminProducts: IController;
+  getAdminProduct: IController;
 }
 
 export function buildCatalogRoutes(controllers: CatalogControllers, auth: RequestHandler): Router {
@@ -25,6 +26,7 @@ export function buildCatalogRoutes(controllers: CatalogControllers, auth: Reques
   );
   router.post('/admin/catalog/services', auth, requirePermission('catalog.write'), ExpressControllerAdapter(controllers.createService));
   router.get('/admin/catalog/products', auth, requirePermission('catalog.read'), ExpressControllerAdapter(controllers.listAdminProducts));
+  router.get('/admin/catalog/products/:id', auth, requirePermission('catalog.write'), ExpressControllerAdapter(controllers.getAdminProduct));
 
   return router;
 }
