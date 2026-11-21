@@ -21,6 +21,9 @@ import { buildCatalogRoutes } from '@/modules/catalog/presentation/routes/catalo
 import { TypeOrmUserRepository } from '@/modules/users';
 import { AdjustProductStockUseCase } from '@/modules/catalog/application/use-cases/AdjustProductStockUseCase';
 import { AdjustProductStockController } from '@/modules/catalog/presentation/controllers/AdjustProductStockController';
+import { CreateProductUseCase } from '@/modules/catalog/application/use-cases/CreateProductUseCase';
+import { TypeOrmProductCategoryRepository } from '@/modules/catalog/infra/repositories/TypeOrmProductCategoryRepository';
+import { CreateProductController } from '@/modules/catalog/presentation/controllers/CreateProductController';
 
 import { makeAuthMiddleware } from '@/shared/middlewares/Auth.middleware';
 import { tokenProvider } from '@/shared/providers';
@@ -35,6 +38,7 @@ export function makeCatalogModule(): Router {
   const auditLogger = new TypeOrmAuditLogger(AppDataSource, logger);
   const categoryRepository = new TypeOrmServiceCategoryRepository(AppDataSource);
   const productRepository = new TypeOrmProductRepository(AppDataSource);
+  const productCategoryRepository = new TypeOrmProductCategoryRepository(AppDataSource);
 
   return buildCatalogRoutes(
     {
@@ -45,6 +49,7 @@ export function makeCatalogModule(): Router {
       listAdminProducts: new ListAdminProductsController(new ListAdminProductsUseCase(productRepository)),
       getAdminProduct: new GetAdminProductController(new GetAdminProductUseCase(productRepository)),
       adjustProductStock: new AdjustProductStockController(new AdjustProductStockUseCase(productRepository, auditLogger)),
+      createProduct: new CreateProductController(new CreateProductUseCase(productRepository, productCategoryRepository, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
