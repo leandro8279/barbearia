@@ -1,12 +1,14 @@
 import { Product } from '@/modules/catalog/domain/entities/Product';
 import { IProductRepository, ProductFilters } from '@/modules/catalog/domain/repositories/ProductRepositoryInterface';
+import type { StockMovement } from '@/modules/catalog/domain/entities/StockMovement';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
 
 export class InMemoryProductRepository implements IProductRepository {
   items: Product[] = [];
-
+  movements: StockMovement[] = [];
+  
   async findPage({ search, categoryId, kind, stock, sortField, direction }: ProductFilters, pagination: PaginationParams) {
     const term = search.toLocaleLowerCase('pt-BR');
     const sign = direction === 'desc' ? -1 : 1;
@@ -29,4 +31,15 @@ export class InMemoryProductRepository implements IProductRepository {
   async findById(id: string) {
     return this.items.find((item) => item.id === id) ?? null;
   }
+  
+  async applyStockAdjustment(movement: StockMovement) {
+    const product = this.items.find((item) => item.id === movement.productId);
+    if (!product || !product.canAdjustStock(movement.qty)) return null;
+
+    product.adjustStock(movement.qty);
+    this.movements.push(movement);
+
+    return product;
+  }
+  
 }
