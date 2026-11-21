@@ -15,6 +15,7 @@ export interface StockMovementResponseDTO {
   qty: number;
   reason: string;
   userId: string | null;
+  tabId: string | null;
   createdAt: string;
 }
 
