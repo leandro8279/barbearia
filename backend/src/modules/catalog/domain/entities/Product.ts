@@ -18,6 +18,19 @@ export interface CreateProductInput {
   active?: boolean;
 }
 
+export interface UpdateProductInput {
+  sku?: string;
+  name?: string;
+  category?: ProductCategory;
+  price?: number;
+  costCents?: number;
+  minStock?: number;
+  commissionPct?: number;
+  kind?: ProductKind;
+  image?: string;
+  active?: boolean;
+}
+
 export interface ProductProps {
   id: string;
   sku: string;
@@ -41,22 +54,28 @@ export class Product {
   }
 
   static create(input: CreateProductInput): Product {
-   return new Product({
-    id: randomUUID(),
-    sku: input.sku,
-    name: input.name.trim(),
-    category: input.category,
-    price: input.price,
-    costCents: input.costCents,
-    stock: input.stock ?? 0,
-    minStock: input.minStock,
-    kind: input.kind,
-    commissionPct: input.commissionPct,
-    image: input.image ?? '',
-    active: input.active ?? true,
-   });
-}
-  
+    return new Product({
+      id: randomUUID(),
+      sku: input.sku,
+      name: input.name.trim(),
+      category: input.category,
+      price: input.price,
+      costCents: input.costCents,
+      stock: input.stock ?? 0,
+      minStock: input.minStock,
+      kind: input.kind,
+      commissionPct: input.commissionPct,
+      image: input.image ?? '',
+      active: input.active ?? true,
+    });
+  }
+
+  update({ name, ...rest }: UpdateProductInput): void {
+    const changes = Object.entries({ ...rest, name: name?.trim() }).filter(([, value]) => value !== undefined);
+
+    Object.assign(this.props, Object.fromEntries(changes));
+  }
+
   canAdjustStock(delta: number): boolean {
     return this.props.stock + delta >= 0;
   }
@@ -65,7 +84,7 @@ export class Product {
     if (!this.canAdjustStock(delta)) throw new Error('O ajuste não pode deixar o estoque negativo');
     this.props.stock += delta;
   }
-  
+
   get id(): string {
     return this.props.id;
   }
