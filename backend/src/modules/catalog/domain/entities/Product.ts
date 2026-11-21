@@ -2,6 +2,21 @@ import type { ProductCategory } from '@/modules/catalog/domain/entities/ProductC
 
 export const PRODUCT_KINDS = ['resale', 'supply'] as const;
 export type ProductKind = (typeof PRODUCT_KINDS)[number];
+import { randomUUID } from 'node:crypto';
+
+export interface CreateProductInput {
+  sku: string;
+  name: string;
+  category: ProductCategory;
+  price: number;
+  costCents: number;
+  stock?: number;
+  minStock: number;
+  kind: ProductKind;
+  commissionPct: number;
+  image?: string;
+  active?: boolean;
+}
 
 export interface ProductProps {
   id: string;
@@ -24,6 +39,23 @@ export class Product {
   static restore(props: ProductProps): Product {
     return new Product({ ...props });
   }
+
+  static create(input: CreateProductInput): Product {
+   return new Product({
+    id: randomUUID(),
+    sku: input.sku,
+    name: input.name.trim(),
+    category: input.category,
+    price: input.price,
+    costCents: input.costCents,
+    stock: input.stock ?? 0,
+    minStock: input.minStock,
+    kind: input.kind,
+    commissionPct: input.commissionPct,
+    image: input.image ?? '',
+    active: input.active ?? true,
+   });
+}
   
   canAdjustStock(delta: number): boolean {
     return this.props.stock + delta >= 0;
