@@ -29,6 +29,8 @@ const BookingBarberPage = lazy(() => import('@/modules/booking/pages/barber-step
 const BookingSlotPage = lazy(() => import('@/modules/booking/pages/slot-step-page'));
 const BookingCustomerDetailsPage = lazy(() => import('@/modules/booking/pages/customer-details-step-page'));
 const BookingReviewPaymentPage = lazy(() => import('@/modules/booking/pages/review-payment-step-page'));
+// const TeamPage = lazy(() => import('@/modules/admin/team/pages/team-page'))
+const TeamUsersPage = lazy(() => import('@/modules/admin/users/pages/team-users-page'));
 
 function Layout({ kind, children }: { kind: RouteMeta['layout']; children: ReactNode }) {
   switch (kind) {
@@ -622,6 +624,8 @@ const pages: Record<string, React.JSX.Element> = {
   G02: <AdminAgendaPage />,
   G03: <AdminAgendaPage />,
   S02: <ServicesPage />,
+  // M01:
+  M08: <TeamUsersPage />,
 };
 
 function RoutedPage({ route }: { route: RouteMeta }) {
@@ -631,17 +635,10 @@ function RoutedPage({ route }: { route: RouteMeta }) {
   const activeRoute = resolveRoute(route, search);
 
   useEffect(() => {
-    setPageMetadata(
-      activeRoute.title,
-      activeRoute.description,
-      activeRoute.access === 'Público' && activeRoute.id !== 'S01',
-      activeRoute.layout === 'admin' ? 'Painel administrativo' : 'Barbearia',
-    );
+    setPageMetadata(activeRoute.title, activeRoute.description, activeRoute.access === 'Público' && activeRoute.id !== 'S01', activeRoute.layout === 'admin' ? 'Painel administrativo' : 'Barbearia');
   }, [activeRoute, location]);
 
-  const fallback = (
-    <div className="mx-auto max-w-3xl animate-pulse rounded-2xl border border-border bg-card p-10 text-muted-foreground">Carregando tela...</div>
-  );
+  const fallback = <div className="mx-auto max-w-3xl animate-pulse rounded-2xl border border-border bg-card p-10 text-muted-foreground">Carregando tela...</div>;
 
   console.log(JSON.stringify({ activeRoute }, null, 2));
 
