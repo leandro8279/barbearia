@@ -16,4 +16,5 @@ export interface ProductFilters {
 
 export interface IProductRepository {
   findPage(filters: ProductFilters, pagination: PaginationParams): Promise<{ items: Product[]; total: number }>;
+  findById(id: string): Promise<Product | null>;
 }

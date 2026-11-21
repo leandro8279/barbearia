@@ -48,4 +48,10 @@ export class TypeOrmProductRepository implements IProductRepository {
 
     return { items: entities.map(ProductMapper.toDomain), total };
   }
+
+  async findById(id: string): Promise<Product | null> {
+    const entity = await this.repository.findOne({ where: { id }, relations: { category: true } });
+
+    return entity ? ProductMapper.toDomain(entity) : null;
+  }
 }
