@@ -6,3 +6,4 @@ dist/
 plop-templates/
 plopfile.mjs
 data
+openapi.json
