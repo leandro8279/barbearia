@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && tsc-alias",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "start": "node dist/server.js",
     "test": "vitest run",
     "docs:generate": "tsx scripts/generate-openapi.ts",
@@ -16,6 +16,7 @@
     "plop": "plop",
     "g": "plop"
   },
+  "engines": { "node": ">=22" },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",
     "bcryptjs": "^3.0.3",
