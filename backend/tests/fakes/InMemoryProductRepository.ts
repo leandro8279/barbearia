@@ -1,15 +1,15 @@
+import { ProductSkuAlreadyExistsError } from '@/modules/catalog/application/errors/ProductSkuAlreadyExistsError';
 import { Product } from '@/modules/catalog/domain/entities/Product';
 import { IProductRepository, ProductFilters } from '@/modules/catalog/domain/repositories/ProductRepositoryInterface';
-import type { StockMovement } from '@/modules/catalog/domain/entities/StockMovement';
-import { ProductSkuAlreadyExistsError } from '@/modules/catalog/application/errors/ProductSkuAlreadyExistsError';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
 
+import type { StockMovement } from '@/modules/catalog/domain/entities/StockMovement';
 export class InMemoryProductRepository implements IProductRepository {
   items: Product[] = [];
   movements: StockMovement[] = [];
-  
+
   async findPage({ search, categoryId, kind, stock, sortField, direction }: ProductFilters, pagination: PaginationParams) {
     const term = search.toLocaleLowerCase('pt-BR');
     const sign = direction === 'desc' ? -1 : 1;
@@ -32,7 +32,7 @@ export class InMemoryProductRepository implements IProductRepository {
   async findById(id: string) {
     return this.items.find((item) => item.id === id) ?? null;
   }
-  
+
   async applyStockAdjustment(movement: StockMovement) {
     const product = this.items.find((item) => item.id === movement.productId);
     if (!product || !product.canAdjustStock(movement.qty)) return null;
@@ -42,14 +42,20 @@ export class InMemoryProductRepository implements IProductRepository {
 
     return product;
   }
-  
-async findBySku(sku: string) {
-  return this.items.find((item) => item.sku === sku) ?? null;
-}
 
-async create(product: Product) {
-  if (this.items.some((item) => item.sku === product.sku)) throw new ProductSkuAlreadyExistsError();
-  this.items.push(product);
-}
-  
+  async findBySku(sku: string) {
+    return this.items.find((item) => item.sku === sku) ?? null;
+  }
+
+  async create(product: Product) {
+    if (this.items.some((item) => item.sku === product.sku)) throw new ProductSkuAlreadyExistsError();
+    this.items.push(product);
+  }
+
+  async update(product: Product) {
+    if (this.items.some((item) => item.sku === product.sku && item.id !== product.id)) throw new ProductSkuAlreadyExistsError();
+
+    const index = this.items.findIndex((item) => item.id === product.id);
+    if (index !== -1) this.items[index] = product;
+  }
 }

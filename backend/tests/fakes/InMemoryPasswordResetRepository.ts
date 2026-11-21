@@ -1,7 +1,12 @@
-import { IPasswordResetRepository, PasswordReset } from '@/modules/auth/domain/repositories/PasswordResetRepositoryInterface';
+import { IPasswordResetRepository, NewPasswordReset, PasswordReset } from '@/modules/auth/domain/repositories/PasswordResetRepositoryInterface';
 
 export class InMemoryPasswordResetRepository implements IPasswordResetRepository {
   items: PasswordReset[] = [];
+
+  async replaceForUser({ id: _id, ...reset }: NewPasswordReset) {
+    this.items = this.items.filter((i) => i.userId !== reset.userId);
+    this.items.push(reset);
+  }
 
   async create(reset: PasswordReset) {
     this.items.push(reset);
