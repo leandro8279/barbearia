@@ -19,9 +19,18 @@ import swaggerUi from 'swagger-ui-express';
 export function createApp() {
   const app = express();
 
+  app.set('trust proxy', env.TRUST_PROXY);
   app.use(helmet());
-  app.use(cors());
-  app.use(express.json({ limit: '1mb' }));
+  app.use(
+    cors({
+      origin: env.CORS_ORIGINS.length ? env.CORS_ORIGINS : [env.WEB_URL],
+      methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      exposedHeaders: ['Retry-After'],
+      maxAge: 600,
+    }),
+  );
+  app.use(express.json({ limit: env.BODY_LIMIT }));
   app.use(pinoHttp({ logger }));
   app.use(rateLimits.global);
 
