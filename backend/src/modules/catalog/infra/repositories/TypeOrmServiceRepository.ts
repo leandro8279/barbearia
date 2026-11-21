@@ -22,8 +22,8 @@ const SORT_COLUMN: Record<ServiceSortField, string> = {
 export class TypeOrmServiceRepository implements IServiceRepository {
   private readonly repository: Repository<ServiceEntity>;
 
-  constructor(dataSource: DataSource) {
-    this.repository = dataSource.getRepository(ServiceEntity);
+  constructor(private readonly dataSource: DataSource) {
+    this.repository = this.dataSource.getRepository(ServiceEntity);
   }
   
   async findBySlug(slug: string): Promise<Service | null> {
