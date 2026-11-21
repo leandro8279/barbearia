@@ -1,12 +1,14 @@
 import type { ListAdminProductsResponseDTO } from '@/modules/catalog/application/dtos/ListAdminProductsDTO';
 import { PRODUCT_KINDS } from '@/modules/catalog/domain/entities/Product';
 import { PRODUCT_SORT_FIELDS } from '@/modules/catalog/domain/repositories/ProductRepositoryInterface';
+import { createProductBodySchema } from '@/modules/catalog/presentation/validators/createProduct.schema';
 import { getAdminProductParamsSchema } from '@/modules/catalog/presentation/validators/getAdminProduct.schema';
+import { updateProductBodySchema } from '@/modules/catalog/presentation/validators/updateProduct.schema';
 
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
 import { z } from '@/shared/openapi/zod';
+
 import type { ProductResponseDTO } from '@/modules/catalog/application/dtos/ProductResponseDTO';
-import { createProductBodySchema } from '@/modules/catalog/presentation/validators/createProduct.schema';
 
 type AssertProductDocMatchesDTO = ProductResponseDTO extends z.infer<typeof AdminProductSchema> ? true : never;
 export const assertAdminProductDocMatchesDTO: AssertProductDocMatchesDTO = true;
@@ -32,7 +34,8 @@ registry.registerPath({
   path: '/api/admin/catalog/products',
   tags: ['Catálogo'],
   summary: 'Criar produto (admin)',
-  description: 'Cria o produto. O SKU é normalizado em maiúsculas e deve ser único. Saldo inicial opcional (padrão 0). Registra auditoria. Exige a permissão catalog.write.',
+  description:
+    'Cria o produto. O SKU é normalizado em maiúsculas e deve ser único. Saldo inicial opcional (padrão 0). Registra auditoria. Exige a permissão catalog.write.',
   security: [{ [bearerAuth.name]: [] }],
   request: { body: { content: jsonContent(createProductBodySchema) } },
   responses: {
@@ -98,5 +101,24 @@ registry.registerPath({
     403: { description: 'Sem permissão', content: errorContent },
     404: { description: 'Produto não encontrado', content: errorContent },
     422: { description: 'Id inválido', content: errorContent },
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/api/admin/catalog/products/{id}',
+  tags: ['Catálogo'],
+  summary: 'Atualizar produto (admin)',
+  description:
+    'Atualização parcial (ao menos um campo). O SKU é normalizado em maiúsculas e deve ser único. O estoque não é alterado aqui: use adjust-stock. Registra auditoria. Exige a permissão catalog.write.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: { params: getAdminProductParamsSchema, body: { content: jsonContent(updateProductBodySchema) } },
+  responses: {
+    200: { description: 'Produto atualizado', content: jsonContent(AdminProductSchema) },
+    401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
+    403: { description: 'Sem permissão', content: errorContent },
+    404: { description: 'Produto não encontrado', content: errorContent },
+    409: { description: 'SKU já cadastrado', content: errorContent },
+    422: { description: 'Dados inválidos ou categoria inexistente', content: errorContent },
   },
 });
