@@ -5,6 +5,7 @@ import { ProductMapper } from '@/modules/catalog/infra/mappers/ProductMapper';
 import type { StockMovement } from '@/modules/catalog/domain/entities/StockMovement';
 import { StockMovementEntity } from '@/modules/catalog/infra/entities/StockMovementEntity';
 import { StockMovementMapper } from '@/modules/catalog/infra/mappers/StockMovementMapper';
+import { ProductSkuAlreadyExistsError } from '@/modules/catalog/application/errors/ProductSkuAlreadyExistsError';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
