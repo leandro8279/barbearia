@@ -6,7 +6,7 @@ import { getAdminProductParamsSchema } from '@/modules/catalog/presentation/vali
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
 import { z } from '@/shared/openapi/zod';
 
-const AdminProductSchema = z.object({
+export const AdminProductSchema = z.object({
   id: z.string().uuid(),
   sku: z.string().openapi({ example: 'BAR-001' }),
   name: z.string().openapi({ example: 'Pomada matte' }),
