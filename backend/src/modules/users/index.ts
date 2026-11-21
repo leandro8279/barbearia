@@ -1,8 +1,0 @@
-export type { IUserRepository } from '@/modules/users/domain/repositories/UserRepositoryInterface';
-export type { UserResponseDTO } from '@/modules/users/application/dtos/UserResponseDTO';
-
-export { toUserResponse } from '@/modules/users/application/dtos/UserResponseDTO';
-export { User } from '@/modules/users/domain/entities/User';
-export { EmailAlreadyExistsError } from '@/modules/users/application/errors/EmailAlreadyExistsError';
-export { PhoneAlreadyExistsError } from '@/modules/users/application/errors/PhoneAlreadyExistsError';
-export { TypeOrmUserRepository } from '@/modules/users/infra/repositories/TypeOrmUserRepository';
