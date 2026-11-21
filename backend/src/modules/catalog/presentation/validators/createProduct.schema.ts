@@ -6,7 +6,7 @@ const DATA_IMAGE_REGEX = /^data:image\/(?:png|jpe?g|webp);base64,([A-Za-z0-9+/]*
 
 export const MAX_PRODUCT_IMAGE_BYTES = 200 * 1024;
 
-function isValidImage(value: string): boolean {
+export function isValidImage(value: string): boolean {
   if (!value.startsWith('data:')) return value.length <= 2048; // URL/caminho
   const match = DATA_IMAGE_REGEX.exec(value);
 
@@ -24,7 +24,11 @@ export const createProductBodySchema = z.object({
   costCents: nonNegativeInt(INT_MESSAGE).openapi({ example: 1800, description: 'Em centavos' }),
   stock: nonNegativeInt(INT_MESSAGE).default(0).openapi({ example: 10, description: 'Saldo inicial (padrão 0)' }),
   minStock: nonNegativeInt(INT_MESSAGE).openapi({ example: 5 }),
-  commissionPct: z.number('A comissão deve ficar entre 0% e 100%.').min(0, 'A comissão deve ficar entre 0% e 100%.').max(100, 'A comissão deve ficar entre 0% e 100%.').openapi({ example: 10 }),
+  commissionPct: z
+    .number('A comissão deve ficar entre 0% e 100%.')
+    .min(0, 'A comissão deve ficar entre 0% e 100%.')
+    .max(100, 'A comissão deve ficar entre 0% e 100%.')
+    .openapi({ example: 10 }),
   kind: z.enum(PRODUCT_KINDS, { error: 'Selecione se o produto é para revenda ou uso interno.' }).openapi({ example: 'resale' }),
   image: z
     .string()
