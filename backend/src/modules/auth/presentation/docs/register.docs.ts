@@ -36,7 +36,7 @@ export const RegisterResponseSchema = registry.register(
 
 // Erro de compilação aqui = a documentação divergiu do DTO real.
 type AssertDocMatchesDTO = RegisterResponseDTO extends z.infer<typeof RegisterResponseSchema> ? true : never;
-export const assertDocMatchesDTO: AssertDocMatchesDTO = true;
+export const assertRegisterDocMatchesDTO: AssertDocMatchesDTO = true;
 
 registry.registerPath({
   method: 'post',
