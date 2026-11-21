@@ -1,4 +1,5 @@
 import type { ServiceCategory } from '@/modules/catalog/domain/entities/ServiceCategory';
+import { randomUUID } from 'node:crypto';
 
 export interface ServiceProps {
   id: string;
