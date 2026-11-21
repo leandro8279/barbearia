@@ -10,21 +10,13 @@ import { IAuditLogger } from '@/shared/providers/audit/AuditLoggerInterface';
 import { IHashProvider } from '@/shared/providers/hash/HashProviderInterface';
 import { IRateLimiter } from '@/shared/providers/rate-limiter/RateLimiterInterface';
 import { ITokenProvider } from '@/shared/providers/token/TokenProviderInterface';
+import { normalizePhone } from '@/shared/utils/phone';
 
 export type LoginError = InvalidCredentialsError | UserInactiveError;
 export type LoginOutput = Either<LoginError, LoginResponseDTO>;
 
 const STAFF_ROLES = new Set(['barber', 'reception', 'manager', 'admin']);
 const PHONE_REGEX = /^[+\d\s().-]+$/;
-
-function normalizePhone(value: string): string | null {
-  if (!PHONE_REGEX.test(value)) return null;
-
-  const digits = value.replace(/\D/g, '');
-  const national = digits.startsWith('55') && [12, 13].includes(digits.length) ? digits.slice(2) : digits;
-
-  return national.length >= 10 ? national : null;
-}
 
 export class LoginUseCase implements IUseCase<LoginDTO, LoginOutput> {
   private dummyHash?: Promise<string>;
@@ -66,9 +58,8 @@ export class LoginUseCase implements IUseCase<LoginDTO, LoginOutput> {
 
     const byEmail = await this.userRepository.findByEmail(normalized);
     if (byEmail) return byEmail;
-
-    const phone = staffOnly ? null : normalizePhone(normalized);
-
+    const phone = staffOnly || !PHONE_REGEX.test(normalized) ? null : normalizePhone(normalized);
+     
     return phone ? this.userRepository.findRegisteredByPhone(phone) : null;
   }
 
