@@ -21,4 +21,5 @@ export interface IProductRepository {
   findBySku(sku: string): Promise<Product | null>;
   create(product: Product): Promise<void>;
   applyStockAdjustment(movement: StockMovement): Promise<Product | null>;
+  update(product: Product): Promise<void>;
 }

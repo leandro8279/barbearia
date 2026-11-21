@@ -1,16 +1,17 @@
+import { ProductSkuAlreadyExistsError } from '@/modules/catalog/application/errors/ProductSkuAlreadyExistsError';
 import { Product } from '@/modules/catalog/domain/entities/Product';
 import { IProductRepository, ProductFilters, ProductSortField } from '@/modules/catalog/domain/repositories/ProductRepositoryInterface';
 import { ProductEntity } from '@/modules/catalog/infra/entities/ProductEntity';
-import { ProductMapper } from '@/modules/catalog/infra/mappers/ProductMapper';
-import type { StockMovement } from '@/modules/catalog/domain/entities/StockMovement';
 import { StockMovementEntity } from '@/modules/catalog/infra/entities/StockMovementEntity';
+import { ProductMapper } from '@/modules/catalog/infra/mappers/ProductMapper';
 import { StockMovementMapper } from '@/modules/catalog/infra/mappers/StockMovementMapper';
-import { ProductSkuAlreadyExistsError } from '@/modules/catalog/application/errors/ProductSkuAlreadyExistsError';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
+
 import { DataSource, QueryFailedError, Repository } from 'typeorm';
 
+import type { StockMovement } from '@/modules/catalog/domain/entities/StockMovement';
 const SORT_COLUMN: Record<ProductSortField, string> = {
   name: 'product.name',
   sku: 'product.sku',
@@ -57,7 +58,7 @@ export class TypeOrmProductRepository implements IProductRepository {
 
     return entity ? ProductMapper.toDomain(entity) : null;
   }
-  
+
   async applyStockAdjustment(movement: StockMovement): Promise<Product | null> {
     return this.dataSource.transaction(async (manager) => {
       // A condição no WHERE garante que o estoque nunca fica negativo, mesmo com requisições concorrentes.
@@ -80,25 +81,35 @@ export class TypeOrmProductRepository implements IProductRepository {
   }
 
   async findBySku(sku: string): Promise<Product | null> {
-  const entity = await this.repository.findOne({ where: { sku }, relations: { category: true } });
+    const entity = await this.repository.findOne({ where: { sku }, relations: { category: true } });
 
-  return entity ? ProductMapper.toDomain(entity) : null;
-}
-
-async create(product: Product): Promise<void> {
-  try {
-    await this.repository.insert(ProductMapper.toPersistence(product));
-  } catch (error) {
-    throw this.translateConstraintError(error);
+    return entity ? ProductMapper.toDomain(entity) : null;
   }
-}
 
-private translateConstraintError(error: unknown): unknown {
-  if (!(error instanceof QueryFailedError)) return error;
+  async create(product: Product): Promise<void> {
+    try {
+      await this.repository.insert(ProductMapper.toPersistence(product));
+    } catch (error) {
+      throw this.translateConstraintError(error);
+    }
+  }
 
-  const { code, message } = error.driverError as { code?: string; message?: string };
-  if (code === 'SQLITE_CONSTRAINT_UNIQUE' && message?.includes('products.sku')) return new ProductSkuAlreadyExistsError();
+  private translateConstraintError(error: unknown): unknown {
+    if (!(error instanceof QueryFailedError)) return error;
 
-  return error;
-}
+    const { code, message } = error.driverError as { code?: string; message?: string };
+    if (code === 'SQLITE_CONSTRAINT_UNIQUE' && message?.includes('products.sku')) return new ProductSkuAlreadyExistsError();
+
+    return error;
+  }
+
+  async update(product: Product): Promise<void> {
+    const { id, stock: _stock, ...data } = ProductMapper.toPersistence(product);
+
+    try {
+      await this.repository.update({ id }, data);
+    } catch (error) {
+      throw this.translateConstraintError(error);
+    }
+  }
 }

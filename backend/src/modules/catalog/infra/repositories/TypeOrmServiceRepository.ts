@@ -1,14 +1,18 @@
 import { ServiceSlugAlreadyExistsError } from '@/modules/catalog/application/errors/ServiceSlugAlreadyExistsError';
 import { Service } from '@/modules/catalog/domain/entities/Service';
-import { IServiceRepository, ServiceFilters, ServiceSortField } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
+import {
+  IServiceRepository,
+  ServiceBarberAssignment,
+  ServiceFilters,
+  ServiceSortField,
+} from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
+import { BarberServiceEntity } from '@/modules/catalog/infra/entities/BarberServiceEntity';
 import { ServiceEntity } from '@/modules/catalog/infra/entities/ServiceEntity';
 import { ServiceMapper } from '@/modules/catalog/infra/mappers/ServiceMapper';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
 
-import { IServiceRepository, ServiceBarberAssignment, ServiceFilters, ServiceSortField } from '@/modules/catalog/domain/repositories/ServiceRepositoryInterface';
-import { BarberServiceEntity } from '@/modules/catalog/infra/entities/BarberServiceEntity';
 import { DataSource, QueryFailedError, Repository } from 'typeorm';
 
 const SORT_COLUMN: Record<ServiceSortField, string> = {
@@ -27,13 +31,13 @@ export class TypeOrmServiceRepository implements IServiceRepository {
   constructor(private readonly dataSource: DataSource) {
     this.repository = this.dataSource.getRepository(ServiceEntity);
   }
-  
+
   async findBySlug(slug: string): Promise<Service | null> {
     const entity = await this.repository.findOne({ where: { slug }, relations: { category: true } });
 
     return entity ? ServiceMapper.toDomain(entity) : null;
   }
-  
+
   async findById(id: string): Promise<Service | null> {
     const entity = await this.repository.findOne({ where: { id }, relations: { category: true } });
 
@@ -67,7 +71,7 @@ export class TypeOrmServiceRepository implements IServiceRepository {
   async updateActive(service: Service): Promise<void> {
     await this.repository.update({ id: service.id }, { active: service.active, updatedAt: service.updatedAt });
   }
-  
+
   async create(service: Service, assignments: ServiceBarberAssignment[]): Promise<void> {
     try {
       await this.dataSource.transaction(async (manager) => {
@@ -93,5 +97,4 @@ export class TypeOrmServiceRepository implements IServiceRepository {
 
     return error;
   }
-  
 }
