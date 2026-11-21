@@ -10,6 +10,7 @@ export interface StockMovementProps {
   qty: number;
   reason: string;
   userId: string | null;
+  tabId: string | null;
   createdAt: Date;
 }
 
@@ -18,6 +19,7 @@ export interface CreateStockMovementInput {
   qty: number;
   reason: string;
   userId: string | null;
+  tabId?: string | null;
   type?: StockMovementType;
 }
 
@@ -32,6 +34,7 @@ export class StockMovement {
       qty: input.qty,
       reason: input.reason.trim(),
       userId: input.userId,
+      tabId: input.tabId ?? null,
       createdAt: new Date(),
     });
   }
@@ -46,5 +49,6 @@ export class StockMovement {
   get qty(): number { return this.props.qty; }
   get reason(): string { return this.props.reason; }
   get userId(): string | null { return this.props.userId; }
+  get tabId(): string | null { return this.props.tabId; }
   get createdAt(): Date { return this.props.createdAt; }
 }
