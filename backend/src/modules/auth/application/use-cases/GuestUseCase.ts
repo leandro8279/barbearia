@@ -7,6 +7,7 @@ import { Either, left, right } from '@/shared/core/Either';
 import { IUseCase } from '@/shared/interfaces/UseCaseInterface';
 import { IAuditLogger } from '@/shared/providers/audit/AuditLoggerInterface';
 import { ITokenProvider } from '@/shared/providers/token/TokenProviderInterface';
+import { normalizePhone } from '@/shared/utils/phone';
 
 export type GuestError = GuestPhoneRegisteredError | EmailAlreadyExistsError;
 export type GuestOutput = Either<GuestError, { created: boolean; auth: RegisterResponseDTO }>;
@@ -19,7 +20,7 @@ export class GuestUseCase implements IUseCase<GuestDTO, GuestOutput> {
   ) {}
 
   async execute(input: GuestDTO): Promise<GuestOutput> {
-    const phone = input.phone.replace(/\D/g, '');
+    const phone = normalizePhone(input.phone) ?? input.phone.replace(/\D/g, '');
     const email = input.email?.trim().toLowerCase() || null;
 
     if (await this.userRepository.findRegisteredByPhone(phone)) return left(new GuestPhoneRegisteredError());

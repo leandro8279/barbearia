@@ -48,6 +48,6 @@ export class ForgotPasswordUseCase implements IUseCase<ForgotPasswordDTO, Forgot
       expiresAt: new Date(Date.now() + PASSWORD_RESET_TTL_MS),
     });
 
-    void this.mailProvider.send({ to: user.email!, ...buildPasswordResetEmail(`${this.resetUrlBase}?token=${token}`) });
+    this.mailProvider.send({ to: user.email!, ...buildPasswordResetEmail(`${this.resetUrlBase}?token=${token}`) }).catch(() => undefined);
   }
 }
