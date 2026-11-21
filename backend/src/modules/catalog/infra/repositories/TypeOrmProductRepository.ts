@@ -8,8 +8,7 @@ import { StockMovementMapper } from '@/modules/catalog/infra/mappers/StockMoveme
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
-
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
 
 const SORT_COLUMN: Record<ProductSortField, string> = {
   name: 'product.name',
@@ -78,4 +77,27 @@ export class TypeOrmProductRepository implements IProductRepository {
       return entity ? ProductMapper.toDomain(entity) : null;
     });
   }
+
+  async findBySku(sku: string): Promise<Product | null> {
+  const entity = await this.repository.findOne({ where: { sku }, relations: { category: true } });
+
+  return entity ? ProductMapper.toDomain(entity) : null;
+}
+
+async create(product: Product): Promise<void> {
+  try {
+    await this.repository.insert(ProductMapper.toPersistence(product));
+  } catch (error) {
+    throw this.translateConstraintError(error);
+  }
+}
+
+private translateConstraintError(error: unknown): unknown {
+  if (!(error instanceof QueryFailedError)) return error;
+
+  const { code, message } = error.driverError as { code?: string; message?: string };
+  if (code === 'SQLITE_CONSTRAINT_UNIQUE' && message?.includes('products.sku')) return new ProductSkuAlreadyExistsError();
+
+  return error;
+}
 }
