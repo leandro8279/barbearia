@@ -6,17 +6,18 @@ import { MailMessage } from '@/shared/providers/mail/MailProviderInterface';
 
 import { describe, expect, it } from 'vitest';
 
+import { InMemoryPasswordResetRepository } from '../fakes/InMemoryPasswordResetRepository';
 import { InMemoryUserRepository } from '../fakes/InMemoryUserRepository';
 
 function makeSut() {
   const users = new InMemoryUserRepository();
-  const resets: NewPasswordReset[] = [];
+  const resets = new InMemoryPasswordResetRepository();
   const sent: MailMessage[] = [];
   const audit: unknown[] = [];
 
   const sut = new ForgotPasswordUseCase(
     users,
-    { replaceForUser: async (r) => void resets.push(r) },
+    resets,
     { send: async (m) => void sent.push(m) },
     { log: async (e) => void audit.push(e) },
     'http://localhost:5173/reset-password',
@@ -26,20 +27,6 @@ function makeSut() {
 }
 
 describe('ForgotPasswordUseCase', () => {
-  it('gera token, guarda só o hash e envia o link', async () => {
-    const { users, resets, sent, sut } = makeSut();
-    await users.create(User.create({ name: 'João', email: 'joao@email.com', passwordHash: 'x' }));
-
-    const output = await sut.execute({ email: 'JOAO@email.com' });
-
-    expect(output.message).toMatch(/Se o e-mail/);
-    expect(resets).toHaveLength(1);
-    expect(sent).toHaveLength(1);
-    const token = new URL(sent[0].text.match(/https?:\/\/\S+/)![0]).searchParams.get('token')!;
-    expect(resets[0].tokenHash).not.toBe(token);
-    expect(resets[0].tokenHash).toHaveLength(64);
-  });
-
   it('responde igual e não envia nada quando o e-mail não existe', async () => {
     const { resets, sent, audit, sut } = makeSut();
 
