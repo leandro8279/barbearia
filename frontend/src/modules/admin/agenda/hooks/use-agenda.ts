@@ -4,13 +4,18 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import {
   getAgendaAppointments,
+  getAgendaAvailabilitySlots,
   getAgendaBarbers,
+  getAgendaCustomerSuggestions,
+  getAgendaEligibleBarbers,
+  getAgendaServices,
   getAgendaTimeBlocks,
   getAgendaUnit,
   rescheduleAgendaAppointment,
   RescheduleAgendaAppointmentInput,
 } from '@/modules/admin/agenda/api/agenda';
 
+import { useMobxQuery } from '@/shared/hooks/use-mobx-query';
 import { HttpError } from '@/shared/lib/http';
 import { MobxMutation } from '@/shared/lib/mutation';
 import { MobxQuery } from '@/shared/lib/query';
@@ -197,6 +202,65 @@ export const useRescheduleAgendaAppointment = () => {
         },
       }),
   );
+
+  return store;
+};
+
+interface AgendaCustomerSuggestionsParams {
+  searchTerm: string;
+}
+
+export const useAgendaCustomerSuggestions = (params: () => AgendaCustomerSuggestionsParams) => {
+  const filters = params();
+  return useMobxQuery({
+    enabled: filters.searchTerm.trim().length >= 2,
+    queryKey: ['admin-agenda-customer-suggestions', filters],
+    queryFn: () => getAgendaCustomerSuggestions(filters.searchTerm),
+  });
+};
+
+export const useAgendaServices = () => {
+  return useMobxQuery({
+    staleTime: 60_000,
+    queryFn: getAgendaServices,
+    queryKey: ['admin-agenda-services'],
+  });
+};
+
+interface AgendaEligibleBarbersParams {
+  serviceIds: number[];
+}
+
+export const useAgendaEligibleBarbers = (params: () => AgendaEligibleBarbersParams) => {
+  const filters = params();
+
+  return useMobxQuery({
+    enabled: filters.serviceIds.length > 0,
+    queryKey: ['admin-agenda-eligible-barbers', filters],
+    queryFn: () => getAgendaEligibleBarbers(filters.serviceIds),
+  });
+};
+
+interface AgendaAvailabilitySlotsParams {
+  date: string;
+  serviceIds: number[];
+  bypassAdvance: boolean;
+  barberId: number | null;
+  allowOutOfHours: boolean;
+}
+
+export const useAgendaAvailabilitySlots = (params: () => AgendaAvailabilitySlotsParams) => {
+  const filters = params();
+
+  return useMobxQuery({
+    queryKey: ['admin-agenda-availability', filters],
+    enabled: filters.serviceIds.length > 0 && filters.barberId !== null && Boolean(filters.date),
+    queryFn: () => getAgendaAvailabilitySlots({ ...filters, barberId: Number(filters.barberId) }),
+  });
+};
+
+export const useCreateAgendaAppointment = () => {
+  const [store] = useState(() => new MobxMutation({}));
 
   return store;
 };
