@@ -1,4 +1,4 @@
-import { logger } from '@/config';
+import { logger } from '@/config/logger';
 import { env } from '@/config/env';
 
 import { BcryptHashProvider } from '@/shared/providers/hash/BcryptHashProvider';
