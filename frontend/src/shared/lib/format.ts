@@ -162,7 +162,13 @@ export function weekdayOffset(date: string): number {
 }
 
 export function businessTime(value: string): string {
-  return new Intl.DateTimeFormat('pt-BR', { timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(
-    new Date(value),
-  );
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(value));
+}
+
+export function phoneForDisplay(value?: string | null) {
+  return value?.trim() || 'Telefone não informado';
+}
+
+export function localTime(value: string) {
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(value));
 }
