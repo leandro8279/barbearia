@@ -2,6 +2,9 @@ import { Product } from '@/modules/catalog/domain/entities/Product';
 import { IProductRepository, ProductFilters, ProductSortField } from '@/modules/catalog/domain/repositories/ProductRepositoryInterface';
 import { ProductEntity } from '@/modules/catalog/infra/entities/ProductEntity';
 import { ProductMapper } from '@/modules/catalog/infra/mappers/ProductMapper';
+import type { StockMovement } from '@/modules/catalog/domain/entities/StockMovement';
+import { StockMovementEntity } from '@/modules/catalog/infra/entities/StockMovementEntity';
+import { StockMovementMapper } from '@/modules/catalog/infra/mappers/StockMovementMapper';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { getSkip } from '@/shared/utils/pagination';
@@ -20,8 +23,8 @@ const SORT_COLUMN: Record<ProductSortField, string> = {
 export class TypeOrmProductRepository implements IProductRepository {
   private readonly repository: Repository<ProductEntity>;
 
-  constructor(dataSource: DataSource) {
-    this.repository = dataSource.getRepository(ProductEntity);
+  constructor(private readonly dataSource: DataSource) {
+    this.repository = this.dataSource.getRepository(ProductEntity);
   }
 
   async findPage(
@@ -53,5 +56,26 @@ export class TypeOrmProductRepository implements IProductRepository {
     const entity = await this.repository.findOne({ where: { id }, relations: { category: true } });
 
     return entity ? ProductMapper.toDomain(entity) : null;
+  }
+  
+  async applyStockAdjustment(movement: StockMovement): Promise<Product | null> {
+    return this.dataSource.transaction(async (manager) => {
+      // A condição no WHERE garante que o estoque nunca fica negativo, mesmo com requisições concorrentes.
+      const result = await manager
+        .createQueryBuilder()
+        .update(ProductEntity)
+        .set({ stock: () => 'stock + :delta' })
+        .where('id = :id AND stock + :delta >= 0', { id: movement.productId })
+        .setParameter('delta', movement.qty)
+        .execute();
+
+      if (!result.affected) return null;
+
+      await manager.insert(StockMovementEntity, StockMovementMapper.toPersistence(movement));
+
+      const entity = await manager.findOne(ProductEntity, { where: { id: movement.productId }, relations: { category: true } });
+
+      return entity ? ProductMapper.toDomain(entity) : null;
+    });
   }
 }
