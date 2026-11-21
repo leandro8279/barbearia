@@ -25,4 +25,8 @@ export class InMemoryProductRepository implements IProductRepository {
 
     return { items: filtered.slice(getSkip(pagination), getSkip(pagination) + pagination.limit), total: filtered.length };
   }
+
+  async findById(id: string) {
+    return this.items.find((item) => item.id === id) ?? null;
+  }
 }
