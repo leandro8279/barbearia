@@ -1,0 +1,62 @@
+import type { ListAdminProductsResponseDTO } from '@/modules/catalog/application/dtos/ListAdminProductsDTO';
+import { PRODUCT_KINDS } from '@/modules/catalog/domain/entities/Product';
+import { PRODUCT_SORT_FIELDS } from '@/modules/catalog/domain/repositories/ProductRepositoryInterface';
+
+import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
+import { z } from '@/shared/openapi/zod';
+
+const AdminProductSchema = z.object({
+  id: z.string().uuid(),
+  sku: z.string().openapi({ example: 'BAR-001' }),
+  name: z.string().openapi({ example: 'Pomada matte' }),
+  categoryId: z.string().uuid().openapi({ example: '3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f' }),
+  categoryName: z.string().openapi({ example: 'Cabelo' }),
+  price: z.number().int().openapi({ example: 3500, description: 'Em centavos' }),
+  costCents: z.number().int().openapi({ example: 1800, description: 'Em centavos' }),
+  stock: z.number().int().openapi({ example: 33 }),
+  minStock: z.number().int().openapi({ example: 5 }),
+  kind: z.enum(PRODUCT_KINDS).openapi({ example: 'resale' }),
+  commissionPct: z.number().openapi({ example: 10 }),
+  image: z.string().openapi({ example: '/seed/product-hair.svg' }),
+  active: z.boolean(),
+});
+
+export const AdminProductPageSchema = registry.register(
+  'AdminProductPage',
+  z.object({
+    items: z.array(AdminProductSchema),
+    total: z.number().int(),
+    page: z.number().int(),
+    pageSize: z.number().int(),
+  }),
+);
+
+type AssertDocMatchesDTO = ListAdminProductsResponseDTO extends z.infer<typeof AdminProductPageSchema> ? true : never;
+export const assertAdminProductPageDocMatchesDTO: AssertDocMatchesDTO = true;
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/admin/catalog/products',
+  tags: ['Catálogo'],
+  summary: 'Listar produtos (admin)',
+  description:
+    'Lista paginada. Valores inválidos de paginação/filtro/ordenação voltam ao padrão. `stock=low` traz estoque abaixo do mínimo; `stock=ok`, igual ou acima. Exige a permissão catalog.read.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: {
+    query: z.object({
+      page: z.number().int().min(1).optional().openapi({ example: 1 }),
+      limit: z.number().int().min(1).max(100).optional().openapi({ example: 20 }),
+      q: z.string().optional().openapi({ description: 'Busca por nome ou SKU' }),
+      categoryId: z.string().optional(),
+      kind: z.enum(PRODUCT_KINDS).optional(),
+      stock: z.enum(['low', 'ok']).optional(),
+      sort: z.enum(PRODUCT_SORT_FIELDS).optional(),
+      order: z.enum(['asc', 'desc']).optional(),
+    }),
+  },
+  responses: {
+    200: { description: 'Página de produtos', content: jsonContent(AdminProductPageSchema) },
+    401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
+    403: { description: 'Sem permissão', content: errorContent },
+  },
+});
