@@ -1,12 +1,18 @@
 import { AppDataSource } from '@/config/database';
 import { logger } from '@/config/logger';
 
+import { CreateServiceUseCase } from '@/modules/catalog/application/use-cases/CreateServiceUseCase';
 import { GetAdminServiceUseCase } from '@/modules/catalog/application/use-cases/GetAdminServiceUseCase';
+import { ListAdminProductsUseCase } from '@/modules/catalog/application/use-cases/ListAdminProductsUseCase';
 import { ListAdminServicesUseCase } from '@/modules/catalog/application/use-cases/ListAdminServicesUseCase';
 import { SetServiceActiveUseCase } from '@/modules/catalog/application/use-cases/SetServiceActiveUseCase';
 import { TypeOrmBarberRepository } from '@/modules/catalog/infra/repositories/TypeOrmBarberRepository';
+import { TypeOrmProductRepository } from '@/modules/catalog/infra/repositories/TypeOrmProductRepository';
+import { TypeOrmServiceCategoryRepository } from '@/modules/catalog/infra/repositories/TypeOrmServiceCategoryRepository';
 import { TypeOrmServiceRepository } from '@/modules/catalog/infra/repositories/TypeOrmServiceRepository';
+import { CreateServiceController } from '@/modules/catalog/presentation/controllers/CreateServiceController';
 import { GetAdminServiceController } from '@/modules/catalog/presentation/controllers/GetAdminServiceController';
+import { ListAdminProductsController } from '@/modules/catalog/presentation/controllers/ListAdminProductsController';
 import { ListAdminServicesController } from '@/modules/catalog/presentation/controllers/ListAdminServicesController';
 import { SetServiceActiveController } from '@/modules/catalog/presentation/controllers/SetServiceActiveController';
 import { buildCatalogRoutes } from '@/modules/catalog/presentation/routes/catalog.routes';
@@ -15,9 +21,6 @@ import { TypeOrmUserRepository } from '@/modules/users';
 import { makeAuthMiddleware } from '@/shared/middlewares/Auth.middleware';
 import { tokenProvider } from '@/shared/providers';
 import { TypeOrmAuditLogger } from '@/shared/providers/audit/TypeOrmAuditLogger';
-import { CreateServiceUseCase } from '@/modules/catalog/application/use-cases/CreateServiceUseCase';
-import { TypeOrmServiceCategoryRepository } from '@/modules/catalog/infra/repositories/TypeOrmServiceCategoryRepository';
-import { CreateServiceController } from '@/modules/catalog/presentation/controllers/CreateServiceController';
 
 import { Router } from 'express';
 
@@ -27,6 +30,7 @@ export function makeCatalogModule(): Router {
   const userRepository = new TypeOrmUserRepository(AppDataSource);
   const auditLogger = new TypeOrmAuditLogger(AppDataSource, logger);
   const categoryRepository = new TypeOrmServiceCategoryRepository(AppDataSource);
+  const productRepository = new TypeOrmProductRepository(AppDataSource);
 
   return buildCatalogRoutes(
     {
@@ -34,6 +38,7 @@ export function makeCatalogModule(): Router {
       getAdminService: new GetAdminServiceController(new GetAdminServiceUseCase(serviceRepository, barberRepository)),
       setServiceActive: new SetServiceActiveController(new SetServiceActiveUseCase(serviceRepository, auditLogger)),
       createService: new CreateServiceController(new CreateServiceUseCase(serviceRepository, categoryRepository, barberRepository, auditLogger)),
+      listAdminProducts: new ListAdminProductsController(new ListAdminProductsUseCase(productRepository)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
