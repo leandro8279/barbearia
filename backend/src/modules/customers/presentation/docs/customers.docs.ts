@@ -1,4 +1,5 @@
 import type { ListAdminCustomersResponseDTO } from '@/modules/customers/application/dtos/ListAdminCustomersDTO';
+import { CUSTOMER_DUPLICATE_MATCHES, FindCustomerDuplicatesResponseDTO } from '@/modules/customers/application/dtos/FindCustomerDuplicatesDTO';
 import { CUSTOMER_SORT_FIELDS } from '@/modules/customers/domain/entities/CustomerSummary';
 
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
@@ -52,5 +53,42 @@ registry.registerPath({
     401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
     403: { description: 'Sem permissão', content: errorContent },
     422: { description: 'Filtro inválido', content: errorContent },
+  },
+});
+
+const CustomerDuplicateSchema = registry.register(
+  'CustomerDuplicate',
+  z.object({
+    id: z.string().uuid().openapi({ example: '3f6c2a1e-8b7d-4c9a-9e2f-1a2b3c4d5e6f' }),
+    name: z.string().openapi({ example: 'João Silva' }),
+    phone: z.string().openapi({ example: '62999998888' }),
+    matchedBy: z.array(z.enum(CUSTOMER_DUPLICATE_MATCHES)).openapi({ example: ['phone'] }),
+  }),
+);
+
+export const CustomerDuplicatesSchema = z.array(CustomerDuplicateSchema);
+
+type AssertDuplicateDocMatchesDTO = FindCustomerDuplicatesResponseDTO extends z.infer<typeof CustomerDuplicatesSchema> ? true : never;
+export const assertCustomerDuplicatesDocMatchesDTO: AssertDuplicateDocMatchesDTO = true;
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/admin/customers/duplicates',
+  tags: ['Clientes'],
+  summary: 'Buscar clientes duplicados (admin)',
+  description:
+    'Procura clientes com o mesmo telefone (a partir de 10 dígitos, ignorando máscara e DDI 55) ou o mesmo nome (a partir de 3 caracteres, ignorando acentos e maiúsculas). Sem critério suficiente, devolve lista vazia. Telefone primeiro, depois ordem alfabética; no máximo 5 resultados. Exige a permissão customers.write.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: {
+    query: z.object({
+      phone: z.string().optional().openapi({ example: '(62) 99999-8888' }),
+      name: z.string().optional().openapi({ example: 'João Silva' }),
+      excludeId: z.string().uuid().optional().openapi({ description: 'Id do cliente a ignorar (ex.: o que está sendo editado)' }),
+    }),
+  },
+  responses: {
+    200: { description: 'Possíveis duplicados', content: jsonContent(CustomerDuplicatesSchema) },
+    401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
+    403: { description: 'Sem permissão', content: errorContent },
   },
 });
