@@ -5,3 +5,10 @@ export function normalizePhone(value: string): string | null {
 
   return national.length >= 10 ? national : null;
 }
+
+/** (**) *****-**88: expõe só os 2 últimos dígitos. */
+export function maskPhone(value: string | null | undefined): string {
+  const digits = (value ?? '').replace(/\D/g, '');
+
+  return digits ? `(**) *****-**${digits.slice(-2)}` : '';
+}
