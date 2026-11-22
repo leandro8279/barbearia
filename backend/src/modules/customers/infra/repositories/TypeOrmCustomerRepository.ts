@@ -1,7 +1,8 @@
 import type { CustomerSummary } from '@/modules/customers/domain/entities/CustomerSummary';
-import { ICustomerRepository } from '@/modules/customers/domain/repositories/CustomerRepositoryInterface';
+import { CustomerSummaryData, ICustomerRepository } from '@/modules/customers/domain/repositories/CustomerRepositoryInterface';
+import { UserEntity } from '@/modules/users/infra/entities/UserEntity';
 
-import { DataSource } from 'typeorm';
+import { DataSource, Not, Repository } from 'typeorm';
 
 interface CustomerRow {
   id: string;
@@ -55,7 +56,11 @@ function parseTags(raw: string | null): string[] {
 }
 
 export class TypeOrmCustomerRepository implements ICustomerRepository {
-  constructor(private readonly dataSource: DataSource) {}
+  private readonly repository: Repository<UserEntity>;
+
+  constructor(private readonly dataSource: DataSource) {
+    this.repository = dataSource.getRepository(UserEntity);
+  }
 
   async findAllWithMetrics(): Promise<CustomerSummary[]> {
     const rows: CustomerRow[] = await this.dataSource.query(CUSTOMERS_WITH_METRICS_SQL);
@@ -71,5 +76,14 @@ export class TypeOrmCustomerRepository implements ICustomerRepository {
       visitsCount: Number(row.visitsCount),
       totalSpentCents: Number(row.totalSpentCents),
     }));
+  }
+
+  async findSummaries(excludeId?: string): Promise<CustomerSummaryData[]> {
+    const entities = await this.repository.find({
+      where: { role: 'customer', ...(excludeId ? { id: Not(excludeId) } : {}) },
+      select: { id: true, name: true, phone: true },
+    });
+
+    return entities.map(({ id, name, phone }) => ({ id, name, phone }));
   }
 }
