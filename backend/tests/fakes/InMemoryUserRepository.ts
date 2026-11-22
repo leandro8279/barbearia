@@ -1,4 +1,4 @@
-import { IUserRepository, User } from '@/modules/users';
+import { IUserRepository, STAFF_ROLES, User } from '@/modules/users';
 
 import { PaginationParams } from '@/shared/types/pagination.types';
 import { buildPaginatedResult } from '@/shared/utils/pagination';
@@ -31,11 +31,17 @@ export class InMemoryUserRepository implements IUserRepository {
     if (index !== -1) this.items[index] = user;
     return user;
   }
+
   async promoteGuest(user: User) {
     return this.update(user);
   }
+
   async touchLastAccess(id: string, at: Date) {
     const user = this.items.find((u) => u.id === id);
     user?.recordAccess(at);
+  }
+
+  async findStaff() {
+    return this.items.filter((u) => (STAFF_ROLES as readonly string[]).includes(u.role));
   }
 }
