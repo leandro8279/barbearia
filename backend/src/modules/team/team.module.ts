@@ -1,9 +1,9 @@
 import { env, logger } from '@/config';
 import { AppDataSource } from '@/config/database';
 
-import { InviteTeamUserUseCase, ListTeamUsersUseCase } from '@/modules/team/application/use-cases';
-import { TypeOrmTeamInviteRepository } from '@/modules/team/infra/repositories/';
-import { InviteTeamUserController, ListTeamUsersController } from '@/modules/team/presentation/controllers';
+import { InviteTeamUserUseCase, ListTeamUsersUseCase, UpdateTeamMemberUseCase } from '@/modules/team/application/use-cases';
+import { TypeOrmTeamInviteRepository, TypeOrmTeamRepository } from '@/modules/team/infra/repositories/';
+import { InviteTeamUserController, ListTeamUsersController, UpdateTeamMemberController } from '@/modules/team/presentation/controllers';
 import { buildTeamRoutes } from '@/modules/team/presentation/routes/team.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
 
@@ -16,6 +16,7 @@ import { Router } from 'express';
 export function makeTeamModule(): Router {
   const userRepository = new TypeOrmUserRepository(AppDataSource);
   const inviteRepository = new TypeOrmTeamInviteRepository(AppDataSource);
+  const teamRepository = new TypeOrmTeamRepository(AppDataSource);
   const auditLogger = new TypeOrmAuditLogger(AppDataSource, logger);
 
   return buildTeamRoutes(
@@ -25,6 +26,7 @@ export function makeTeamModule(): Router {
       inviteTeamUser: new InviteTeamUserController(
         new InviteTeamUserUseCase(userRepository, inviteRepository, mailProvider, auditLogger, `${env.WEB_URL}/reset-password`),
       ),
+      updateTeamMember: new UpdateTeamMemberController(new UpdateTeamMemberUseCase(userRepository, teamRepository, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
