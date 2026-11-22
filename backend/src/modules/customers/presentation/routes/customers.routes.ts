@@ -6,12 +6,14 @@ import { RequestHandler, Router } from 'express';
 
 export interface CustomersControllers {
   listAdminCustomers: IController;
+  findDuplicates: IController;
 }
 
 export function buildCustomersRoutes(controllers: CustomersControllers, auth: RequestHandler): Router {
   const router = Router();
 
   router.get('/admin/customers', auth, requirePermission('customers.read'), ExpressControllerAdapter(controllers.listAdminCustomers));
+  router.get('/admin/customers/duplicates', auth, requirePermission('customers.write'), ExpressControllerAdapter(controllers.findDuplicates));
 
   return router;
 }
