@@ -43,4 +43,10 @@ describe('hasPermission', () => {
   it('customer é negado em tudo', () => {
     expect(hasPermission({ id: '1', role: 'customer' }, 'agenda.read')).toBe(false);
   });
+
+  it('team.manage: manager e admin; reception e barber não', () => {
+    expect(hasPermission({ id: '1', role: 'manager' }, 'team.manage')).toBe(true);
+    expect(hasPermission({ id: '1', role: 'reception' }, 'team.manage')).toBe(false);
+    expect(hasPermission({ id: '1', role: 'barber' }, 'team.manage')).toBe(false);
+  });
 });
