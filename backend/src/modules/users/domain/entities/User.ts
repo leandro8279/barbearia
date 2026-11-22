@@ -142,6 +142,24 @@ export class User {
     this.props.updatedAt = at;
   }
 
+  updateTeamAccess(input: { role: UserRole; active: boolean; permissions: string[] }): { roleChanged: boolean } {
+    const roleChanged = this.props.role !== input.role;
+
+    Object.assign(this.props, {
+      role: input.role,
+      active: input.active,
+      permissions: [...new Set(input.permissions)],
+      tokenVersion: roleChanged ? this.props.tokenVersion + 1 : this.props.tokenVersion,
+      updatedAt: new Date(),
+    });
+
+    return { roleChanged };
+  }
+
+  get isStaff(): boolean {
+    return this.props.role !== 'customer';
+  }
+
   get id(): string {
     return this.props.id;
   }
