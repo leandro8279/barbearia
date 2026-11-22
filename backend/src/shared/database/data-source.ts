@@ -1,9 +1,8 @@
-import 'reflect-metadata';
-
 import { env } from '@/config/env';
 
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
+import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 
 mkdirSync(path.dirname(env.DATABASE_PATH), { recursive: true });
@@ -15,7 +14,7 @@ export const AppDataSource = new DataSource({
   entities: [path.join(__dirname, '../../modules/**/*Entity{.ts,.js}'), path.join(__dirname, 'entities/**/*Entity{.ts,.js}')],
   migrations: [path.join(__dirname, 'migrations/*.{ts,js}')],
 
-  synchronize: false,
+  synchronize: true,
   logging: env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
 
   enableWAL: true,
