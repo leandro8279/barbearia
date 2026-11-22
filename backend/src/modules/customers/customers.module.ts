@@ -1,8 +1,8 @@
 import { AppDataSource } from '@/config/database';
 
-import { ListAdminCustomersUseCase } from '@/modules/customers/application/use-cases/';
+import { FindCustomerDuplicatesUseCase, ListAdminCustomersUseCase } from '@/modules/customers/application/use-cases/';
 import { TypeOrmCustomerRepository } from '@/modules/customers/infra/repositories/';
-import { ListAdminCustomersController } from '@/modules/customers/presentation/controllers';
+import { FindCustomerDuplicatesController, ListAdminCustomersController } from '@/modules/customers/presentation/controllers';
 import { buildCustomersRoutes } from '@/modules/customers/presentation/routes/customers.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
 
@@ -16,7 +16,10 @@ export function makeCustomersModule(): Router {
   const userRepository = new TypeOrmUserRepository(AppDataSource);
 
   return buildCustomersRoutes(
-    { listAdminCustomers: new ListAdminCustomersController(new ListAdminCustomersUseCase(customerRepository)) },
+    {
+      listAdminCustomers: new ListAdminCustomersController(new ListAdminCustomersUseCase(customerRepository)),
+      findDuplicates: new FindCustomerDuplicatesController(new FindCustomerDuplicatesUseCase(customerRepository)),
+    },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
 }
