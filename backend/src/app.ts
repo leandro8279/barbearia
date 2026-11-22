@@ -1,8 +1,8 @@
-import '@/config/zod';
 import { buildOpenApiDocument } from '@/docs';
 
 import { env } from '@/config/env';
 import { logger } from '@/config/logger';
+import '@/config/zod';
 
 import { registerModules } from '@/modules';
 
