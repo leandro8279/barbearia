@@ -7,4 +7,8 @@ export class InMemoryCustomerRepository implements ICustomerRepository {
   async findAllWithMetrics() {
     return [...this.items];
   }
+
+  async findSummaries(excludeId?: string) {
+    return this.items.filter((item) => item.id !== excludeId);
+  }
 }
