@@ -7,3 +7,4 @@ export * from '@/modules/catalog/presentation/controllers/ListAdminProductsContr
 export * from '@/modules/catalog/presentation/controllers/ListAdminServicesController';
 export * from '@/modules/catalog/presentation/controllers/SetServiceActiveController';
 export * from '@/modules/catalog/presentation/controllers/UpdateProductController';
+export * from '@/modules/catalog/presentation/controllers/UpdateServiceController';
