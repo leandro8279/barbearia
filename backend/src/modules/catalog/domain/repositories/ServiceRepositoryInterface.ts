@@ -24,4 +24,5 @@ export interface IServiceRepository {
   findPage(filters: ServiceFilters, pagination: PaginationParams): Promise<{ items: Service[]; total: number }>;
   create(service: Service, assignments: ServiceBarberAssignment[]): Promise<void>;
   updateActive(service: Service): Promise<void>;
+  update(service: Service, assignments: ServiceBarberAssignment[]): Promise<void>;
 }

@@ -97,4 +97,24 @@ export class TypeOrmServiceRepository implements IServiceRepository {
 
     return error;
   }
+
+  async update(service: Service, assignments: ServiceBarberAssignment[]): Promise<void> {
+    const { id, createdAt: _createdAt, ...data } = ServiceMapper.toPersistence(service);
+
+    try {
+      await this.dataSource.transaction(async (manager) => {
+        await manager.update(ServiceEntity, { id }, data);
+        await manager.delete(BarberServiceEntity, { serviceId: id });
+
+        if (assignments.length) {
+          await manager.insert(
+            BarberServiceEntity,
+            assignments.map(({ barberId, commissionPct }) => ({ barberId, serviceId: id, commissionPct })),
+          );
+        }
+      });
+    } catch (error) {
+      throw this.translateConstraintError(error);
+    }
+  }
 }
