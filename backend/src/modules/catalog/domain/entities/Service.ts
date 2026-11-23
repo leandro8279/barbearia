@@ -10,7 +10,6 @@ export interface ServiceProps {
   image: string;
   durationMin: number;
   bufferMin: number;
-  /** Em centavos (6000 = R$ 60,00). */
   price: number;
   commissionPct: number;
   active: boolean;
@@ -31,11 +30,25 @@ export interface CreateServiceInput {
   commissionPct: number;
   active?: boolean;
   featured?: boolean;
- }
+}
+
+export interface UpdateServiceInput {
+  name: string;
+  slug: string;
+  category: ServiceCategory;
+  description: string;
+  image: string;
+  durationMin: number;
+  bufferMin: number;
+  price: number;
+  commissionPct: number;
+  active: boolean;
+  featured: boolean;
+}
 
 export class Service {
   private constructor(private readonly props: ServiceProps) {}
-  
+
   static create(input: CreateServiceInput): Service {
     const now = new Date();
 
@@ -56,9 +69,18 @@ export class Service {
       updatedAt: now,
     });
   }
-  
+
   static restore(props: ServiceProps): Service {
     return new Service({ ...props });
+  }
+
+  update(input: UpdateServiceInput): void {
+    Object.assign(this.props, {
+      ...input,
+      name: input.name.trim(),
+      description: input.description.trim(),
+      updatedAt: new Date(),
+    });
   }
 
   get id(): string {
