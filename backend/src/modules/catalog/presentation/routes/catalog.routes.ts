@@ -15,6 +15,7 @@ export interface CatalogControllers {
   createProduct: IController;
   updateProduct: IController;
   updateService: IController;
+  listAdminBarbers: IController;
 }
 
 export function buildCatalogRoutes(controllers: CatalogControllers, auth: RequestHandler): Router {
@@ -40,6 +41,7 @@ export function buildCatalogRoutes(controllers: CatalogControllers, auth: Reques
   router.post('/admin/catalog/products', auth, requirePermission('catalog.write'), ExpressControllerAdapter(controllers.createProduct));
   router.patch('/admin/catalog/products/:id', auth, requirePermission('catalog.write'), ExpressControllerAdapter(controllers.updateProduct));
   router.patch('/admin/catalog/services/:id', auth, requirePermission('catalog.write'), ExpressControllerAdapter(controllers.updateService));
+  router.get('/admin/catalog/barbers', auth, requirePermission('catalog.write'), ExpressControllerAdapter(controllers.listAdminBarbers));
 
   return router;
 }

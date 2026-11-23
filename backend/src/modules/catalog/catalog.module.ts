@@ -7,6 +7,7 @@ import {
   CreateServiceUseCase,
   GetAdminProductUseCase,
   GetAdminServiceUseCase,
+  ListAdminBarbersUseCase,
   ListAdminProductsUseCase,
   ListAdminServicesUseCase,
   SetServiceActiveUseCase,
@@ -26,6 +27,7 @@ import {
   CreateServiceController,
   GetAdminProductController,
   GetAdminServiceController,
+  ListAdminBarbersController,
   ListAdminProductsController,
   ListAdminServicesController,
   SetServiceActiveController,
@@ -62,6 +64,7 @@ export function makeCatalogModule(): Router {
       createProduct: new CreateProductController(new CreateProductUseCase(productRepository, productCategoryRepository, auditLogger)),
       updateProduct: new UpdateProductController(new UpdateProductUseCase(productRepository, productCategoryRepository, auditLogger)),
       updateService: new UpdateServiceController(new UpdateServiceUseCase(serviceRepository, categoryRepository, barberRepository, auditLogger)),
+      listAdminBarbers: new ListAdminBarbersController(new ListAdminBarbersUseCase(barberRepository)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
