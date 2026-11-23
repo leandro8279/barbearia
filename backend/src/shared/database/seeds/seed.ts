@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-
 import { AppDataSource, connectDatabase, disconnectDatabase } from '@/config/database';
 import { env } from '@/config/env';
 import { logger } from '@/config/logger';
@@ -15,6 +13,8 @@ import { ServiceCategoryEntity } from '@/modules/catalog/infra/entities/ServiceC
 import { ServiceEntity } from '@/modules/catalog/infra/entities/ServiceEntity';
 import { ProductMapper } from '@/modules/catalog/infra/mappers/ProductMapper';
 import { ServiceMapper } from '@/modules/catalog/infra/mappers/ServiceMapper';
+import { SettingsEntity } from '@/modules/settings/infra/entities/SettingsEntity';
+import { UnitEntity } from '@/modules/settings/infra/entities/UnitEntity';
 import { CreateUserInput, User } from '@/modules/users/domain/entities/User';
 import { UserEntity } from '@/modules/users/infra/entities/UserEntity';
 import { UserMapper } from '@/modules/users/infra/mappers/UserMapper';
@@ -22,6 +22,8 @@ import { UserMapper } from '@/modules/users/infra/mappers/UserMapper';
 import { BcryptHashProvider } from '@/shared/providers/hash/BcryptHashProvider';
 
 import { randomUUID } from 'node:crypto';
+import 'reflect-metadata';
+
 import type { EntityTarget, FindOptionsWhere, ObjectLiteral, QueryDeepPartialEntity } from 'typeorm';
 
 const isProd = env.NODE_ENV === 'production';
@@ -47,6 +49,64 @@ async function ensureUser(input: CreateUserInput & { email: string }, password: 
   return repo.findOneByOrFail({ id: user.id });
 }
 
+async function seedUnit(): Promise<void> {
+  const weekdays = [1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, ranges: [{ start: '08:00', end: '20:00' }] }));
+  const holidays = [2026, 2027].flatMap((year) =>
+    [
+      ['01-01', 'Confraternização Universal'],
+      ['04-21', 'Tiradentes'],
+      ['05-01', 'Dia do Trabalho'],
+      ['09-07', 'Independência do Brasil'],
+      ['12-25', 'Natal'],
+    ].map(([monthDay, name]) => ({ date: `${year}-${monthDay}`, name, closed: true, ranges: [] })),
+  );
+
+  const unit = await ensure(
+    UnitEntity,
+    { name: 'Barbearia Estação' },
+    {
+      id: randomUUID(),
+      name: 'Barbearia Estação',
+      address: 'Rua das Palmeiras, 120, Centro, São Paulo - SP, 01001-000',
+      addressDetails: {
+        zip: '01001-000',
+        street: 'Rua das Palmeiras',
+        number: '120',
+        complement: '',
+        neighborhood: 'Centro',
+        city: 'São Paulo',
+        state: 'SP',
+        reference: '',
+      },
+      phone: '(11) 3333-1212',
+      whatsapp: '551133331212',
+      logo: null,
+      amenities: ['Wi-Fi', 'Café', 'Acessível'],
+      photos: ['/seed/barber-1.svg'],
+      businessHours: weekdays,
+      holidays,
+    },
+  );
+
+  await ensure(
+    SettingsEntity,
+    { unitId: unit.id },
+    {
+      id: randomUUID(),
+      unitId: unit.id,
+      business: {
+        name: 'Barbearia Estação',
+        cnpj: '',
+        email: 'contato@barbearia.test',
+        socials: { instagram: '', facebook: '', tiktok: '', website: '' },
+        timezone: 'America/Sao_Paulo',
+      },
+      booking: {},
+      notifications: {},
+    },
+  );
+}
+
 async function seedAdmin(): Promise<void> {
   const email = (process.env.SEED_ADMIN_EMAIL ?? 'admin@barbearia.local').toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD ?? (isProd ? '' : 'admin-dev-123');
@@ -63,10 +123,7 @@ async function seedCategories() {
   return { serviceCategory, productCategory };
 }
 
-async function seedDemo(
-  serviceCategory: ServiceCategoryEntity,
-  productCategory: ProductCategoryEntity,
-): Promise<void> {
+async function seedDemo(serviceCategory: ServiceCategoryEntity, productCategory: ProductCategoryEntity): Promise<void> {
   const barbers = [
     { name: 'Rafael Nogueira', slug: 'rafael', email: 'rafael@barbearia.local', phone: '62999990001' },
     { name: 'Bruno Alves', slug: 'bruno', email: 'bruno@barbearia.local', phone: '62999990002' },
@@ -75,18 +132,22 @@ async function seedDemo(
   for (const b of barbers) {
     const user = await ensureUser({ name: b.name, email: b.email, phone: b.phone, role: 'barber' }, 'barber-dev-123');
 
-    await ensure(BarberEntity, { slug: b.slug }, {
-      id: randomUUID(),
-      userId: user.id,
-      slug: b.slug,
-      bio: '',
-      specialties: [],
-      commissionServicePct: 45,
-      commissionProductPct: 10,
-      photo: null,
-      pixKey: null,
-      active: true,
-    });
+    await ensure(
+      BarberEntity,
+      { slug: b.slug },
+      {
+        id: randomUUID(),
+        userId: user.id,
+        slug: b.slug,
+        bio: '',
+        specialties: [],
+        commissionServicePct: 45,
+        commissionProductPct: 10,
+        photo: null,
+        pixKey: null,
+        active: true,
+      },
+    );
   }
 
   const category = ServiceCategory.restore({
