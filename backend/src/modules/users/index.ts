@@ -7,3 +7,4 @@ export { PhoneAlreadyExistsError } from '@/modules/users/application/errors/Phon
 export { TypeOrmUserRepository } from '@/modules/users/infra/repositories/TypeOrmUserRepository';
 export { STAFF_ROLES } from '@/modules/users/domain/entities/User';
 export type { StaffRole, UserRole } from '@/modules/users/domain/entities/User';
+export { CpfAlreadyExistsError } from '@/modules/users/application/errors/CpfAlreadyExistsError';

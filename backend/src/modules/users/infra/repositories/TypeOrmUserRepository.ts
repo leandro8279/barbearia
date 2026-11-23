@@ -1,3 +1,4 @@
+import { CpfAlreadyExistsError } from '@/modules/users/application/errors/CpfAlreadyExistsError';
 import { EmailAlreadyExistsError } from '@/modules/users/application/errors/EmailAlreadyExistsError';
 import { PhoneAlreadyExistsError } from '@/modules/users/application/errors/PhoneAlreadyExistsError';
 import { STAFF_ROLES, User } from '@/modules/users/domain/entities/User';
@@ -87,6 +88,7 @@ export class TypeOrmUserRepository implements IUserRepository {
     if (code !== 'SQLITE_CONSTRAINT_UNIQUE') return error;
 
     if (message?.includes('users.email')) return new EmailAlreadyExistsError();
+    if (message?.includes('users.cpf')) return new CpfAlreadyExistsError();
     if (message?.includes('users.phone')) return new PhoneAlreadyExistsError();
 
     return error;
