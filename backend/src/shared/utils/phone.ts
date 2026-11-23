@@ -12,3 +12,14 @@ export function maskPhone(value: string | null | undefined): string {
 
   return digits ? `(**) *****-**${digits.slice(-2)}` : '';
 }
+
+/** Fixo (2–5 + 7 dígitos) ou celular (9 + 8 dígitos), com DDD 11–99. */
+export function isValidBrazilianPhone(value: string): boolean {
+  const national = normalizePhone(value);
+  if (!national) return false;
+
+  const areaCode = Number(national.slice(0, 2));
+  const local = national.slice(2);
+
+  return areaCode >= 11 && areaCode <= 99 && (/^[2-5]\d{7}$/.test(local) || /^9\d{8}$/.test(local));
+}
