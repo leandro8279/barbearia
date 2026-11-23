@@ -7,3 +7,4 @@ export * from '@/modules/catalog/application/use-cases/ListAdminProductsUseCase'
 export * from '@/modules/catalog/application/use-cases/ListAdminServicesUseCase';
 export * from '@/modules/catalog/application/use-cases/SetServiceActiveUseCase';
 export * from '@/modules/catalog/application/use-cases/UpdateProductUseCase';
+export * from '@/modules/catalog/application/use-cases/UpdateServiceUseCase';
