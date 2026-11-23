@@ -11,6 +11,7 @@ import {
   ListAdminServicesUseCase,
   SetServiceActiveUseCase,
   UpdateProductUseCase,
+  UpdateServiceUseCase,
 } from '@/modules/catalog/application/use-cases';
 import {
   TypeOrmBarberRepository,
@@ -29,6 +30,7 @@ import {
   ListAdminServicesController,
   SetServiceActiveController,
   UpdateProductController,
+  UpdateServiceController,
 } from '@/modules/catalog/presentation/controllers';
 import { buildCatalogRoutes } from '@/modules/catalog/presentation/routes/catalog.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
@@ -59,6 +61,7 @@ export function makeCatalogModule(): Router {
       adjustProductStock: new AdjustProductStockController(new AdjustProductStockUseCase(productRepository, auditLogger)),
       createProduct: new CreateProductController(new CreateProductUseCase(productRepository, productCategoryRepository, auditLogger)),
       updateProduct: new UpdateProductController(new UpdateProductUseCase(productRepository, productCategoryRepository, auditLogger)),
+      updateService: new UpdateServiceController(new UpdateServiceUseCase(serviceRepository, categoryRepository, barberRepository, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
