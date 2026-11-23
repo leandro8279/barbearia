@@ -62,6 +62,12 @@ export class TypeOrmCustomerRepository implements ICustomerRepository {
     this.repository = dataSource.getRepository(UserEntity);
   }
 
+  async findByPhone(phone: string): Promise<CustomerSummaryData | null> {
+    const entity = await this.repository.findOne({ where: { role: 'customer', phone }, select: { id: true, name: true, phone: true } });
+
+    return entity ? { id: entity.id, name: entity.name, phone: entity.phone } : null;
+  }
+
   async findAllWithMetrics(): Promise<CustomerSummary[]> {
     const rows: CustomerRow[] = await this.dataSource.query(CUSTOMERS_WITH_METRICS_SQL);
 
@@ -85,5 +91,14 @@ export class TypeOrmCustomerRepository implements ICustomerRepository {
     });
 
     return entities.map(({ id, name, phone }) => ({ id, name, phone }));
+  }
+
+  async findByPhoneAndCustomerId(phone: string, excludeId: string): Promise<CustomerSummaryData | null> {
+    const entity = await this.repository.findOne({
+      where: { role: 'customer', phone, id: Not(excludeId) },
+      select: { id: true, name: true, phone: true },
+    });
+
+    return entity ? { id: entity.id, name: entity.name, phone: entity.phone } : null;
   }
 }

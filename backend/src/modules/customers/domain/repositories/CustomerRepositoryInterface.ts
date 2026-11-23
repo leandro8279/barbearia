@@ -9,4 +9,6 @@ export interface CustomerSummaryData {
 export interface ICustomerRepository {
   findAllWithMetrics(): Promise<CustomerSummary[]>;
   findSummaries(excludeId?: string): Promise<CustomerSummaryData[]>;
+  findByPhone(phone: string): Promise<CustomerSummaryData | null>;
+  findByPhoneAndCustomerId(phone: string, customerId: string): Promise<CustomerSummaryData | null>;
 }
