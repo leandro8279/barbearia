@@ -6,8 +6,10 @@ import { RequestHandler, Router } from 'express';
 
 export interface CustomersControllers {
   listAdminCustomers: IController;
+  createAdminCustomer: IController;
   findDuplicates: IController;
   getAdminCustomerProfile: IController;
+  updateAdminCustomer: IController;
 }
 
 export function buildCustomersRoutes(controllers: CustomersControllers, auth: RequestHandler): Router {
@@ -16,6 +18,8 @@ export function buildCustomersRoutes(controllers: CustomersControllers, auth: Re
   router.get('/admin/customers', auth, requirePermission('customers.read'), ExpressControllerAdapter(controllers.listAdminCustomers));
   router.get('/admin/customers/duplicates', auth, requirePermission('customers.write'), ExpressControllerAdapter(controllers.findDuplicates));
   router.get('/admin/customers/:id', auth, requirePermission('customers.read'), ExpressControllerAdapter(controllers.getAdminCustomerProfile));
+  router.post('/admin/customers', auth, requirePermission('customers.write'), ExpressControllerAdapter(controllers.createAdminCustomer));
+  router.patch('/admin/customers/:id', auth, requirePermission('customers.write'), ExpressControllerAdapter(controllers.updateAdminCustomer));
 
   return router;
 }

@@ -1,32 +1,43 @@
+import { logger } from '@/config';
 import { AppDataSource } from '@/config/database';
 
 import {
-    FindCustomerDuplicatesUseCase, GetAdminCustomerProfileUseCase, ListAdminCustomersUseCase
+  CreateAdminCustomerUseCase,
+  FindCustomerDuplicatesUseCase,
+  GetAdminCustomerProfileUseCase,
+  ListAdminCustomersUseCase,
+  UpdateAdminCustomerUseCase,
 } from '@/modules/customers/application/use-cases/';
 import {
-    TypeOrmCustomerAppointmentRepository, TypeOrmCustomerHistoryRepository,
-    TypeOrmCustomerNoteRepository, TypeOrmCustomerRepository, TypeOrmCustomerTabRepository
-} from '@/modules/customers/infra/repositories/';
+  TypeOrmCustomerAppointmentRepository,
+  TypeOrmCustomerNoteRepository,
+  TypeOrmCustomerRepository,
+  TypeOrmCustomerTabRepository,
+} from '@/modules/customers/infra/repositories';
 import {
-    FindCustomerDuplicatesController, GetAdminCustomerProfileController,
-    ListAdminCustomersController
+  CreateAdminCustomerController,
+  FindCustomerDuplicatesController,
+  GetAdminCustomerProfileController,
+  ListAdminCustomersController,
+  UpdateAdminCustomerController,
 } from '@/modules/customers/presentation/controllers';
 import { buildCustomersRoutes } from '@/modules/customers/presentation/routes/customers.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
 
 import { makeAuthMiddleware } from '@/shared/middlewares/Auth.middleware';
 import { tokenProvider } from '@/shared/providers';
+import { TypeOrmAuditLogger } from '@/shared/providers/audit/TypeOrmAuditLogger';
 
 import { Router } from 'express';
 
 export function makeCustomersModule(): Router {
   const customerRepository = new TypeOrmCustomerRepository(AppDataSource);
   const userRepository = new TypeOrmUserRepository(AppDataSource);
-  const historyRepository = new TypeOrmCustomerHistoryRepository(AppDataSource);
 
   const appointmentRepository = new TypeOrmCustomerAppointmentRepository(AppDataSource);
   const tabRepository = new TypeOrmCustomerTabRepository(AppDataSource);
   const noteRepository = new TypeOrmCustomerNoteRepository(AppDataSource);
+  const auditLogger = new TypeOrmAuditLogger(AppDataSource, logger);
 
   return buildCustomersRoutes(
     {
@@ -35,6 +46,8 @@ export function makeCustomersModule(): Router {
       getAdminCustomerProfile: new GetAdminCustomerProfileController(
         new GetAdminCustomerProfileUseCase(userRepository, appointmentRepository, tabRepository, noteRepository),
       ),
+      createAdminCustomer: new CreateAdminCustomerController(new CreateAdminCustomerUseCase(userRepository, customerRepository, auditLogger)),
+      updateAdminCustomer: new UpdateAdminCustomerController(new UpdateAdminCustomerUseCase(userRepository, customerRepository, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
