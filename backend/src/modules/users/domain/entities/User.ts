@@ -128,6 +128,21 @@ export class User {
     });
   }
 
+  updateCustomerProfile(input: {
+    name: string;
+    phone: string;
+    email: string | null;
+    cpf: string | null;
+    birthDate: Date | null;
+    referralSource: string | null;
+    tags: string[];
+    consent: UserConsent;
+  }): void {
+    if (this.props.role !== 'customer') throw new Error('Apenas clientes podem ter o perfil atualizado por aqui');
+
+    Object.assign(this.props, { ...input, name: input.name.trim(), tags: [...input.tags], updatedAt: new Date() });
+  }
+
   revokeTokens(): void {
     this.props.tokenVersion += 1;
     this.props.updatedAt = new Date();
