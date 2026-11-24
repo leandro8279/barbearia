@@ -4,3 +4,4 @@ export * from '@/modules/settings/presentation/docs/businessHours.docs';
 export * from '@/modules/settings/presentation/docs/saveBusinessHours.docs';
 export * from '@/modules/settings/presentation/docs/notificationSettings.docs';
 export * from '@/modules/settings/presentation/docs/notifications.docs';
+export * from '@/modules/settings/presentation/docs/bookingSettings.docs';

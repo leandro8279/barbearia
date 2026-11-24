@@ -5,3 +5,4 @@ export * from '@/modules/settings/application/use-cases/SaveBusinessHoursUseCase
 export * from '@/modules/settings/application/use-cases/GetNotificationSettingsUseCase';
 export * from '@/modules/settings/application/use-cases/SaveNotificationSettingsUseCase';
 export * from '@/modules/settings/application/use-cases/ResendNotificationUseCase';
+export * from '@/modules/settings/application/use-cases/GetBookingSettingsUseCase';

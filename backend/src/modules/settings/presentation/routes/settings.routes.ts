@@ -12,6 +12,7 @@ export interface SettingsControllers {
   getNotificationSettings: IController;
   saveNotificationSettings: IController;
   resendNotification: IController;
+  getBookingSettings: IController;
 }
 
 export function buildSettingsRoutes(controllers: SettingsControllers, auth: RequestHandler): Router {
@@ -39,5 +40,7 @@ export function buildSettingsRoutes(controllers: SettingsControllers, auth: Requ
     requirePermission('settings.write'),
     ExpressControllerAdapter(controllers.resendNotification),
   );
+  router.get('/admin/settings/booking', auth, requirePermission('settings.write'), ExpressControllerAdapter(controllers.getBookingSettings));
+
   return router;
 }

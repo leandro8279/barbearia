@@ -1,14 +1,9 @@
+import { BookingSettings } from '@/modules/settings/domain/entities/BookingSettings';
 import { BusinessSettings } from '@/modules/settings/domain/entities/BusinessSettings';
-import {
-    NOTIFICATION_TYPES, NotificationType
-} from '@/modules/settings/domain/entities/Notification';
-import {
-    NotificationSettings, NotificationTemplates
-} from '@/modules/settings/domain/entities/NotificationSettings';
+import { NOTIFICATION_TYPES, NotificationType } from '@/modules/settings/domain/entities/Notification';
+import { NotificationSettings, NotificationTemplates } from '@/modules/settings/domain/entities/NotificationSettings';
 import { Unit } from '@/modules/settings/domain/entities/Unit';
-import {
-    ISettingsRepository
-} from '@/modules/settings/domain/repositories/SettingsRepositoryInterface';
+import { ISettingsRepository } from '@/modules/settings/domain/repositories/SettingsRepositoryInterface';
 import { MessageTemplateEntity } from '@/modules/settings/infra/entities/MessageTemplateEntity';
 import { SettingsEntity } from '@/modules/settings/infra/entities/SettingsEntity';
 import { UnitEntity } from '@/modules/settings/infra/entities/UnitEntity';
@@ -89,5 +84,11 @@ export class TypeOrmSettingsRepository implements ISettingsRepository {
 
       return settingsId;
     });
+  }
+
+  async findBookingByUnitId(unitId: string): Promise<BookingSettings | null> {
+    const entity = await this.repository.findOneBy({ unitId });
+
+    return entity ? SettingsMapper.toBookingDomain(entity) : null;
   }
 }

@@ -2,18 +2,31 @@ import { logger } from '@/config';
 import { AppDataSource } from '@/config/database';
 
 import {
-    GetBusinessHoursUseCase, GetBusinessSettingsUseCase, GetNotificationSettingsUseCase,
-    ResendNotificationUseCase, SaveBusinessHoursUseCase, SaveNotificationSettingsUseCase,
-    UpdateBusinessSettingsUseCase
+  GetBookingSettingsUseCase,
+  GetBusinessHoursUseCase,
+  GetBusinessSettingsUseCase,
+  GetNotificationSettingsUseCase,
+  ResendNotificationUseCase,
+  SaveBusinessHoursUseCase,
+  SaveNotificationSettingsUseCase,
+  UpdateBusinessSettingsUseCase,
 } from '@/modules/settings/application/use-cases';
 import {
-    TypeOrmMessageTemplateRepository, TypeOrmNotificationRepository, TypeOrmSettingsRepository,
-    TypeOrmUnitRepository, TypeOrmUpcomingAppointmentRepository
+  TypeOrmMessageTemplateRepository,
+  TypeOrmNotificationRepository,
+  TypeOrmSettingsRepository,
+  TypeOrmUnitRepository,
+  TypeOrmUpcomingAppointmentRepository,
 } from '@/modules/settings/infra/repositories';
 import {
-    GetBusinessHoursController, GetBusinessSettingsController, GetNotificationSettingsController,
-    ResendNotificationController, SaveBusinessHoursController, SaveNotificationSettingsController,
-    UpdateBusinessSettingsController
+  GetBookingSettingsController,
+  GetBusinessHoursController,
+  GetBusinessSettingsController,
+  GetNotificationSettingsController,
+  ResendNotificationController,
+  SaveBusinessHoursController,
+  SaveNotificationSettingsController,
+  UpdateBusinessSettingsController,
 } from '@/modules/settings/presentation/controllers';
 import { buildSettingsRoutes } from '@/modules/settings/presentation/routes/settings.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
@@ -50,6 +63,7 @@ export function makeSettingsModule(): Router {
       resendNotification: new ResendNotificationController(
         new ResendNotificationUseCase(notificationRepository, userRepository, settingsRepository, auditLogger),
       ),
+      getBookingSettings: new GetBookingSettingsController(new GetBookingSettingsUseCase(unitRepository, settingsRepository)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );

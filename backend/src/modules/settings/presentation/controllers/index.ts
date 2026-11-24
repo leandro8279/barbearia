@@ -5,3 +5,4 @@ export * from '@/modules/settings/presentation/controllers/SaveBusinessHoursCont
 export * from '@/modules/settings/presentation/controllers/GetNotificationSettingsController';
 export * from '@/modules/settings/presentation/controllers/SaveNotificationSettingsController';
 export * from '@/modules/settings/presentation/controllers/ResendNotificationController';
+export * from '@/modules/settings/presentation/controllers/GetBookingSettingsController';
