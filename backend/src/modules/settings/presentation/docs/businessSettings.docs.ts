@@ -3,24 +3,24 @@ import type { GetBusinessSettingsResponseDTO } from '@/modules/settings/applicat
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
 import { z } from '@/shared/openapi/zod';
 
-const TimeRangeSchema = z.object({
+export const TimeRangeSchema = z.object({
   start: z.string().openapi({ example: '08:00' }),
   end: z.string().openapi({ example: '20:00' }),
 });
 
-const BusinessHourSchema = z.object({
+export const BusinessHourSchema = z.object({
   weekday: z.number().int().min(0).max(6).openapi({ example: 1, description: '0 = domingo ... 6 = sábado' }),
   ranges: z.array(TimeRangeSchema),
 });
 
-const HolidaySchema = z.object({
+export const HolidaySchema = z.object({
   date: z.string().openapi({ example: '2026-12-25' }),
   name: z.string().openapi({ example: 'Natal' }),
   closed: z.boolean().openapi({ example: true }),
   ranges: z.array(TimeRangeSchema),
 });
 
-const AddressDetailsSchema = z.object({
+export const AddressDetailsSchema = z.object({
   zip: z.string().openapi({ example: '01001-000' }),
   street: z.string().openapi({ example: 'Rua das Palmeiras' }),
   number: z.string().openapi({ example: '120' }),
