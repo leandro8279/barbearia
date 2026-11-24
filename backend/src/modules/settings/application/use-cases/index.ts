@@ -2,3 +2,6 @@ export * from '@/modules/settings/application/use-cases/GetBusinessSettingsUseCa
 export * from '@/modules/settings/application/use-cases/UpdateBusinessSettingsUseCase';
 export * from '@/modules/settings/application/use-cases/GetBusinessHoursUseCase';
 export * from '@/modules/settings/application/use-cases/SaveBusinessHoursUseCase';
+export * from '@/modules/settings/application/use-cases/GetNotificationSettingsUseCase';
+export * from '@/modules/settings/application/use-cases/SaveNotificationSettingsUseCase';
+export * from '@/modules/settings/application/use-cases/ResendNotificationUseCase';
