@@ -1,4 +1,7 @@
-import { BusinessSettings, DEFAULT_TIMEZONE } from '@/modules/settings/domain/entities/BusinessSettings';
+import {
+    BusinessSettings, DEFAULT_TIMEZONE
+} from '@/modules/settings/domain/entities/BusinessSettings';
+import { NotificationSettings } from '@/modules/settings/domain/entities/NotificationSettings';
 import { BusinessJson, SettingsEntity } from '@/modules/settings/infra/entities/SettingsEntity';
 
 export class SettingsMapper {
@@ -27,6 +30,21 @@ export class SettingsMapper {
       email: business.email,
       socials: business.socials,
       timezone: business.timezone,
+    };
+  }
+
+  static toNotificationDomain(entity: SettingsEntity): NotificationSettings {
+    return NotificationSettings.restore(entity.notifications ?? {});
+  }
+
+  static toNotificationsPersistence(settings: NotificationSettings): Record<string, unknown> {
+    return {
+      events: settings.events,
+      channels: settings.channels,
+      quietHours: settings.quietHours,
+      retentionDays: settings.retentionDays,
+      reminders: settings.reminders,
+      reminderHours: settings.reminderHours,
     };
   }
 }
