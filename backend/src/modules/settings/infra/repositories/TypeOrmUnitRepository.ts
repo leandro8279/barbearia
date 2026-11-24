@@ -17,4 +17,8 @@ export class TypeOrmUnitRepository implements IUnitRepository {
 
     return entity ? UnitMapper.toDomain(entity) : null;
   }
+
+  async updateSchedule(unit: Unit): Promise<void> {
+    await this.repository.update({ id: unit.id }, { businessHours: unit.businessHours, holidays: unit.holidays, updatedAt: unit.updatedAt });
+  }
 }
