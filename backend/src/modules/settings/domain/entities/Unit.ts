@@ -57,6 +57,16 @@ export interface CreateUnitInput {
   holidays?: Holiday[];
 }
 
+export interface UpdateUnitProfileInput {
+  name: string;
+  phone: string;
+  whatsapp: string;
+  addressDetails: UnitAddressDetails;
+  logo: string | null;
+  photos: string[];
+  amenities: string[];
+}
+
 export const EMPTY_ADDRESS_DETAILS: UnitAddressDetails = {
   zip: '',
   street: '',
@@ -99,6 +109,41 @@ export class Unit {
       photos: [...props.photos],
       businessHours: props.businessHours.map((hour) => ({ ...hour, ranges: hour.ranges.map((range) => ({ ...range })) })),
       holidays: props.holidays.map((holiday) => ({ ...holiday, ranges: holiday.ranges.map((range) => ({ ...range })) })),
+    });
+  }
+
+  static composeAddress(details: UnitAddressDetails): string {
+    const locality = [details.city, details.state].filter(Boolean).join(' - ');
+    const lines = [
+      [details.street, details.number].filter(Boolean).join(', '),
+      details.complement,
+      details.neighborhood,
+      locality,
+      details.zip,
+    ].filter(Boolean);
+
+    return lines.join(', ');
+  }
+
+  updateProfile(input: UpdateUnitProfileInput): void {
+    Object.assign(this.props, {
+      name: input.name.trim(),
+      phone: input.phone,
+      whatsapp: input.whatsapp,
+      addressDetails: { ...input.addressDetails },
+      address: Unit.composeAddress(input.addressDetails),
+      logo: input.logo,
+      photos: [...input.photos],
+      amenities: [...input.amenities],
+      updatedAt: new Date(),
+    });
+  }
+
+  updateSchedule({ businessHours, holidays }: { businessHours: BusinessHour[]; holidays: Holiday[] }): void {
+    Object.assign(this.props, {
+      businessHours: businessHours.map((hour) => ({ ...hour, ranges: hour.ranges.map((range) => ({ ...range })) })),
+      holidays: holidays.map((holiday) => ({ ...holiday, ranges: holiday.ranges.map((range) => ({ ...range })) })),
+      updatedAt: new Date(),
     });
   }
 

@@ -19,7 +19,6 @@ export interface BusinessSettingsProps {
 export class BusinessSettings {
   private constructor(private readonly props: BusinessSettingsProps) {}
 
-  /** Usado quando a unidade ainda não tem configurações gravadas. */
   static defaultFor(unitId: string): BusinessSettings {
     return new BusinessSettings({
       unitId,
@@ -33,6 +32,16 @@ export class BusinessSettings {
 
   static restore(props: BusinessSettingsProps): BusinessSettings {
     return new BusinessSettings({ ...props, socials: { ...props.socials } });
+  }
+
+  updateInfo(input: { name: string; cnpj: string; email: string; socials: BusinessSocials }): void {
+    Object.assign(this.props, {
+      name: input.name.trim(),
+      cnpj: input.cnpj,
+      email: input.email,
+      socials: { ...input.socials },
+      timezone: DEFAULT_TIMEZONE,
+    });
   }
 
   get unitId(): string {
