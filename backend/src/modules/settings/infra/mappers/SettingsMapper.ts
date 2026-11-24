@@ -1,5 +1,5 @@
 import { BusinessSettings, DEFAULT_TIMEZONE } from '@/modules/settings/domain/entities/BusinessSettings';
-import { SettingsEntity } from '@/modules/settings/infra/entities/SettingsEntity';
+import { BusinessJson, SettingsEntity } from '@/modules/settings/infra/entities/SettingsEntity';
 
 export class SettingsMapper {
   static toBusinessDomain(entity: SettingsEntity): BusinessSettings {
@@ -18,5 +18,15 @@ export class SettingsMapper {
       },
       timezone: business.timezone ?? DEFAULT_TIMEZONE,
     });
+  }
+
+  static toBusinessPersistence(business: BusinessSettings): BusinessJson {
+    return {
+      name: business.name,
+      cnpj: business.cnpj,
+      email: business.email,
+      socials: business.socials,
+      timezone: business.timezone,
+    };
   }
 }
