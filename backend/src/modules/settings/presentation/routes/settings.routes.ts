@@ -9,6 +9,9 @@ export interface SettingsControllers {
   updateBusinessSettings: IController;
   getBusinessHours: IController;
   saveBusinessHours: IController;
+  getNotificationSettings: IController;
+  saveNotificationSettings: IController;
+  resendNotification: IController;
 }
 
 export function buildSettingsRoutes(controllers: SettingsControllers, auth: RequestHandler): Router {
@@ -18,6 +21,23 @@ export function buildSettingsRoutes(controllers: SettingsControllers, auth: Requ
   router.patch('/admin/settings/business', auth, requirePermission('settings.write'), ExpressControllerAdapter(controllers.updateBusinessSettings));
   router.get('/admin/settings/hours', auth, requirePermission('settings.write'), ExpressControllerAdapter(controllers.getBusinessHours));
   router.patch('/admin/settings/hours', auth, requirePermission('settings.write'), ExpressControllerAdapter(controllers.saveBusinessHours));
-
+  router.get(
+    '/admin/settings/notifications',
+    auth,
+    requirePermission('settings.write'),
+    ExpressControllerAdapter(controllers.getNotificationSettings),
+  );
+  router.patch(
+    '/admin/settings/notifications',
+    auth,
+    requirePermission('settings.write'),
+    ExpressControllerAdapter(controllers.saveNotificationSettings),
+  );
+  router.post(
+    '/admin/settings/notifications/:id/resend',
+    auth,
+    requirePermission('settings.write'),
+    ExpressControllerAdapter(controllers.resendNotification),
+  );
   return router;
 }
