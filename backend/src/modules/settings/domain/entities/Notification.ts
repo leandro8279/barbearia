@@ -41,6 +41,7 @@ export interface NotificationProps {
   sentAt: Date | null;
   message: string;
   resendOf: string | null;
+  sentFrom: string | null;
   createdAt: Date;
 }
 
@@ -60,7 +61,19 @@ export class Notification {
       readyAt: at,
       sentAt: null,
       resendOf: this.props.id,
+      sentFrom: null,
       message,
+      createdAt: at,
+    });
+  }
+
+  markAsSent(at: Date): Notification {
+    return new Notification({
+      ...this.props,
+      id: randomUUID(),
+      status: 'sent',
+      sentAt: at,
+      sentFrom: this.props.id,
       createdAt: at,
     });
   }
@@ -91,6 +104,10 @@ export class Notification {
 
   get scheduledAt(): Date | null {
     return this.props.scheduledAt;
+  }
+
+  get sentFrom(): string | null {
+    return this.props.sentFrom;
   }
 
   get readyAt(): Date | null {

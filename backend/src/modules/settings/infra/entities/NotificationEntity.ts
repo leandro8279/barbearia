@@ -39,6 +39,9 @@ export class NotificationEntity {
   @Column({ type: 'varchar', length: 36, name: 'resend_of', nullable: true })
   resendOf!: string | null;
 
+  @Column({ type: 'varchar', length: 36, name: 'sent_from', nullable: true })
+  sentFrom!: string | null;
+
   @CreateDateColumn({ type: 'datetime', name: 'created_at' })
   createdAt!: Date;
 }

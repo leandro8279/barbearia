@@ -1,18 +1,14 @@
 import type { ResendNotificationResponseDTO } from '@/modules/settings/application/dtos/ResendNotificationDTO';
 import type { SaveNotificationSettingsResponseDTO } from '@/modules/settings/application/dtos/SaveNotificationSettingsDTO';
-import {
-    NOTIFICATION_CHANNELS, NOTIFICATION_STATUSES, NOTIFICATION_TYPES
-} from '@/modules/settings/domain/entities/Notification';
-import {
-    resendNotificationParamsSchema
-} from '@/modules/settings/presentation/validators/resendNotification.schema';
-import {
-    saveNotificationSettingsBodySchema
-} from '@/modules/settings/presentation/validators/saveNotificationSettings.schema';
+import { NOTIFICATION_CHANNELS, NOTIFICATION_STATUSES, NOTIFICATION_TYPES } from '@/modules/settings/domain/entities/Notification';
+import { markNotificationSentParamsSchema } from '@/modules/settings/presentation/validators/markNotificationSent.schema';
+import { resendNotificationParamsSchema } from '@/modules/settings/presentation/validators/resendNotification.schema';
+import { saveNotificationSettingsBodySchema } from '@/modules/settings/presentation/validators/saveNotificationSettings.schema';
 
 import { bearerAuth, errorContent, jsonContent, registry } from '@/shared/openapi/registry';
 import { z } from '@/shared/openapi/zod';
 
+import type { MarkNotificationSentResponseDTO } from '@/modules/settings/application/dtos/MarkNotificationSentDTO';
 export const NotificationSettingsSchema = registry.register(
   'NotificationSettings',
   z.object({
@@ -62,6 +58,7 @@ const NotificationListItemSchema = z.object({
   sentAt: z.string().datetime().nullable(),
   message: z.string().openapi({ example: 'Olá João, lembrete: seu horário com Rafael é amanhã, 25/11/2026 14:00.' }),
   resendOf: z.string().uuid().nullable(),
+  sentFrom: z.string().uuid().nullable(),
   customerName: z.string().openapi({ example: 'João Silva' }),
   customerPhone: z.string().openapi({ example: '62999998888' }),
   customerEmail: z.string().openapi({ example: 'joao@email.com' }),
@@ -98,6 +95,28 @@ registry.registerPath({
     403: { description: 'Sem permissão', content: errorContent },
     404: { description: 'Notificação não encontrada', content: errorContent },
     409: { description: 'O cliente não pode receber a mensagem pelo canal selecionado', content: errorContent },
+    422: { description: 'Id inválido', content: errorContent },
+  },
+});
+
+type AssertMarkSentDocMatchesDTO = MarkNotificationSentResponseDTO extends z.infer<typeof NotificationListItemSchema> ? true : never;
+export const assertMarkNotificationSentDocMatchesDTO: AssertMarkSentDocMatchesDTO = true;
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/admin/settings/notifications/{id}/mark-sent',
+  tags: ['Configurações'],
+  summary: 'Registrar envio manual de notificação (admin)',
+  description:
+    'Cria um novo registro "sent" a partir de uma notificação "ready" (envio manual via wa.me/mailto), com `sentFrom` apontando para a original, que permanece inalterada. Registra auditoria. Exige a permissão settings.write.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: { params: markNotificationSentParamsSchema },
+  responses: {
+    201: { description: 'Envio registrado', content: jsonContent(NotificationListItemSchema) },
+    401: { description: 'Token ausente, inválido ou expirado', content: errorContent },
+    403: { description: 'Sem permissão', content: errorContent },
+    404: { description: 'Notificação não encontrada', content: errorContent },
+    409: { description: 'Somente mensagens prontas podem ser registradas como enviadas', content: errorContent },
     422: { description: 'Id inválido', content: errorContent },
   },
 });

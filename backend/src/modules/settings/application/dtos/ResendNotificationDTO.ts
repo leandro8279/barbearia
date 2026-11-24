@@ -19,6 +19,7 @@ export interface NotificationListItemDTO {
   sentAt: string | null;
   message: string;
   resendOf: string | null;
+  sentFrom: string | null;
   customerName: string;
   customerPhone: string;
   customerEmail: string;
@@ -48,6 +49,7 @@ export function toNotificationListItem(
     sentAt: notification.sentAt?.toISOString() ?? null,
     message: notification.message,
     resendOf: notification.resendOf,
+    sentFrom: notification.sentFrom,
     customerName: customer.name || 'Cliente',
     customerPhone: customer.phone ?? '',
     customerEmail: customer.email ?? '',

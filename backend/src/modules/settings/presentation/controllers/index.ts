@@ -6,3 +6,4 @@ export * from '@/modules/settings/presentation/controllers/GetNotificationSettin
 export * from '@/modules/settings/presentation/controllers/SaveNotificationSettingsController';
 export * from '@/modules/settings/presentation/controllers/ResendNotificationController';
 export * from '@/modules/settings/presentation/controllers/GetBookingSettingsController';
+export * from '@/modules/settings/presentation/controllers/MarkNotificationSentController';

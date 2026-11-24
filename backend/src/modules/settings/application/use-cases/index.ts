@@ -6,3 +6,4 @@ export * from '@/modules/settings/application/use-cases/GetNotificationSettingsU
 export * from '@/modules/settings/application/use-cases/SaveNotificationSettingsUseCase';
 export * from '@/modules/settings/application/use-cases/ResendNotificationUseCase';
 export * from '@/modules/settings/application/use-cases/GetBookingSettingsUseCase';
+export * from '@/modules/settings/application/use-cases/MarkNotificationSentUseCase';

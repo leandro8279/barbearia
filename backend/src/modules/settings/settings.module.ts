@@ -6,6 +6,7 @@ import {
   GetBusinessHoursUseCase,
   GetBusinessSettingsUseCase,
   GetNotificationSettingsUseCase,
+  MarkNotificationSentUseCase,
   ResendNotificationUseCase,
   SaveBusinessHoursUseCase,
   SaveNotificationSettingsUseCase,
@@ -23,6 +24,7 @@ import {
   GetBusinessHoursController,
   GetBusinessSettingsController,
   GetNotificationSettingsController,
+  MarkNotificationSentController,
   ResendNotificationController,
   SaveBusinessHoursController,
   SaveNotificationSettingsController,
@@ -64,6 +66,7 @@ export function makeSettingsModule(): Router {
         new ResendNotificationUseCase(notificationRepository, userRepository, settingsRepository, auditLogger),
       ),
       getBookingSettings: new GetBookingSettingsController(new GetBookingSettingsUseCase(unitRepository, settingsRepository)),
+      markNotificationSent: new MarkNotificationSentController(new MarkNotificationSentUseCase(notificationRepository, userRepository, auditLogger)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );

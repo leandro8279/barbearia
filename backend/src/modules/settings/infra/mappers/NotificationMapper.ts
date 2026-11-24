@@ -13,6 +13,7 @@ export class NotificationMapper {
       scheduledAt: entity.scheduledAt,
       readyAt: entity.readyAt,
       sentAt: entity.sentAt,
+      sentFrom: entity.sentFrom,
       message: entity.message ?? '',
       resendOf: entity.resendOf,
       createdAt: entity.createdAt,
@@ -31,6 +32,7 @@ export class NotificationMapper {
       readyAt: notification.readyAt,
       sentAt: notification.sentAt,
       message: notification.message,
+      sentFrom: notification.sentFrom,
       resendOf: notification.resendOf,
       createdAt: notification.createdAt,
     };
