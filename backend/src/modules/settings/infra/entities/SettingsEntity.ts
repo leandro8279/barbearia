@@ -1,7 +1,10 @@
+import {
+    StoredNotificationSettings
+} from '@/modules/settings/domain/entities/NotificationSettings';
+
 import { Column, CreateDateColumn, Entity, Index, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 import type { BusinessSocials } from '@/modules/settings/domain/entities/BusinessSettings';
-
 export interface BusinessJson {
   name?: string;
   cnpj?: string;
@@ -26,7 +29,7 @@ export class SettingsEntity {
   booking!: Record<string, unknown>;
 
   @Column({ type: 'simple-json', default: '{}' })
-  notifications!: Record<string, unknown>;
+  notifications!: StoredNotificationSettings;
 
   @CreateDateColumn({ type: 'datetime', name: 'created_at' })
   createdAt!: Date;
