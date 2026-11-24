@@ -1,7 +1,7 @@
 import {
     StoredNotificationSettings
 } from '@/modules/settings/domain/entities/NotificationSettings';
-
+import type { StoredBookingSettings } from '@/modules/settings/domain/entities/BookingSettings';
 import { Column, CreateDateColumn, Entity, Index, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 import type { BusinessSocials } from '@/modules/settings/domain/entities/BusinessSettings';
@@ -26,7 +26,7 @@ export class SettingsEntity {
   business!: BusinessJson;
 
   @Column({ type: 'simple-json', default: '{}' })
-  booking!: Record<string, unknown>;
+  booking!: StoredBookingSettings;
 
   @Column({ type: 'simple-json', default: '{}' })
   notifications!: StoredNotificationSettings;
