@@ -3,6 +3,7 @@ import {
 } from '@/modules/settings/domain/entities/BusinessSettings';
 import { NotificationSettings } from '@/modules/settings/domain/entities/NotificationSettings';
 import { BusinessJson, SettingsEntity } from '@/modules/settings/infra/entities/SettingsEntity';
+import { BookingSettings } from '@/modules/settings/domain/entities/BookingSettings';
 
 export class SettingsMapper {
   static toBusinessDomain(entity: SettingsEntity): BusinessSettings {
@@ -47,4 +48,8 @@ export class SettingsMapper {
       reminderHours: settings.reminderHours,
     };
   }
+
+static toBookingDomain(entity: SettingsEntity): BookingSettings {
+    return BookingSettings.restore(entity.booking ?? {});
+}
 }
