@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
-import { Inbox } from 'lucide-react';
+import { RenderComponent } from '@/shared/components/render-component';
 import { Button } from '@/shared/ui/button';
+
+import { Inbox } from 'lucide-react';
 
 export interface EmptyStateProps {
   title: string;
@@ -14,15 +16,21 @@ export function EmptyState({ title, description, icon, actionLabel, onAction }: 
   return (
     <section className="flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 p-6 text-center" aria-live="polite">
       <span className="mb-3 text-muted-foreground" aria-hidden="true">
-        {icon ?? <Inbox className="size-8" />}
+        <RenderComponent condition={icon}>
+          <Inbox className="size-8" />
+        </RenderComponent>
       </span>
       <h2 className="text-lg font-semibold">{title}</h2>
-      {description && <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>}
-      {actionLabel && onAction && (
+
+      <RenderComponent condition={description}>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>
+      </RenderComponent>
+
+      <RenderComponent condition={actionLabel && onAction}>
         <Button className="mt-4 min-h-11" onClick={onAction}>
           {actionLabel}
         </Button>
-      )}
+      </RenderComponent>
     </section>
   );
 }

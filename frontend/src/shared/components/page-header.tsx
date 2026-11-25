@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { RenderComponent } from '@/shared/components/render-component';
 
 export interface PageHeaderProps {
   title: string;
@@ -13,9 +14,15 @@ export function PageHeader({ title, description, actions, eyebrow }: PageHeaderP
       <div className="min-w-0">
         {eyebrow && <p className="mb-1 text-sm font-semibold text-primary">{eyebrow}</p>}
         <h1 className="text-3xl font-semibold">{title}</h1>
-        {description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{description}</p>}
+
+        <RenderComponent condition={description}>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{description}</p>
+        </RenderComponent>
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+
+      <RenderComponent condition={actions}>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
+      </RenderComponent>
     </header>
   );
 }

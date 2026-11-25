@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+
+import { BookingStep, useBookingDraftStore } from '@/shared/stores/booking-draft-store';
+
 import { useLocation } from 'wouter';
-import { useBookingDraftStore, type BookingStep } from '@/shared/stores/booking-draft-store';
 
 const stepPaths: Record<BookingStep, string> = { services: '/agendar', barber: '/agendar/profissional', slot: '/agendar/horario', details: '/agendar/dados', review: '/agendar/revisao' };
 

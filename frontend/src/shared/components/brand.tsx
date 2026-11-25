@@ -1,3 +1,5 @@
+import { RenderComponent } from '@/shared/components/render-component';
+
 import { Scissors } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -11,7 +13,10 @@ export function Brand({ compact = false }: BrandProps) {
       <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <Scissors aria-hidden="true" className="size-[18px]" />
       </span>
-      {!compact && <span className="font-heading text-lg font-semibold uppercase tracking-[0.12em]">Barbearia</span>}
+
+      <RenderComponent condition={!compact}>
+        <span className="font-heading text-lg font-semibold uppercase tracking-[0.12em]">Barbearia</span>
+      </RenderComponent>
     </Link>
   );
 }

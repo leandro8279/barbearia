@@ -1,5 +1,7 @@
-import { AlertTriangle } from 'lucide-react';
+import { RenderComponent } from '@/shared/components/render-component';
 import { Button } from '@/shared/ui/button';
+
+import { AlertTriangle } from 'lucide-react';
 
 export interface ErrorStateProps {
   title?: string;
@@ -19,11 +21,12 @@ export function ErrorState({
       <AlertTriangle className="mb-3 size-8 text-destructive" aria-hidden="true" />
       <h2 className="text-lg font-semibold">{title}</h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>
-      {onRetry && (
+
+      <RenderComponent condition={onRetry}>
         <Button variant="outline" className="mt-4 min-h-11" onClick={onRetry}>
           {retryLabel}
         </Button>
-      )}
+      </RenderComponent>
     </section>
   );
 }

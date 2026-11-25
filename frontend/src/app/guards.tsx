@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
-import { Redirect } from 'wouter';
 import { useCan } from '@/shared/hooks/use-can';
 import { useSessionStore } from '@/shared/stores/session-store';
+
+import { Redirect } from 'wouter';
+
 import type { Permission, UserRole } from '@/shared/types/domain';
 
 interface GuardProps {

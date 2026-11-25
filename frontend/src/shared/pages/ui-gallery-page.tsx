@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import type { ColumnDef } from '@tanstack/react-table';
+
 import { BarberCard } from '@/shared/components/barber-card';
 import { CalendarGrid } from '@/shared/components/calendar-grid';
 import { CalendarPicker } from '@/shared/components/calendar-picker';
@@ -28,6 +28,7 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 
+import type { ColumnDef } from '@tanstack/react-table';
 interface DemoBooking {
   id: string;
   client: string;

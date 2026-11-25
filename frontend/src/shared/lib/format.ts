@@ -1,6 +1,7 @@
+import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
+
 import { format, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
 
 function dateInBusinessTimeZone(value: Date | string | number): Date {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {

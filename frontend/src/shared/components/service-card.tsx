@@ -1,10 +1,12 @@
-import { Clock3 } from 'lucide-react';
+import { PriceTag } from '@/shared/components/price-tag';
+import { RenderComponent } from '@/shared/components/render-component';
 import { formatDuration } from '@/shared/lib/format';
 import { cn } from '@/shared/lib/utils';
 import { Card, CardContent, CardFooter } from '@/shared/ui/card';
-import { PriceTag } from '@/shared/components/price-tag';
-import type { ReactNode } from 'react';
 
+import { Clock3 } from 'lucide-react';
+
+import type { ReactNode } from 'react';
 export interface ServiceCardProps {
   name: string;
   description?: string;
@@ -23,20 +25,29 @@ export function ServiceCard({ name, description, durationMinutes, priceCents, pr
       <CardContent className="flex min-h-28 items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="font-semibold">{name}</h3>
-          {description && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{description}</p>}
-          {!footer && (
+
+          <RenderComponent condition={description}>
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{description}</p>
+          </RenderComponent>
+
+          <RenderComponent condition={!footer}>
             <span className="mt-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
               <Clock3 className="size-4" aria-hidden="true" />
               {formatDuration(durationMinutes)}
             </span>
-          )}
+          </RenderComponent>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
-          {priceCaption && <span className="text-xs text-muted-foreground">{priceCaption}</span>}
+          <RenderComponent condition={priceCaption}>
+            <span className="text-xs text-muted-foreground">{priceCaption}</span>
+          </RenderComponent>
           <PriceTag cents={priceCents} />
         </div>
       </CardContent>
-      {footer && <CardFooter className="mt-auto justify-between gap-3 border-t pt-4">{footer}</CardFooter>}
+
+      <RenderComponent condition={footer}>
+        <CardFooter className="mt-auto justify-between gap-3 border-t pt-4">{footer}</CardFooter>
+      </RenderComponent>
     </Card>
   );
 

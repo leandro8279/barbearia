@@ -1,10 +1,12 @@
-import { QueryClient, QueryClientProvider, type Query } from '@tanstack/react-query';
 import { useEffect } from 'react';
+
 import { Router } from '@/app/router';
+import { Query, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 import { AppErrorBoundary } from '@/shared/components/app-error-boundary';
 import { syncOpenGraph } from '@/shared/lib/page-meta';
-import { TooltipProvider } from '@/shared/ui/tooltip';
 import { Toaster } from '@/shared/ui/sonner';
+import { TooltipProvider } from '@/shared/ui/tooltip';
 
 const entityStaleTimes: Record<string, number> = {
   appointments: 15_000,

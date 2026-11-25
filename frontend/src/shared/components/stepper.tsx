@@ -1,5 +1,6 @@
-import { Check } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+
+import { Check } from 'lucide-react';
 
 export interface StepperStep {
   label: string;

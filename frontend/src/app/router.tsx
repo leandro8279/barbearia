@@ -1,17 +1,22 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { Link, Redirect, Route, Switch, useLocation, useSearch } from 'wouter';
-import type { ReactNode } from 'react';
+
 import { RequireAuth, RequirePermission, RequireRole } from '@/app/guards';
+
 import { AccountLayout } from '@/modules/account/components/account-layout';
 import { AdminLayout } from '@/modules/admin/components/admin-layout';
 import { AuthLayout } from '@/modules/auth/components/auth-layout';
 import { BookingLayout } from '@/modules/booking/components/booking-layout';
 import { SiteLayout } from '@/modules/site/components/site-layout';
-import type { RouteMeta } from '@/shared/components/route-placeholder';
-import { setPageMetadata } from '@/shared/lib/page-meta';
-import { Button } from '@/shared/ui/button';
-import { useSessionStore } from '@/shared/stores/session-store';
 
+import { RenderComponent } from '@/shared/components/render-component';
+import { setPageMetadata } from '@/shared/lib/page-meta';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { Button } from '@/shared/ui/button';
+
+import { Link, Redirect, Route, Switch, useLocation, useSearch } from 'wouter';
+
+import type { ReactNode } from 'react';
+import type { RouteMeta } from '@/shared/components/route-placeholder';
 const RoutePlaceholder = lazy(() => import('@/shared/components/route-placeholder'));
 const LoginPage = lazy(() => import('@/modules/auth/pages/login-page'));
 const RegisterPage = lazy(() => import('@/modules/auth/pages/register-page'));
@@ -55,7 +60,7 @@ const BusinessSettingsPage = lazy(() => import('@/modules/admin/settings/pages/b
 const BusinessHoursPage = lazy(() => import('@/modules/admin/settings/pages/business-hours-page'));
 const BookingRulesPage = lazy(() => import('@/modules/admin/settings/pages/booking-rules-page'));
 const NotificationSettingsPage = lazy(() => import('@/modules/admin/settings/pages/notification-settings-page'));
-const DevUiPage = import.meta.env.DEV ? lazy(() => import('@/shared/pages/ui-gallery-page')) : null;
+const DevUiPage = import.meta.env.DEV ? lazy(() => import('@/shared/pages/ui-gallery-page')) : () => <div></div>;
 
 const definitions: RouteMeta[] = [
   { id: 'L01', title: 'Entrar', description: 'Acesse sua conta da Barbearia.', url: '/entrar', matchPath: '/entrar', access: 'Público', layout: 'auth' },
@@ -867,13 +872,15 @@ export function Router() {
           <RoutedPage route={route} />
         </Route>
       ))}
-      {DevUiPage && (
+
+      <RenderComponent condition={DevUiPage}>
         <Route path="/_ui">
           <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Carregando componentes...</div>}>
             <DevUiPage />
           </Suspense>
         </Route>
-      )}
+      </RenderComponent>
+
       <Route path="/403">
         <ForbiddenPage />
       </Route>
