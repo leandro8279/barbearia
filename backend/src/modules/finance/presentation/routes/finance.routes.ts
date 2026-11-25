@@ -7,6 +7,7 @@ import { RequestHandler, Router } from 'express';
 export interface FinanceControllers {
   getFinanceSummary: IController;
   listExpenses: IController;
+  listExpenseCategories: IController;
 }
 
 export function buildFinanceRoutes(controllers: FinanceControllers, auth: RequestHandler): Router {
@@ -14,6 +15,12 @@ export function buildFinanceRoutes(controllers: FinanceControllers, auth: Reques
 
   router.get('/admin/finance/summary', auth, requirePermission('finance.read'), ExpressControllerAdapter(controllers.getFinanceSummary));
   router.get('/admin/finance/expenses', auth, requirePermission('finance.read'), ExpressControllerAdapter(controllers.listExpenses));
+  router.get(
+    '/admin/finance/expense-categories',
+    auth,
+    requirePermission('finance.read'),
+    ExpressControllerAdapter(controllers.listExpenseCategories),
+  );
 
   return router;
 }

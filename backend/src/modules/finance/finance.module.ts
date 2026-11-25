@@ -1,8 +1,8 @@
 import { AppDataSource } from '@/config/database';
 
-import { GetFinanceSummaryUseCase, ListExpensesUseCase } from '@/modules/finance/application/use-cases';
+import { GetFinanceSummaryUseCase, ListExpenseCategoriesUseCase, ListExpensesUseCase } from '@/modules/finance/application/use-cases';
 import { TypeOrmExpenseRepository, TypeOrmFinanceSummaryRepository } from '@/modules/finance/infra/repositories';
-import { GetFinanceSummaryController, ListExpensesController } from '@/modules/finance/presentation/controllers';
+import { GetFinanceSummaryController, ListExpenseCategoriesController, ListExpensesController } from '@/modules/finance/presentation/controllers';
 import { buildFinanceRoutes } from '@/modules/finance/presentation/routes/finance.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
 
@@ -20,6 +20,7 @@ export function makeFinanceModule(): Router {
     {
       getFinanceSummary: new GetFinanceSummaryController(new GetFinanceSummaryUseCase(financeRepository)),
       listExpenses: new ListExpensesController(new ListExpensesUseCase(expenseRepository)),
+      listExpenseCategories: new ListExpenseCategoriesController(new ListExpenseCategoriesUseCase()),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );
