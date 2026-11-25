@@ -1,132 +1,132 @@
-import {useEffect, useMemo, useState} from 'react'
-import {useForm} from 'react-hook-form'
+import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
-import {zodResolver} from '@hookform/resolvers/zod'
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import {OpenCashTab} from '@/modules/admin/cash/api/cash'
-import {useCashTabDetail, useCloseCashTab} from '@/modules/admin/cash/hooks/use-cash'
-import {cashCloseSchema, CashCloseValues, type} from '@/modules/admin/cash/schemas/cash-close.schema'
+import { OpenCashTab } from '@/modules/admin/cash/api/cash';
+import { useCashTabDetail, useCloseCashTab } from '@/modules/admin/cash/hooks/use-cash';
+import { cashCloseSchema, CashCloseValues } from '@/modules/admin/cash/schemas/cash-close.schema';
 
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {ErrorState} from '@/shared/components/error-state'
-import {MoneyInput} from '@/shared/components/money-input'
-import {formatBRL} from '@/shared/lib/format'
-import {calculatePricing} from '@/shared/lib/pricing'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent} from '@/shared/ui/card'
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { ErrorState } from '@/shared/components/error-state';
+import { MoneyInput } from '@/shared/components/money-input';
+import { formatBRL } from '@/shared/lib/format';
+import { calculatePricing } from '@/shared/lib/pricing';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 interface CashCloseDialogProps {
-  open: boolean
-  tabId: number | null
-  openTabs: OpenCashTab[]
-  cashSessionOpen: boolean
-  tabListLoading: boolean
-  tabListError: boolean
-  onRetryTabList: () => void
-  onSelectTab: (id: number) => void
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  tabId: number | null;
+  openTabs: OpenCashTab[];
+  cashSessionOpen: boolean;
+  tabListLoading: boolean;
+  tabListError: boolean;
+  onRetryTabList: () => void;
+  onSelectTab: (id: number) => void;
+  onOpenChange: (open: boolean) => void;
 }
 
-const emptyFormValues: CashCloseValues = {cashAmountCents: 0, cashReceivedCents: 0, pixCents: 0, debitCents: 0, creditCents: 0, tipCents: 0, tipAllocations: []}
+const emptyFormValues: CashCloseValues = { cashAmountCents: 0, cashReceivedCents: 0, pixCents: 0, debitCents: 0, creditCents: 0, tipCents: 0, tipAllocations: [] };
 
-function splitTipEvenly(amountCents: number, barbers: {id: number}[]) {
-  if (!barbers.length) return []
-  const baseAmount = Math.floor(amountCents / barbers.length)
-  const extraCents = amountCents % barbers.length
-  return barbers.map((barber, index) => ({barberId: barber.id, amountCents: baseAmount + (index < extraCents ? 1 : 0)}))
+function splitTipEvenly(amountCents: number, barbers: { id: number }[]) {
+  if (!barbers.length) return [];
+  const baseAmount = Math.floor(amountCents / barbers.length);
+  const extraCents = amountCents % barbers.length;
+  return barbers.map((barber, index) => ({ barberId: barber.id, amountCents: baseAmount + (index < extraCents ? 1 : 0) }));
 }
 
-export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessionOpen, tabListLoading, tabListError, onRetryTabList, onSelectTab}: CashCloseDialogProps) {
-  const tabQuery = useCashTabDetail(tabId ?? 0)
-  const closeTab = useCloseCashTab()
-  const [formError, setFormError] = useState('')
-  const [discardOpen, setDiscardOpen] = useState(false)
+export function CashCloseDialog({ open, onOpenChange, tabId, openTabs, cashSessionOpen, tabListLoading, tabListError, onRetryTabList, onSelectTab }: CashCloseDialogProps) {
+  const tabQuery = useCashTabDetail(tabId ?? 0);
+  const closeTab = useCloseCashTab();
+  const [formError, setFormError] = useState('');
+  const [discardOpen, setDiscardOpen] = useState(false);
   const eligibleBarbers = useMemo(() => {
-    const detail = tabQuery.data
-    if (!detail) return []
-    const ids = [...new Set(detail.tab.items.map(item => item.barberId).filter((id): id is number => id !== null))]
-    return ids.map(id => ({id, name: detail.barbers.find(barber => barber.id === id)?.name ?? `Barbeiro #${id}`}))
-  }, [tabQuery.data])
-  const schema = useMemo(() => cashCloseSchema(eligibleBarbers.length), [eligibleBarbers.length])
-  const form = useForm<CashCloseValues>({resolver: zodResolver(schema), defaultValues: emptyFormValues, mode: 'onChange'})
-  const {reset, setValue, watch} = form
-  const values = watch()
-  const tab = tabQuery.data?.tab
+    const detail = tabQuery.data;
+    if (!detail) return [];
+    const ids = [...new Set(detail.tab.items.map((item) => item.barberId).filter((id): id is number => id !== null))];
+    return ids.map((id) => ({ id, name: detail.barbers.find((barber) => barber.id === id)?.name ?? `Barbeiro #${id}` }));
+  }, [tabQuery.data]);
+  const schema = useMemo(() => cashCloseSchema(eligibleBarbers.length), [eligibleBarbers.length]);
+  const form = useForm<CashCloseValues>({ resolver: zodResolver(schema), defaultValues: emptyFormValues, mode: 'onChange' });
+  const { reset, setValue, watch } = form;
+  const values = watch();
+  const tab = tabQuery.data?.tab;
   const pricing =
     tab ?
       calculatePricing(
-        tab.items.map(item => ({quantity: item.qty, unitPriceCents: item.unitPrice, discountCents: item.discount})),
-        tab.discount
+        tab.items.map((item) => ({ quantity: item.qty, unitPriceCents: item.unitPrice, discountCents: item.discount })),
+        tab.discount,
       )
-    : null
-  const tipCents = values.tipCents ?? 0
-  const totalDueCents = (pricing?.totalCents ?? 0) + tipCents
-  const paymentTotalCents = (values.cashAmountCents ?? 0) + (values.pixCents ?? 0) + (values.debitCents ?? 0) + (values.creditCents ?? 0)
-  const remainingCents = totalDueCents - paymentTotalCents
-  const cashChangeCents = Math.max(0, (values.cashReceivedCents ?? 0) - (values.cashAmountCents ?? 0))
-  const tipAllocationTotal = (values.tipAllocations ?? []).reduce((sum, allocation) => sum + allocation.amountCents, 0)
-  const busy = closeTab.isPending
-  const hasUnsavedChanges = form.formState.isDirty
+    : null;
+  const tipCents = values.tipCents ?? 0;
+  const totalDueCents = (pricing?.totalCents ?? 0) + tipCents;
+  const paymentTotalCents = (values.cashAmountCents ?? 0) + (values.pixCents ?? 0) + (values.debitCents ?? 0) + (values.creditCents ?? 0);
+  const remainingCents = totalDueCents - paymentTotalCents;
+  const cashChangeCents = Math.max(0, (values.cashReceivedCents ?? 0) - (values.cashAmountCents ?? 0));
+  const tipAllocationTotal = (values.tipAllocations ?? []).reduce((sum, allocation) => sum + allocation.amountCents, 0);
+  const busy = closeTab.isPending;
+  const hasUnsavedChanges = form.formState.isDirty;
 
   useEffect(() => {
     if (!open) {
-      reset(emptyFormValues)
-      setFormError('')
-      return
+      reset(emptyFormValues);
+      setFormError('');
+      return;
     }
     if (tab) {
-      reset({...emptyFormValues, tipAllocations: eligibleBarbers.map(barber => ({barberId: barber.id, amountCents: 0}))})
-      setFormError('')
+      reset({ ...emptyFormValues, tipAllocations: eligibleBarbers.map((barber) => ({ barberId: barber.id, amountCents: 0 })) });
+      setFormError('');
     }
-  }, [eligibleBarbers, open, reset, tab])
+  }, [eligibleBarbers, open, reset, tab]);
 
   useEffect(() => {
-    if (!open) return
+    if (!open) return;
     const frame = window.requestAnimationFrame(() => {
-      document.getElementById(tabId ? 'cash-close-cash-amount' : 'cash-close-tab-select')?.focus()
-    })
-    return () => window.cancelAnimationFrame(frame)
-  }, [open, openTabs.length, tabId, tab, tabListLoading])
+      document.getElementById(tabId ? 'cash-close-cash-amount' : 'cash-close-tab-select')?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, openTabs.length, tabId, tab, tabListLoading]);
 
   function requestClose(nextOpen: boolean) {
-    if (!nextOpen && busy) return
+    if (!nextOpen && busy) return;
     if (!nextOpen && hasUnsavedChanges) {
-      setDiscardOpen(true)
-      return
+      setDiscardOpen(true);
+      return;
     }
-    setFormError('')
-    onOpenChange(nextOpen)
+    setFormError('');
+    onOpenChange(nextOpen);
   }
 
   function setTipAmount(amountCents: number) {
-    setValue('tipCents', amountCents, {shouldDirty: true, shouldValidate: true})
-    setValue('tipAllocations', splitTipEvenly(amountCents, eligibleBarbers), {shouldDirty: true, shouldValidate: true})
-    setFormError('')
+    setValue('tipCents', amountCents, { shouldDirty: true, shouldValidate: true });
+    setValue('tipAllocations', splitTipEvenly(amountCents, eligibleBarbers), { shouldDirty: true, shouldValidate: true });
+    setFormError('');
   }
 
   async function submit(valuesToSubmit: CashCloseValues) {
-    if (!tab || tab.status !== 'open' || !pricing) return
+    if (!tab || tab.status !== 'open' || !pricing) return;
     if (valuesToSubmit.cashAmountCents + valuesToSubmit.pixCents + valuesToSubmit.debitCents + valuesToSubmit.creditCents !== pricing.totalCents + valuesToSubmit.tipCents) {
-      setFormError('A soma dos pagamentos deve ser igual ao total da comanda mais a gorjeta.')
-      return
+      setFormError('A soma dos pagamentos deve ser igual ao total da comanda mais a gorjeta.');
+      return;
     }
     const payments = [
-      {method: 'cash' as const, amountCents: valuesToSubmit.cashAmountCents},
-      {method: 'pix' as const, amountCents: valuesToSubmit.pixCents},
-      {method: 'debit' as const, amountCents: valuesToSubmit.debitCents},
-      {method: 'credit' as const, amountCents: valuesToSubmit.creditCents}
-    ].filter(payment => payment.amountCents > 0)
+      { method: 'cash' as const, amountCents: valuesToSubmit.cashAmountCents },
+      { method: 'pix' as const, amountCents: valuesToSubmit.pixCents },
+      { method: 'debit' as const, amountCents: valuesToSubmit.debitCents },
+      { method: 'credit' as const, amountCents: valuesToSubmit.creditCents },
+    ].filter((payment) => payment.amountCents > 0);
     try {
-      await closeTab.mutateAsync({id: tab.id, input: {tipCents: valuesToSubmit.tipCents, tipAllocations: valuesToSubmit.tipAllocations, payments}})
-      reset(emptyFormValues)
-      setFormError('')
-      onOpenChange(false)
+      await closeTab.mutateAsync({ id: tab.id, input: { tipCents: valuesToSubmit.tipCents, tipAllocations: valuesToSubmit.tipAllocations, payments } });
+      reset(emptyFormValues);
+      setFormError('');
+      onOpenChange(false);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível fechar a conta. Nenhuma alteração foi gravada.')
+      setFormError(error instanceof Error ? error.message : 'Não foi possível fechar a conta. Nenhuma alteração foi gravada.');
     }
   }
 
@@ -149,12 +149,12 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
               : tabListLoading ?
                 <Skeleton className="h-11 rounded-md" />
               : openTabs.length ?
-                <Select value="" onValueChange={value => onSelectTab(Number(value))}>
+                <Select value="" onValueChange={(value) => onSelectTab(Number(value))}>
                   <SelectTrigger id="cash-close-tab-select" className="min-h-11 w-full">
                     <SelectValue placeholder="Selecione uma comanda aberta" />
                   </SelectTrigger>
                   <SelectContent>
-                    {openTabs.map(openTab => (
+                    {openTabs.map((openTab) => (
                       <SelectItem key={openTab.id} value={String(openTab.id)}>
                         #{openTab.id} · {openTab.customerName} · {formatBRL(openTab.totalCents)}
                       </SelectItem>
@@ -201,7 +201,7 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
                       <p className="text-sm text-muted-foreground">A gorjeta não gera comissão sobre os itens.</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {[5, 10, 15].map(percentage => (
+                      {[5, 10, 15].map((percentage) => (
                         <Button key={percentage} type="button" variant="outline" className="min-h-11" disabled={busy} onClick={() => setTipAmount(Math.round((pricing.totalCents * percentage) / 100))}>
                           {percentage}%
                         </Button>
@@ -211,16 +211,16 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
                   <FormField
                     control={form.control}
                     name="tipCents"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Valor livre</FormLabel>
                         <FormControl>
                           <MoneyInput
                             value={field.value}
-                            onValueChange={value => {
-                              field.onChange(value)
-                              setValue('tipAllocations', splitTipEvenly(value, eligibleBarbers), {shouldDirty: true, shouldValidate: true})
-                              setFormError('')
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              setValue('tipAllocations', splitTipEvenly(value, eligibleBarbers), { shouldDirty: true, shouldValidate: true });
+                              setFormError('');
                             }}
                             aria-label="Valor da gorjeta"
                             disabled={busy}
@@ -244,20 +244,21 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
                           variant="outline"
                           className="min-h-11"
                           disabled={busy || tipCents === 0}
-                          onClick={() => setValue('tipAllocations', splitTipEvenly(tipCents, eligibleBarbers), {shouldDirty: true, shouldValidate: true})}>
+                          onClick={() => setValue('tipAllocations', splitTipEvenly(tipCents, eligibleBarbers), { shouldDirty: true, shouldValidate: true })}
+                        >
                           Dividir igualmente
                         </Button>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
-                        {eligibleBarbers.map(barber => {
-                          const allocationIndex = values.tipAllocations.findIndex(allocation => allocation.barberId === barber.id)
-                          if (allocationIndex < 0) return null
+                        {eligibleBarbers.map((barber) => {
+                          const allocationIndex = values.tipAllocations.findIndex((allocation) => allocation.barberId === barber.id);
+                          if (allocationIndex < 0) return null;
                           return (
                             <FormField
                               key={barber.id}
                               control={form.control}
                               name={`tipAllocations.${allocationIndex}.amountCents`}
-                              render={({field}) => (
+                              render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>{barber.name}</FormLabel>
                                   <FormControl>
@@ -267,7 +268,7 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
                                 </FormItem>
                               )}
                             />
-                          )
+                          );
                         })}
                       </div>
                       {tipAllocationTotal !== tipCents && (
@@ -295,7 +296,7 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
                     <FormField
                       control={form.control}
                       name="cashAmountCents"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Parte paga em dinheiro</FormLabel>
                           <FormControl>
@@ -308,7 +309,7 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
                     <FormField
                       control={form.control}
                       name="cashReceivedCents"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Dinheiro recebido</FormLabel>
                           <FormControl>
@@ -320,16 +321,16 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
                     />
                     {(
                       [
-                        {name: 'pixCents', label: 'Pix'},
-                        {name: 'debitCents', label: 'Débito'},
-                        {name: 'creditCents', label: 'Crédito'}
+                        { name: 'pixCents', label: 'Pix' },
+                        { name: 'debitCents', label: 'Débito' },
+                        { name: 'creditCents', label: 'Crédito' },
                       ] as const
-                    ).map(method => (
+                    ).map((method) => (
                       <FormField
                         key={method.name}
                         control={form.control}
                         name={method.name}
-                        render={({field}) => (
+                        render={({ field }) => (
                           <FormItem>
                             <FormLabel>{method.label}</FormLabel>
                             <FormControl>
@@ -400,12 +401,12 @@ export function CashCloseDialog({open, onOpenChange, tabId, openTabs, cashSessio
         confirmLabel="Descartar"
         destructive
         onConfirm={() => {
-          setDiscardOpen(false)
-          reset(emptyFormValues)
-          setFormError('')
-          onOpenChange(false)
+          setDiscardOpen(false);
+          reset(emptyFormValues);
+          setFormError('');
+          onOpenChange(false);
         }}
       />
     </>
-  )
+  );
 }
