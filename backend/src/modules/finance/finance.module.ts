@@ -1,8 +1,8 @@
 import { AppDataSource } from '@/config/database';
 
-import { GetFinanceSummaryUseCase } from '@/modules/finance/application/use-cases/GetFinanceSummaryUseCase';
-import { TypeOrmFinanceSummaryRepository } from '@/modules/finance/infra/repositories/TypeOrmFinanceSummaryRepository';
-import { GetFinanceSummaryController } from '@/modules/finance/presentation/controllers/GetFinanceSummaryController';
+import { GetFinanceSummaryUseCase, ListExpensesUseCase } from '@/modules/finance/application/use-cases';
+import { TypeOrmExpenseRepository, TypeOrmFinanceSummaryRepository } from '@/modules/finance/infra/repositories';
+import { GetFinanceSummaryController, ListExpensesController } from '@/modules/finance/presentation/controllers';
 import { buildFinanceRoutes } from '@/modules/finance/presentation/routes/finance.routes';
 import { TypeOrmUserRepository } from '@/modules/users';
 
@@ -14,10 +14,12 @@ import { Router } from 'express';
 export function makeFinanceModule(): Router {
   const userRepository = new TypeOrmUserRepository(AppDataSource);
   const financeRepository = new TypeOrmFinanceSummaryRepository(AppDataSource);
+  const expenseRepository = new TypeOrmExpenseRepository(AppDataSource);
 
   return buildFinanceRoutes(
     {
       getFinanceSummary: new GetFinanceSummaryController(new GetFinanceSummaryUseCase(financeRepository)),
+      listExpenses: new ListExpensesController(new ListExpensesUseCase(expenseRepository)),
     },
     makeAuthMiddleware(tokenProvider, userRepository),
   );

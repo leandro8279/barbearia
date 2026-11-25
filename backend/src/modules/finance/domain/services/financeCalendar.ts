@@ -1,12 +1,12 @@
-/** A barbearia opera em America/Sao_Paulo (UTC-3, sem horário de verão). */
 const LOCAL_UTC_OFFSET_MS = -3 * 60 * 60 * 1000;
 const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Período inclusivo nas duas pontas. */
 export interface FinancePeriod {
   start: Date;
   end: Date;
 }
+
+export const startOfLocalDay = (date: Date): Date => new Date(`${localDateString(date)}T00:00:00.000-03:00`);
 
 export const isDateOnly = (value: string): boolean => DATE_ONLY_REGEX.test(value);
 
@@ -16,7 +16,6 @@ export function localDateString(date: Date): string {
 
 export const monthKey = (date: Date): string => localDateString(date).slice(0, 7);
 
-/** `AAAA-MM-DD` vale no fuso local (início ou fim do dia); qualquer outro texto passa por `new Date`. */
 export function parseBoundary(value: string, endOfDay: boolean): Date | null {
   const input = value.trim();
 
@@ -39,7 +38,6 @@ export function resolvePeriod(from: string, to: string): FinancePeriod | null {
   return start && end && end.getTime() >= start.getTime() ? { start, end } : null;
 }
 
-/** Janela imediatamente anterior, com a mesma duração. */
 export function previousPeriod({ start, end }: FinancePeriod): FinancePeriod {
   const duration = end.getTime() - start.getTime() + 1;
 

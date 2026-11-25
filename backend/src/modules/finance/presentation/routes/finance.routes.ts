@@ -6,12 +6,14 @@ import { RequestHandler, Router } from 'express';
 
 export interface FinanceControllers {
   getFinanceSummary: IController;
+  listExpenses: IController;
 }
 
 export function buildFinanceRoutes(controllers: FinanceControllers, auth: RequestHandler): Router {
   const router = Router();
 
   router.get('/admin/finance/summary', auth, requirePermission('finance.read'), ExpressControllerAdapter(controllers.getFinanceSummary));
+  router.get('/admin/finance/expenses', auth, requirePermission('finance.read'), ExpressControllerAdapter(controllers.listExpenses));
 
   return router;
 }
