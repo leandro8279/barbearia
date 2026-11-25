@@ -1,6 +1,7 @@
 import { makeAuthModule } from '@/modules/auth';
 import { makeCatalogModule } from '@/modules/catalog';
 import { makeCustomersModule } from '@/modules/customers';
+import { makeFinanceModule } from '@/modules/finance';
 import { makeSettingsModule } from '@/modules/settings';
 import { makeTeamModule } from '@/modules/team';
 
@@ -14,5 +15,7 @@ export function registerModules(): Router {
   router.use(makeTeamModule());
   router.use(makeCustomersModule());
   router.use(makeSettingsModule());
+  router.use(makeFinanceModule());
+
   return router;
 }
