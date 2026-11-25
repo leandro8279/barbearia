@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import type { AccountAddress } from '@/modules/account/api/profile';
-import { accountAddressSchema, type AccountAddressValues } from '@/modules/account/schemas/account-profile.schema';
+import { AccountAddress } from '@/modules/account/api/profile';
+import { AccountAddressValues } from '@/modules/account/schemas/account-profile.schema';
+
 import { Button } from '@/shared/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
+
+import { useAccountAddressDrawer } from './useAccountAddressDrawer';
 
 interface AccountAddressDrawerProps {
   open: boolean;
@@ -16,57 +16,18 @@ interface AccountAddressDrawerProps {
   isPending: boolean;
 }
 
-const emptyAddress: AccountAddressValues = { label: 'Casa', zip: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', reference: '' };
-
 export function AccountAddressDrawer({ open, address, onOpenChange, onSave, isPending }: AccountAddressDrawerProps) {
-  const form = useForm<AccountAddressValues>({ resolver: zodResolver(accountAddressSchema), defaultValues: emptyAddress });
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    form.reset(
-      address ?
-        {
-          label: address.label,
-          zip: address.zip,
-          street: address.street,
-          number: address.number,
-          complement: address.complement,
-          neighborhood: address.neighborhood,
-          city: address.city,
-          state: address.state,
-          reference: address.reference,
-        }
-      : emptyAddress,
-    );
-  }, [address, form, open]);
-
-  async function submit(values: AccountAddressValues) {
-    setSubmitting(true);
-    form.clearErrors('root.server');
-    try {
-      await onSave(values);
-      form.reset(values);
-    } catch (error) {
-      form.setError('root.server', { type: 'server', message: error instanceof Error ? error.message : 'Não foi possível salvar o endereço.' });
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen && form.formState.isDirty && !submitting && !window.confirm('Descartar as alterações deste endereço?')) return;
-    onOpenChange(nextOpen);
-  }
+  const { form, action } = useAccountAddressDrawer({ onOpenChange, onSave });
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
+    <Sheet open={open} onOpenChange={action.handleOpenChange}>
       <SheetContent side="right" className="w-[min(94vw,34rem)] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{address ? 'Editar endereço' : 'Adicionar endereço'}</SheetTitle>
           <SheetDescription>Salve um endereço para facilitar seus próximos agendamentos.</SheetDescription>
         </SheetHeader>
         <Form {...form}>
-          <form className="space-y-4 px-4 pb-5" onSubmit={form.handleSubmit(submit)}>
+          <form className="space-y-4 px-4 pb-5" onSubmit={form.handleSubmit(action.submit)}>
             <div className="grid gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
