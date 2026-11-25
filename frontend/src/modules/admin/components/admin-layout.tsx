@@ -1,64 +1,64 @@
-import {Bell, CalendarCheck2, CalendarDays, ChevronDown, CircleDollarSign, ContactRound, LayoutDashboard, Menu, Search, Settings2, Scissors, UsersRound} from 'lucide-react'
-import type {ReactNode} from 'react'
-import {Link} from 'wouter'
-import {useSessionStore} from '@/shared/stores/session-store'
-import type {Permission} from '@/shared/types/domain'
-import {Brand} from '@/shared/components/brand'
-import {Button} from '@/shared/ui/button'
-import {Input} from '@/shared/ui/input'
-import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from '@/shared/ui/sheet'
+import { Bell, CalendarCheck2, CalendarDays, ChevronDown, CircleDollarSign, ContactRound, LayoutDashboard, Menu, Search, Settings2, Scissors, UsersRound } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Link } from 'wouter';
+import { useSessionStore } from '@/shared/stores/session-store';
+import type { Permission } from '@/shared/types/domain';
+import { Brand } from '@/shared/components/brand';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/ui/sheet';
 
-const navItems: {href: string; label: string; icon: typeof LayoutDashboard; permission: Permission}[] = [
-  {href: '/admin', label: 'Visão geral', icon: LayoutDashboard, permission: 'agenda.read'},
-  {href: '/admin/meu-dia', label: 'Meu dia', icon: CalendarCheck2, permission: 'agenda.read'},
-  {href: '/admin/agenda', label: 'Agenda', icon: CalendarDays, permission: 'agenda.read'},
-  {href: '/admin/caixa', label: 'Caixa', icon: CircleDollarSign, permission: 'cash.read'},
-  {href: '/admin/servicos', label: 'Catálogo', icon: Scissors, permission: 'catalog.read'},
-  {href: '/admin/clientes', label: 'Clientes', icon: ContactRound, permission: 'customers.read'},
-  {href: '/admin/equipe', label: 'Equipe', icon: UsersRound, permission: 'team.read'},
-  {href: '/admin/comissoes', label: 'Comissões', icon: CircleDollarSign, permission: 'team.read'},
-  {href: '/admin/usuarios', label: 'Usuários', icon: UsersRound, permission: 'team.manage'},
-  {href: '/admin/financeiro', label: 'Financeiro', icon: CircleDollarSign, permission: 'finance.read'},
-  {href: '/admin/config', label: 'Configurações', icon: Settings2, permission: 'settings.read'}
-]
+const navItems: { href: string; label: string; icon: typeof LayoutDashboard; permission: Permission }[] = [
+  { href: '/admin', label: 'Visão geral', icon: LayoutDashboard, permission: 'agenda.read' },
+  { href: '/admin/meu-dia', label: 'Meu dia', icon: CalendarCheck2, permission: 'agenda.read' },
+  { href: '/admin/agenda', label: 'Agenda', icon: CalendarDays, permission: 'agenda.read' },
+  { href: '/admin/caixa', label: 'Caixa', icon: CircleDollarSign, permission: 'cash.read' },
+  { href: '/admin/servicos', label: 'Catálogo', icon: Scissors, permission: 'catalog.read' },
+  { href: '/admin/clientes', label: 'Clientes', icon: ContactRound, permission: 'customers.read' },
+  { href: '/admin/equipe', label: 'Equipe', icon: UsersRound, permission: 'team.read' },
+  { href: '/admin/comissoes', label: 'Comissões', icon: CircleDollarSign, permission: 'team.read' },
+  { href: '/admin/usuarios', label: 'Usuários', icon: UsersRound, permission: 'team.manage' },
+  { href: '/admin/financeiro', label: 'Financeiro', icon: CircleDollarSign, permission: 'finance.read' },
+  { href: '/admin/config', label: 'Configurações', icon: Settings2, permission: 'settings.read' },
+];
 
 const roleGrants: Record<string, string[]> = {
   customer: [],
   barber: ['agenda.read', 'agenda.write', 'customers.read', 'catalog.read', 'commissions.read'],
   reception: ['agenda.*', 'cash.*', 'customers.*', 'catalog.read'],
   manager: ['*'],
-  admin: ['*']
-}
+  admin: ['*'],
+};
 
 function canNavigate(user: NonNullable<ReturnType<typeof useSessionStore.getState>['user']>, permission: Permission) {
-  const grants = [...(roleGrants[user.role] ?? []), ...user.permissions]
-  return grants.some(grant => grant === '*' || grant === permission || (grant.endsWith('.*') && permission.startsWith(grant.slice(0, -1))))
+  const grants = [...(roleGrants[user.role] ?? []), ...user.permissions];
+  return grants.some((grant) => grant === '*' || grant === permission || (grant.endsWith('.*') && permission.startsWith(grant.slice(0, -1))));
 }
 
 interface AdminLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 function AdminNav() {
-  const user = useSessionStore(state => state.user)
-  const visibleItems = navItems.filter(item => {
-    if (!user) return false
-    if (canNavigate(user, item.permission)) return true
-    return user.role === 'barber' && ['/admin/equipe', '/admin/comissoes'].includes(item.href)
-  })
+  const user = useSessionStore((state) => state.user);
+  const visibleItems = navItems.filter((item) => {
+    if (!user) return false;
+    if (canNavigate(user, item.permission)) return true;
+    return user.role === 'barber' && ['/admin/equipe', '/admin/comissoes'].includes(item.href);
+  });
   return (
     <nav aria-label="Navegação administrativa" className="space-y-1">
-      {visibleItems.map(({href, label, icon: Icon}) => (
+      {visibleItems.map(({ href, label, icon: Icon }) => (
         <Link key={href} href={href} className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
           <Icon className="size-4 shrink-0" />
           {label}
         </Link>
       ))}
     </nav>
-  )
+  );
 }
 
-export function AdminLayout({children}: AdminLayoutProps) {
+export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
       <aside className="hidden border-r border-border bg-card/50 px-4 py-5 md:block">
@@ -102,5 +102,5 @@ export function AdminLayout({children}: AdminLayoutProps) {
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-9">{children}</main>
       </div>
     </div>
-  )
+  );
 }

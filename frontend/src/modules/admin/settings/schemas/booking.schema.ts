@@ -1,4 +1,4 @@
-import {z} from 'zod'
+import { z } from 'zod';
 
 export const bookingSchema = z.object({
   slotGranularityMin: z.union([z.literal(15), z.literal(30)]),
@@ -9,7 +9,7 @@ export const bookingSchema = z.object({
   rescheduleBeforeHours: z.number().int().min(0).max(720),
   maxReschedules: z.number().int().min(0).max(20),
   autoConfirm: z.boolean(),
-  maxFutureAppointments: z.number().int().min(1).max(50)
-})
+  maxFutureAppointments: z.number().int().min(1).max(50),
+});
 
-export type BookingFormValues = z.infer<typeof bookingSchema>
+export type BookingFormValues = z.infer<typeof bookingSchema>;

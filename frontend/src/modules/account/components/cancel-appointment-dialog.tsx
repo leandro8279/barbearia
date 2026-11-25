@@ -1,87 +1,88 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {useMutation, useQueryClient} from '@tanstack/react-query'
-import {toast} from 'sonner'
-import {cancelMyAppointment, type CustomerAppointmentDetail} from '@/modules/account/api/appointments'
-import {cancelAppointmentSchema, type CancelAppointmentValues} from '@/modules/account/schemas/cancel-appointment.schema'
-import {useBookingPolicy} from '@/modules/booking/hooks/use-booking-data'
-import {Button} from '@/shared/ui/button'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {RadioGroup, RadioGroupItem} from '@/shared/ui/radio-group'
-import {Textarea} from '@/shared/ui/textarea'
-import {ResponsiveAccountOverlay} from '@/modules/account/components/responsive-account-overlay'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { cancelMyAppointment, type CustomerAppointmentDetail } from '@/modules/account/api/appointments';
+import { cancelAppointmentSchema, type CancelAppointmentValues } from '@/modules/account/schemas/cancel-appointment.schema';
+import { useBookingPolicy } from '@/modules/booking/hooks/use-booking-data';
+import { Button } from '@/shared/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/shared/ui/radio-group';
+import { Textarea } from '@/shared/ui/textarea';
+import { ResponsiveAccountOverlay } from '@/modules/account/components/responsive-account-overlay';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
 
 interface CancelAppointmentDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  appointment?: CustomerAppointmentDetail
-  loadingAppointment: boolean
-  appointmentError: string | null
-  onRetryAppointment: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  appointment?: CustomerAppointmentDetail;
+  loadingAppointment: boolean;
+  appointmentError: string | null;
+  onRetryAppointment: () => void;
 }
 
 const reasons = [
-  {value: 'change_of_plans', label: 'Mudança de planos'},
-  {value: 'schedule_conflict', label: 'Conflito de horário'},
-  {value: 'other', label: 'Outro motivo'}
-] as const
+  { value: 'change_of_plans', label: 'Mudança de planos' },
+  { value: 'schedule_conflict', label: 'Conflito de horário' },
+  { value: 'other', label: 'Outro motivo' },
+] as const;
 
-export function CancelAppointmentDialog({open, onOpenChange, appointment, loadingAppointment, appointmentError, onRetryAppointment}: CancelAppointmentDialogProps) {
-  const queryClient = useQueryClient()
-  const policyQuery = useBookingPolicy()
-  const [confirmDiscard, setConfirmDiscard] = useState(false)
-  const form = useForm<CancelAppointmentValues>({resolver: zodResolver(cancelAppointmentSchema), defaultValues: {reason: 'change_of_plans', details: ''}})
+export function CancelAppointmentDialog({ open, onOpenChange, appointment, loadingAppointment, appointmentError, onRetryAppointment }: CancelAppointmentDialogProps) {
+  const queryClient = useQueryClient();
+  const policyQuery = useBookingPolicy();
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const form = useForm<CancelAppointmentValues>({ resolver: zodResolver(cancelAppointmentSchema), defaultValues: { reason: 'change_of_plans', details: '' } });
   const cancelMutation = useMutation({
     mutationFn: async (values: CancelAppointmentValues) => {
-      if (!appointment) throw new Error('Não foi possível localizar este agendamento.')
-      const selectedReason = reasons.find(item => item.value === values.reason)?.label ?? 'Outro motivo'
-      const reason = values.reason === 'other' ? values.details?.trim() : selectedReason
-      return cancelMyAppointment(appointment.id, reason || selectedReason)
+      if (!appointment) throw new Error('Não foi possível localizar este agendamento.');
+      const selectedReason = reasons.find((item) => item.value === values.reason)?.label ?? 'Outro motivo';
+      const reason = values.reason === 'other' ? values.details?.trim() : selectedReason;
+      return cancelMyAppointment(appointment.id, reason || selectedReason);
     },
     onSuccess: async () => {
-      toast.success('Agendamento cancelado.')
-      await queryClient.invalidateQueries({queryKey: ['appointments']})
-      await queryClient.invalidateQueries({queryKey: ['availability-days']})
-      await queryClient.invalidateQueries({queryKey: ['availability-slots']})
-      form.reset({reason: 'change_of_plans', details: ''})
-      onOpenChange(false)
+      toast.success('Agendamento cancelado.');
+      await queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      await queryClient.invalidateQueries({ queryKey: ['availability-days'] });
+      await queryClient.invalidateQueries({ queryKey: ['availability-slots'] });
+      form.reset({ reason: 'change_of_plans', details: '' });
+      onOpenChange(false);
     },
-    onError: error => {
-      form.setError('root.server', {type: 'server', message: error instanceof Error ? error.message : 'Não foi possível cancelar. Tente novamente.'})
-    }
-  })
+    onError: (error) => {
+      form.setError('root.server', { type: 'server', message: error instanceof Error ? error.message : 'Não foi possível cancelar. Tente novamente.' });
+    },
+  });
 
   useEffect(() => {
-    if (!open) return
-    form.reset({reason: 'change_of_plans', details: ''})
-  }, [form, open, appointment?.id])
+    if (!open) return;
+    form.reset({ reason: 'change_of_plans', details: '' });
+  }, [form, open, appointment?.id]);
 
-  const canCancel = Boolean(appointment && ['pending', 'confirmed', 'checked_in'].includes(appointment.status) && new Date(appointment.start).getTime() > Date.now())
-  const cancelBeforeHours = policyQuery.data?.cancelBeforeHours
-  const isOutsideFreeWindow = Boolean(appointment && cancelBeforeHours !== undefined && (new Date(appointment.start).getTime() - Date.now()) / 3_600_000 < cancelBeforeHours)
+  const canCancel = Boolean(appointment && ['pending', 'confirmed', 'checked_in'].includes(appointment.status) && new Date(appointment.start).getTime() > Date.now());
+  const cancelBeforeHours = policyQuery.data?.cancelBeforeHours;
+  const isOutsideFreeWindow = Boolean(appointment && cancelBeforeHours !== undefined && (new Date(appointment.start).getTime() - Date.now()) / 3_600_000 < cancelBeforeHours);
 
   function requestClose() {
     if (form.formState.isDirty) {
-      setConfirmDiscard(true)
-      return
+      setConfirmDiscard(true);
+      return;
     }
-    onOpenChange(false)
+    onOpenChange(false);
   }
 
   return (
     <>
       <ResponsiveAccountOverlay
         open={open}
-        onOpenChange={next => {
+        onOpenChange={(next) => {
           if (!cancelMutation.isPending) {
-            if (next) onOpenChange(true)
-            else requestClose()
+            if (next) onOpenChange(true);
+            else requestClose();
           }
         }}
         title="Cancelar agendamento"
-        description="Confira a política e informe o motivo antes de confirmar.">
+        description="Confira a política e informe o motivo antes de confirmar."
+      >
         <div className="space-y-5">
           {!appointment ?
             loadingAppointment ?
@@ -123,16 +124,16 @@ export function CancelAppointmentDialog({open, onOpenChange, appointment, loadin
               )}
 
               <Form {...form}>
-                <form className="space-y-5" onSubmit={form.handleSubmit(values => cancelMutation.mutate(values))}>
+                <form className="space-y-5" onSubmit={form.handleSubmit((values) => cancelMutation.mutate(values))}>
                   <FormField
                     control={form.control}
                     name="reason"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Motivo do cancelamento</FormLabel>
                         <FormControl>
                           <RadioGroup value={field.value} onValueChange={field.onChange} className="gap-2">
-                            {reasons.map(reason => (
+                            {reasons.map((reason) => (
                               <label key={reason.value} htmlFor={`cancel-reason-${reason.value}`} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2">
                                 <RadioGroupItem id={`cancel-reason-${reason.value}`} value={reason.value} />
                                 <span className="text-sm">{reason.label}</span>
@@ -149,7 +150,7 @@ export function CancelAppointmentDialog({open, onOpenChange, appointment, loadin
                     <FormField
                       control={form.control}
                       name="details"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Conte o motivo</FormLabel>
                           <FormControl>
@@ -183,11 +184,11 @@ export function CancelAppointmentDialog({open, onOpenChange, appointment, loadin
         confirmLabel="Descartar"
         destructive
         onConfirm={() => {
-          setConfirmDiscard(false)
-          form.reset({reason: 'change_of_plans', details: ''})
-          onOpenChange(false)
+          setConfirmDiscard(false);
+          form.reset({ reason: 'change_of_plans', details: '' });
+          onOpenChange(false);
         }}
       />
     </>
-  )
+  );
 }

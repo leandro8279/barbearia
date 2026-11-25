@@ -1,92 +1,92 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {CalendarClock, Clock3, UserRound} from 'lucide-react'
-import {useLocation} from 'wouter'
-import {BookingSummaryFooter} from '@/modules/booking/components/booking-summary-footer'
-import {useAvailableBarbers, useBookingEstimate} from '@/modules/booking/hooks/use-booking-data'
-import {customerDetailsSchema, type CustomerDetailsValues} from '@/modules/booking/schemas/customer-details.schema'
-import {Countdown} from '@/shared/components/countdown'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {PhoneInput} from '@/shared/components/phone-input'
-import {formatBRL, formatDateTime, formatDuration} from '@/shared/lib/format'
-import {useBookingDraftStore} from '@/shared/stores/booking-draft-store'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { CalendarClock, Clock3, UserRound } from 'lucide-react';
+import { useLocation } from 'wouter';
+import { BookingSummaryFooter } from '@/modules/booking/components/booking-summary-footer';
+import { useAvailableBarbers, useBookingEstimate } from '@/modules/booking/hooks/use-booking-data';
+import { customerDetailsSchema, type CustomerDetailsValues } from '@/modules/booking/schemas/customer-details.schema';
+import { Countdown } from '@/shared/components/countdown';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { PhoneInput } from '@/shared/components/phone-input';
+import { formatBRL, formatDateTime, formatDuration } from '@/shared/lib/format';
+import { useBookingDraftStore } from '@/shared/stores/booking-draft-store';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 export default function CustomerDetailsStepPage() {
-  const [, navigate] = useLocation()
-  const serviceIds = useBookingDraftStore(state => state.serviceIds)
-  const barberId = useBookingDraftStore(state => state.barberId)
-  const date = useBookingDraftStore(state => state.date)
-  const time = useBookingDraftStore(state => state.time)
-  const holdKey = useBookingDraftStore(state => state.holdKey)
-  const holdExpiresAt = useBookingDraftStore(state => state.holdExpiresAt)
-  const customerName = useBookingDraftStore(state => state.customerName)
-  const customerPhone = useBookingDraftStore(state => state.customerPhone)
-  const setCustomer = useBookingDraftStore(state => state.setCustomer)
-  const setSlot = useBookingDraftStore(state => state.setSlot)
-  const setStep = useBookingDraftStore(state => state.setStep)
-  const [reservationExpired, setReservationExpired] = useState(() => !holdExpiresAt || !Number.isFinite(Date.parse(holdExpiresAt)) || Date.parse(holdExpiresAt) <= Date.now())
-  const form = useForm<CustomerDetailsValues>({resolver: zodResolver(customerDetailsSchema), defaultValues: {name: customerName, phone: customerPhone}})
-  const barbersQuery = useAvailableBarbers(serviceIds)
-  const estimateQuery = useBookingEstimate(serviceIds, barberId)
-  const hasReservationDetails = Boolean(serviceIds.length && barberId && date && time && holdKey && holdExpiresAt)
-  const hasActiveReservation = hasReservationDetails && !reservationExpired
-  const selectedBarber = barbersQuery.data?.find(barber => String(barber.id) === barberId)
+  const [, navigate] = useLocation();
+  const serviceIds = useBookingDraftStore((state) => state.serviceIds);
+  const barberId = useBookingDraftStore((state) => state.barberId);
+  const date = useBookingDraftStore((state) => state.date);
+  const time = useBookingDraftStore((state) => state.time);
+  const holdKey = useBookingDraftStore((state) => state.holdKey);
+  const holdExpiresAt = useBookingDraftStore((state) => state.holdExpiresAt);
+  const customerName = useBookingDraftStore((state) => state.customerName);
+  const customerPhone = useBookingDraftStore((state) => state.customerPhone);
+  const setCustomer = useBookingDraftStore((state) => state.setCustomer);
+  const setSlot = useBookingDraftStore((state) => state.setSlot);
+  const setStep = useBookingDraftStore((state) => state.setStep);
+  const [reservationExpired, setReservationExpired] = useState(() => !holdExpiresAt || !Number.isFinite(Date.parse(holdExpiresAt)) || Date.parse(holdExpiresAt) <= Date.now());
+  const form = useForm<CustomerDetailsValues>({ resolver: zodResolver(customerDetailsSchema), defaultValues: { name: customerName, phone: customerPhone } });
+  const barbersQuery = useAvailableBarbers(serviceIds);
+  const estimateQuery = useBookingEstimate(serviceIds, barberId);
+  const hasReservationDetails = Boolean(serviceIds.length && barberId && date && time && holdKey && holdExpiresAt);
+  const hasActiveReservation = hasReservationDetails && !reservationExpired;
+  const selectedBarber = barbersQuery.data?.find((barber) => String(barber.id) === barberId);
 
   useEffect(() => {
-    document.title = 'Seus dados | Barbearia'
-    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    document.title = 'Seus dados | Barbearia';
+    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!description) {
-      description = document.createElement('meta')
-      description.name = 'description'
-      document.head.append(description)
+      description = document.createElement('meta');
+      description.name = 'description';
+      document.head.append(description);
     }
-    description.content = 'Informe seus dados de contato para continuar com o agendamento.'
-  }, [])
+    description.content = 'Informe seus dados de contato para continuar com o agendamento.';
+  }, []);
 
   useEffect(() => {
     if (!serviceIds.length) {
-      navigate('/agendar')
-      return
+      navigate('/agendar');
+      return;
     }
-    if (hasActiveReservation) setStep('details')
-  }, [hasActiveReservation, navigate, serviceIds.length, setStep])
+    if (hasActiveReservation) setStep('details');
+  }, [hasActiveReservation, navigate, serviceIds.length, setStep]);
 
   useEffect(() => {
     if (!holdExpiresAt) {
-      setReservationExpired(true)
-      return
+      setReservationExpired(true);
+      return;
     }
-    const remaining = Date.parse(holdExpiresAt) - Date.now()
+    const remaining = Date.parse(holdExpiresAt) - Date.now();
     if (!Number.isFinite(remaining) || remaining <= 0) {
-      setReservationExpired(true)
-      return
+      setReservationExpired(true);
+      return;
     }
-    setReservationExpired(false)
-    const timeout = window.setTimeout(() => setReservationExpired(true), remaining)
-    return () => window.clearTimeout(timeout)
-  }, [holdExpiresAt])
+    setReservationExpired(false);
+    const timeout = window.setTimeout(() => setReservationExpired(true), remaining);
+    return () => window.clearTimeout(timeout);
+  }, [holdExpiresAt]);
 
   function returnToSlotSelection() {
-    setSlot(date, null, null)
-    setStep('slot')
-    navigate('/agendar/horario')
+    setSlot(date, null, null);
+    setStep('slot');
+    navigate('/agendar/horario');
   }
 
   function saveCustomer(values: CustomerDetailsValues) {
-    if (!hasActiveReservation) return
-    setCustomer(values)
-    setStep('review')
-    navigate('/agendar/revisao')
+    if (!hasActiveReservation) return;
+    setCustomer(values);
+    setStep('review');
+    navigate('/agendar/revisao');
   }
 
-  if (!serviceIds.length) return <div className="min-h-48" aria-label="Voltando à escolha de serviços" />
+  if (!serviceIds.length) return <div className="min-h-48" aria-label="Voltando à escolha de serviços" />;
 
   if (!hasActiveReservation) {
     return (
@@ -99,22 +99,22 @@ export default function CustomerDetailsStepPage() {
           retryLabel="Escolher outro horário"
         />
       </div>
-    )
+    );
   }
 
-  const estimate = estimateQuery.data
+  const estimate = estimateQuery.data;
   const durationLabel =
     estimate ?
       estimate.durationMin.min === estimate.durationMin.max ?
         formatDuration(estimate.durationMin.min)
       : `${formatDuration(estimate.durationMin.min)}–${formatDuration(estimate.durationMin.max)}`
-    : null
+    : null;
   const priceLabel =
     estimate ?
       estimate.subtotal.min === estimate.subtotal.max ?
         formatBRL(estimate.subtotal.min)
       : `A partir de ${formatBRL(estimate.subtotal.min)}`
-    : null
+    : null;
 
   return (
     <div className="space-y-7">
@@ -132,7 +132,7 @@ export default function CustomerDetailsStepPage() {
                 <FormField
                   control={form.control}
                   name="name"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nome completo</FormLabel>
                       <FormControl>
@@ -145,7 +145,7 @@ export default function CustomerDetailsStepPage() {
                 <FormField
                   control={form.control}
                   name="phone"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Telefone ou WhatsApp</FormLabel>
                       <FormControl>
@@ -233,5 +233,5 @@ export default function CustomerDetailsStepPage() {
 
       <BookingSummaryFooter actionLabel="Continuar para revisão" disabled={!hasActiveReservation || form.formState.isSubmitting} onContinue={() => void form.handleSubmit(saveCustomer)()} />
     </div>
-  )
+  );
 }

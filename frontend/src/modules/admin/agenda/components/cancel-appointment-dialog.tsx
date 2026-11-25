@@ -1,86 +1,86 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {MessageCircle} from 'lucide-react'
-import {useAgendaAppointmentDetail, useCancelAgendaAppointment, useMarkAgendaAppointmentNoShow} from '@/modules/admin/agenda/hooks/use-agenda'
-import {cancelAppointmentSchema, type CancelAppointmentValues} from '@/modules/admin/agenda/schemas/agenda-overlays.schema'
-import {formatDateTime} from '@/shared/lib/format'
-import {Button} from '@/shared/ui/button'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Textarea} from '@/shared/ui/textarea'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {ErrorState} from '@/shared/components/error-state'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { MessageCircle } from 'lucide-react';
+import { useAgendaAppointmentDetail, useCancelAgendaAppointment, useMarkAgendaAppointmentNoShow } from '@/modules/admin/agenda/hooks/use-agenda';
+import { cancelAppointmentSchema, type CancelAppointmentValues } from '@/modules/admin/agenda/schemas/agenda-overlays.schema';
+import { formatDateTime } from '@/shared/lib/format';
+import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Textarea } from '@/shared/ui/textarea';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { ErrorState } from '@/shared/components/error-state';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 interface CancelAppointmentDialogProps {
-  open: boolean
-  appointmentId: string | null
-  initialType?: 'customer' | 'barbershop' | 'no_show'
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  appointmentId: string | null;
+  initialType?: 'customer' | 'barbershop' | 'no_show';
+  onOpenChange: (open: boolean) => void;
 }
 
-export function CancelAppointmentDialog({open, appointmentId, initialType = 'barbershop', onOpenChange}: CancelAppointmentDialogProps) {
-  const id = appointmentId && /^\d+$/.test(appointmentId) ? Number(appointmentId) : null
-  const detailQuery = useAgendaAppointmentDetail(id)
-  const appointment = detailQuery.data?.appointment
-  const customer = detailQuery.data?.customer
-  const cancelMutation = useCancelAgendaAppointment()
-  const noShowMutation = useMarkAgendaAppointmentNoShow()
-  const form = useForm<CancelAppointmentValues>({resolver: zodResolver(cancelAppointmentSchema), defaultValues: {type: initialType, reason: '', offerReschedule: false}})
-  const type = form.watch('type')
-  const offerReschedule = form.watch('offerReschedule')
-  const [formError, setFormError] = useState('')
-  const [whatsAppHref, setWhatsAppHref] = useState('')
-  const [completed, setCompleted] = useState(false)
-  const [discardOpen, setDiscardOpen] = useState(false)
-  const busy = cancelMutation.isPending || noShowMutation.isPending
+export function CancelAppointmentDialog({ open, appointmentId, initialType = 'barbershop', onOpenChange }: CancelAppointmentDialogProps) {
+  const id = appointmentId && /^\d+$/.test(appointmentId) ? Number(appointmentId) : null;
+  const detailQuery = useAgendaAppointmentDetail(id);
+  const appointment = detailQuery.data?.appointment;
+  const customer = detailQuery.data?.customer;
+  const cancelMutation = useCancelAgendaAppointment();
+  const noShowMutation = useMarkAgendaAppointmentNoShow();
+  const form = useForm<CancelAppointmentValues>({ resolver: zodResolver(cancelAppointmentSchema), defaultValues: { type: initialType, reason: '', offerReschedule: false } });
+  const type = form.watch('type');
+  const offerReschedule = form.watch('offerReschedule');
+  const [formError, setFormError] = useState('');
+  const [whatsAppHref, setWhatsAppHref] = useState('');
+  const [completed, setCompleted] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const busy = cancelMutation.isPending || noShowMutation.isPending;
 
   useEffect(() => {
     if (!open) {
-      form.reset({type: initialType, reason: '', offerReschedule: false})
-      setFormError('')
-      setWhatsAppHref('')
-      setCompleted(false)
+      form.reset({ type: initialType, reason: '', offerReschedule: false });
+      setFormError('');
+      setWhatsAppHref('');
+      setCompleted(false);
     }
-  }, [form, initialType, open])
+  }, [form, initialType, open]);
 
   function requestClose(nextOpen: boolean) {
     if (!nextOpen && form.formState.isDirty && !completed) {
-      setDiscardOpen(true)
-      return
+      setDiscardOpen(true);
+      return;
     }
-    onOpenChange(nextOpen)
+    onOpenChange(nextOpen);
   }
 
   async function submit(values: CancelAppointmentValues) {
-    if (!appointment) return
-    setFormError('')
+    if (!appointment) return;
+    setFormError('');
     try {
       if (values.type === 'no_show') {
-        await noShowMutation.mutateAsync({id: appointment.id, reason: values.reason})
+        await noShowMutation.mutateAsync({ id: appointment.id, reason: values.reason });
       } else {
-        await cancelMutation.mutateAsync({id: appointment.id, reason: values.reason, cancellationType: values.type, offerReschedule: values.offerReschedule})
+        await cancelMutation.mutateAsync({ id: appointment.id, reason: values.reason, cancellationType: values.type, offerReschedule: values.offerReschedule });
       }
       if (values.offerReschedule && values.type !== 'no_show') {
-        const phone = (customer?.phone ?? '').replace(/\D/g, '')
+        const phone = (customer?.phone ?? '').replace(/\D/g, '');
         if (phone.length >= 10) {
-          const text = `Olá, ${customer?.name}. Seu agendamento de ${formatDateTime(appointment.start)} foi cancelado. Se quiser, podemos ajudar a escolher um novo horário.`
-          setWhatsAppHref(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`)
+          const text = `Olá, ${customer?.name}. Seu agendamento de ${formatDateTime(appointment.start)} foi cancelado. Se quiser, podemos ajudar a escolher um novo horário.`;
+          setWhatsAppHref(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`);
         }
       }
-      setCompleted(true)
+      setCompleted(true);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível atualizar o agendamento.')
+      setFormError(error instanceof Error ? error.message : 'Não foi possível atualizar o agendamento.');
     }
   }
 
   const title =
     type === 'no_show' ? 'Registrar no-show'
     : type === 'customer' ? 'Cancelar a pedido do cliente'
-    : 'Cancelar pela barbearia'
+    : 'Cancelar pela barbearia';
 
   return (
     <>
@@ -116,7 +116,7 @@ export function CancelAppointmentDialog({open, appointmentId, initialType = 'bar
                 <FormField
                   control={form.control}
                   name="type"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Tipo de ocorrência</FormLabel>
                       <Select value={field.value} onValueChange={field.onChange}>
@@ -138,7 +138,7 @@ export function CancelAppointmentDialog({open, appointmentId, initialType = 'bar
                 <FormField
                   control={form.control}
                   name="reason"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Motivo</FormLabel>
                       <FormControl>
@@ -152,10 +152,10 @@ export function CancelAppointmentDialog({open, appointmentId, initialType = 'bar
                   <FormField
                     control={form.control}
                     name="offerReschedule"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem className="flex items-start gap-3 rounded-lg border p-3">
                         <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={value => field.onChange(value === true)} />
+                          <Checkbox checked={field.value} onCheckedChange={(value) => field.onChange(value === true)} />
                         </FormControl>
                         <div>
                           <FormLabel className="cursor-pointer">Oferecer reagendamento</FormLabel>
@@ -203,11 +203,11 @@ export function CancelAppointmentDialog({open, appointmentId, initialType = 'bar
         confirmLabel="Descartar"
         destructive
         onConfirm={() => {
-          setDiscardOpen(false)
-          form.reset()
-          onOpenChange(false)
+          setDiscardOpen(false);
+          form.reset();
+          onOpenChange(false);
         }}
       />
     </>
-  )
+  );
 }

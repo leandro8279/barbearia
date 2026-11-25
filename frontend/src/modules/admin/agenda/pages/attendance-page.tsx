@@ -1,124 +1,124 @@
-import {useEffect, useMemo, useState} from 'react'
-import {Link, useLocation} from 'wouter'
-import {ArrowLeft, ArrowUpRight, Check, Clock3, UserRound} from 'lucide-react'
-import {useAgendaAppointmentDetail, useFinishAgendaService, useStartAgendaService} from '@/modules/admin/agenda/hooks/use-agenda'
-import {ErrorState} from '@/shared/components/error-state'
-import {formatDateTime, formatDuration} from '@/shared/lib/format'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {Avatar, AvatarFallback, AvatarImage} from '@/shared/ui/avatar'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation } from 'wouter';
+import { ArrowLeft, ArrowUpRight, Check, Clock3, UserRound } from 'lucide-react';
+import { useAgendaAppointmentDetail, useFinishAgendaService, useStartAgendaService } from '@/modules/admin/agenda/hooks/use-agenda';
+import { ErrorState } from '@/shared/components/error-state';
+import { formatDateTime, formatDuration } from '@/shared/lib/format';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 interface ScreenWakeLock {
-  release(): Promise<void>
-  addEventListener(type: 'release', listener: () => void): void
+  release(): Promise<void>;
+  addEventListener(type: 'release', listener: () => void): void;
 }
 
-type WakeLockNavigator = Omit<Navigator, 'wakeLock'> & {wakeLock?: {request(type: 'screen'): Promise<ScreenWakeLock>}}
+type WakeLockNavigator = Omit<Navigator, 'wakeLock'> & { wakeLock?: { request(type: 'screen'): Promise<ScreenWakeLock> } };
 
 function durationClock(seconds: number) {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const remainder = seconds % 60
-  return [hours, minutes, remainder].map(value => String(value).padStart(2, '0')).join(':')
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainder = seconds % 60;
+  return [hours, minutes, remainder].map((value) => String(value).padStart(2, '0')).join(':');
 }
 
 export default function AttendancePage() {
-  const [location, setLocation] = useLocation()
-  const appointmentId = location.split('/').filter(Boolean).at(-1) ?? ''
-  const validId = /^\d+$/.test(appointmentId) ? Number(appointmentId) : null
-  const user = useSessionStore(state => state.user)
-  const barberMode = user?.role === 'barber'
-  const canOpenCash = Boolean(user && (['admin', 'manager', 'reception'].includes(user.role) || user.permissions.includes('cash.write')))
-  const detailQuery = useAgendaAppointmentDetail(validId, barberMode)
-  const startMutation = useStartAgendaService()
-  const finishMutation = useFinishAgendaService()
-  const detail = detailQuery.data
-  const appointment = detail?.appointment
-  const openTab = detail?.tabs.find(tab => tab.status === 'open')
-  const [now, setNow] = useState(Date.now())
-  const [checkedServices, setCheckedServices] = useState<Record<string, boolean>>({})
+  const [location, setLocation] = useLocation();
+  const appointmentId = location.split('/').filter(Boolean).at(-1) ?? '';
+  const validId = /^\d+$/.test(appointmentId) ? Number(appointmentId) : null;
+  const user = useSessionStore((state) => state.user);
+  const barberMode = user?.role === 'barber';
+  const canOpenCash = Boolean(user && (['admin', 'manager', 'reception'].includes(user.role) || user.permissions.includes('cash.write')));
+  const detailQuery = useAgendaAppointmentDetail(validId, barberMode);
+  const startMutation = useStartAgendaService();
+  const finishMutation = useFinishAgendaService();
+  const detail = detailQuery.data;
+  const appointment = detail?.appointment;
+  const openTab = detail?.tabs.find((tab) => tab.status === 'open');
+  const [now, setNow] = useState(Date.now());
+  const [checkedServices, setCheckedServices] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    document.title = 'Atendimento | Painel administrativo'
-  }, [])
+    document.title = 'Atendimento | Painel administrativo';
+  }, []);
 
   useEffect(() => {
-    setCheckedServices({})
-  }, [appointment?.id])
+    setCheckedServices({});
+  }, [appointment?.id]);
 
   useEffect(() => {
-    if (appointment?.status !== 'in_service' || !appointment.startedAt || appointment.finishedAt) return
-    const interval = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(interval)
-  }, [appointment?.finishedAt, appointment?.startedAt, appointment?.status])
+    if (appointment?.status !== 'in_service' || !appointment.startedAt || appointment.finishedAt) return;
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, [appointment?.finishedAt, appointment?.startedAt, appointment?.status]);
 
   useEffect(() => {
-    if (appointment?.status !== 'in_service') return
-    const manager = (navigator as WakeLockNavigator).wakeLock
-    if (!manager) return
+    if (appointment?.status !== 'in_service') return;
+    const manager = (navigator as WakeLockNavigator).wakeLock;
+    if (!manager) return;
 
-    let lock: ScreenWakeLock | null = null
+    let lock: ScreenWakeLock | null = null;
     const acquire = async () => {
-      if (document.visibilityState !== 'visible' || lock) return
+      if (document.visibilityState !== 'visible' || lock) return;
       try {
-        lock = await manager.request('screen')
-        const acquiredLock = lock
+        lock = await manager.request('screen');
+        const acquiredLock = lock;
         acquiredLock.addEventListener('release', () => {
-          if (lock === acquiredLock) lock = null
-        })
+          if (lock === acquiredLock) lock = null;
+        });
       } catch {
         // O navegador pode negar o bloqueio de tela; o cronômetro segue funcionando.
       }
-    }
-    const onVisibilityChange = () => void acquire()
+    };
+    const onVisibilityChange = () => void acquire();
 
-    void acquire()
-    document.addEventListener('visibilitychange', onVisibilityChange)
+    void acquire();
+    document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      if (lock) void lock.release()
-    }
-  }, [appointment?.status])
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      if (lock) void lock.release();
+    };
+  }, [appointment?.status]);
 
   const timerSeconds = useMemo(() => {
-    if (!appointment?.startedAt) return 0
-    const end = appointment.finishedAt ? new Date(appointment.finishedAt).getTime() : now
-    return Math.max(0, Math.floor((end - new Date(appointment.startedAt).getTime()) / 1000))
-  }, [appointment?.finishedAt, appointment?.startedAt, now])
+    if (!appointment?.startedAt) return 0;
+    const end = appointment.finishedAt ? new Date(appointment.finishedAt).getTime() : now;
+    return Math.max(0, Math.floor((end - new Date(appointment.startedAt).getTime()) / 1000));
+  }, [appointment?.finishedAt, appointment?.startedAt, now]);
 
   function startService() {
-    if (!appointment) return
-    startMutation.mutate({id: appointment.id, status: appointment.status}, {onSuccess: () => void detailQuery.refetch()})
+    if (!appointment) return;
+    startMutation.mutate({ id: appointment.id, status: appointment.status }, { onSuccess: () => void detailQuery.refetch() });
   }
 
   async function finishService() {
-    if (!appointment) return
+    if (!appointment) return;
     try {
-      await finishMutation.mutateAsync({id: appointment.id})
-      await detailQuery.refetch()
-      if (canOpenCash && openTab) setLocation(`/admin/caixa?tabId=${openTab.id}`)
+      await finishMutation.mutateAsync({ id: appointment.id });
+      await detailQuery.refetch();
+      if (canOpenCash && openTab) setLocation(`/admin/caixa?tabId=${openTab.id}`);
     } catch {
       // A mutation já apresenta a mensagem de erro ao usuário.
     }
   }
 
   function goToCash(query: string) {
-    if (!openTab) return
-    const params = new URLSearchParams(query)
-    params.set('tabId', String(openTab.id))
-    setLocation(`/admin/caixa?${params.toString()}`)
+    if (!openTab) return;
+    const params = new URLSearchParams(query);
+    params.set('tabId', String(openTab.id));
+    setLocation(`/admin/caixa?${params.toString()}`);
   }
 
   const initials = detail?.customer.name
     .split(/\s+/)
     .slice(0, 2)
-    .map(part => part[0])
+    .map((part) => part[0])
     .join('')
-    .toUpperCase()
+    .toUpperCase();
 
   return (
     <div className="-mx-4 -my-6 min-h-[calc(100dvh-4rem)] bg-muted/20 sm:-mx-6 sm:-my-9">
@@ -216,16 +216,20 @@ export default function AttendancePage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {appointment.items.map((item, index) => {
-                    const key = `${item.serviceId}-${index}`
-                    const checked = Boolean(checkedServices[key])
+                    const key = `${item.serviceId}-${index}`;
+                    const checked = Boolean(checkedServices[key]);
                     return (
                       <label key={key} className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-muted/50">
-                        <Checkbox checked={checked} onCheckedChange={value => setCheckedServices(current => ({...current, [key]: value === true}))} aria-label={`Marcar ${item.name} como concluído`} />
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(value) => setCheckedServices((current) => ({ ...current, [key]: value === true }))}
+                          aria-label={`Marcar ${item.name} como concluído`}
+                        />
                         <span className={`min-w-0 flex-1 font-medium ${checked ? 'text-muted-foreground line-through' : ''}`}>{item.name}</span>
                         <span className="text-sm text-muted-foreground">{formatDuration(item.durationMin)}</span>
                         {checked && <Check className="size-4 text-primary" aria-hidden="true" />}
                       </label>
-                    )
+                    );
                   })}
                 </CardContent>
               </Card>
@@ -282,5 +286,5 @@ export default function AttendancePage() {
         }
       </div>
     </div>
-  )
+  );
 }

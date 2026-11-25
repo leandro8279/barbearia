@@ -1,36 +1,36 @@
-import {useEffect} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {LoaderCircle} from 'lucide-react'
-import type {StaffRole} from '@/modules/admin/users/api/team-users'
-import {inviteSchema, type InviteValues} from '@/modules/admin/users/schemas/invite.schema'
-import {Button} from '@/shared/ui/button'
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
+import { useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { LoaderCircle } from 'lucide-react';
+import type { StaffRole } from '@/modules/admin/users/api/team-users';
+import { inviteSchema, type InviteValues } from '@/modules/admin/users/schemas/invite.schema';
+import { Button } from '@/shared/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 
-const roleLabels: Record<StaffRole, string> = {barber: 'Barbeiro', reception: 'Recepção', manager: 'Gerente', admin: 'Administrador'}
+const roleLabels: Record<StaffRole, string> = { barber: 'Barbeiro', reception: 'Recepção', manager: 'Gerente', admin: 'Administrador' };
 
 interface InviteStaffDialogProps {
-  open: boolean
-  pending: boolean
-  onOpenChange: (open: boolean) => void
-  onInvite: (values: InviteValues) => Promise<void>
+  open: boolean;
+  pending: boolean;
+  onOpenChange: (open: boolean) => void;
+  onInvite: (values: InviteValues) => Promise<void>;
 }
 
-export function InviteStaffDialog({open, pending, onOpenChange, onInvite}: InviteStaffDialogProps) {
-  const form = useForm<InviteValues>({resolver: zodResolver(inviteSchema), defaultValues: {email: '', role: 'reception'}})
+export function InviteStaffDialog({ open, pending, onOpenChange, onInvite }: InviteStaffDialogProps) {
+  const form = useForm<InviteValues>({ resolver: zodResolver(inviteSchema), defaultValues: { email: '', role: 'reception' } });
 
   useEffect(() => {
-    if (!open) form.reset({email: '', role: 'reception'})
-  }, [form, open])
+    if (!open) form.reset({ email: '', role: 'reception' });
+  }, [form, open]);
 
   async function submit(values: InviteValues) {
     try {
-      await onInvite(values)
+      await onInvite(values);
     } catch (error) {
-      form.setError('root.server', {message: error instanceof Error ? error.message : 'Não foi possível criar o convite.'})
+      form.setError('root.server', { message: error instanceof Error ? error.message : 'Não foi possível criar o convite.' });
     }
   }
 
@@ -46,7 +46,7 @@ export function InviteStaffDialog({open, pending, onOpenChange, onInvite}: Invit
             <FormField
               control={form.control}
               name="email"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>E-mail</FormLabel>
                   <FormControl>
@@ -59,7 +59,7 @@ export function InviteStaffDialog({open, pending, onOpenChange, onInvite}: Invit
             <FormField
               control={form.control}
               name="role"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Papel</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
@@ -69,7 +69,7 @@ export function InviteStaffDialog({open, pending, onOpenChange, onInvite}: Invit
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {(Object.keys(roleLabels) as StaffRole[]).map(role => (
+                      {(Object.keys(roleLabels) as StaffRole[]).map((role) => (
                         <SelectItem key={role} value={role}>
                           {roleLabels[role]}
                         </SelectItem>
@@ -98,5 +98,5 @@ export function InviteStaffDialog({open, pending, onOpenChange, onInvite}: Invit
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

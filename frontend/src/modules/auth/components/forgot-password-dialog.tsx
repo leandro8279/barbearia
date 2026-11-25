@@ -1,43 +1,43 @@
-import {useEffect, useState} from 'react'
-import {useMutation} from '@tanstack/react-query'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {CheckCircle2, LoaderCircle, X} from 'lucide-react'
-import {useForm} from 'react-hook-form'
-import {requestPasswordReset} from '@/modules/auth/api/auth'
-import {forgotPasswordSchema, type ForgotPasswordValues} from '@/modules/auth/schemas/forgot-password.schema'
-import {Button} from '@/shared/ui/button'
-import {Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
+import { useEffect, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CheckCircle2, LoaderCircle, X } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { requestPasswordReset } from '@/modules/auth/api/auth';
+import { forgotPasswordSchema, type ForgotPasswordValues } from '@/modules/auth/schemas/forgot-password.schema';
+import { Button } from '@/shared/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
 
 interface ForgotPasswordDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function ForgotPasswordDialog({open, onOpenChange}: ForgotPasswordDialogProps) {
-  const [sent, setSent] = useState(false)
-  const mutation = useMutation({mutationFn: requestPasswordReset})
-  const form = useForm<ForgotPasswordValues>({resolver: zodResolver(forgotPasswordSchema), defaultValues: {email: ''}})
+export function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps) {
+  const [sent, setSent] = useState(false);
+  const mutation = useMutation({ mutationFn: requestPasswordReset });
+  const form = useForm<ForgotPasswordValues>({ resolver: zodResolver(forgotPasswordSchema), defaultValues: { email: '' } });
 
   useEffect(() => {
-    if (!open) return
-    form.reset()
-    form.clearErrors()
-    setSent(false)
-  }, [form, open])
+    if (!open) return;
+    form.reset();
+    form.clearErrors();
+    setSent(false);
+  }, [form, open]);
 
   async function onSubmit(values: ForgotPasswordValues) {
-    form.clearErrors('root.server')
+    form.clearErrors('root.server');
     try {
-      await mutation.mutateAsync(values.email)
-      setSent(true)
+      await mutation.mutateAsync(values.email);
+      setSent(true);
     } catch {
-      form.setError('root.server', {type: 'server', message: 'Não foi possível processar sua solicitação agora. Tente novamente.'})
+      form.setError('root.server', { type: 'server', message: 'Não foi possível processar sua solicitação agora. Tente novamente.' });
     }
   }
 
-  const isPending = form.formState.isSubmitting || mutation.isPending
+  const isPending = form.formState.isSubmitting || mutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -69,7 +69,7 @@ export function ForgotPasswordDialog({open, onOpenChange}: ForgotPasswordDialogP
                 <FormField
                   control={form.control}
                   name="email"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>E-mail</FormLabel>
                       <FormControl>
@@ -94,5 +94,5 @@ export function ForgotPasswordDialog({open, onOpenChange}: ForgotPasswordDialogP
         }
       </DialogContent>
     </Dialog>
-  )
+  );
 }

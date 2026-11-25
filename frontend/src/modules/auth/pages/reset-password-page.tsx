@@ -1,57 +1,57 @@
-import {useEffect, useState} from 'react'
-import {useMutation} from '@tanstack/react-query'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {Link, useLocation, useRoute} from 'wouter'
-import {resetPassword} from '@/modules/auth/api/auth'
-import {resetPasswordSchema, type ResetPasswordValues} from '@/modules/auth/schemas/reset-password.schema'
-import {HttpError} from '@/shared/lib/http'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {toast} from 'sonner'
+import { useEffect, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Link, useLocation, useRoute } from 'wouter';
+import { resetPassword } from '@/modules/auth/api/auth';
+import { resetPasswordSchema, type ResetPasswordValues } from '@/modules/auth/schemas/reset-password.schema';
+import { HttpError } from '@/shared/lib/http';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { toast } from 'sonner';
 
 function getPasswordStrength(password: string) {
-  if (!password) return 0
-  return [password.length >= 8, /[a-z]/.test(password) && /[A-Z]/.test(password), /\d/.test(password), /[^a-zA-Z0-9]/.test(password)].filter(Boolean).length
+  if (!password) return 0;
+  return [password.length >= 8, /[a-z]/.test(password) && /[A-Z]/.test(password), /\d/.test(password), /[^a-zA-Z0-9]/.test(password)].filter(Boolean).length;
 }
 
 export default function ResetPasswordPage() {
-  const [, params] = useRoute('/redefinir-senha/:token')
-  const [, setLocation] = useLocation()
-  const clearSession = useSessionStore(state => state.clearSession)
-  const [invalidToken, setInvalidToken] = useState(false)
-  const mutation = useMutation({mutationFn: resetPassword})
-  const form = useForm<ResetPasswordValues>({resolver: zodResolver(resetPasswordSchema), defaultValues: {password: '', confirmPassword: ''}})
-  const password = form.watch('password')
-  const passwordStrength = getPasswordStrength(password)
-  const strengthLabel = ['', 'Fraca', 'Média', 'Boa', 'Forte'][passwordStrength]
+  const [, params] = useRoute('/redefinir-senha/:token');
+  const [, setLocation] = useLocation();
+  const clearSession = useSessionStore((state) => state.clearSession);
+  const [invalidToken, setInvalidToken] = useState(false);
+  const mutation = useMutation({ mutationFn: resetPassword });
+  const form = useForm<ResetPasswordValues>({ resolver: zodResolver(resetPasswordSchema), defaultValues: { password: '', confirmPassword: '' } });
+  const password = form.watch('password');
+  const passwordStrength = getPasswordStrength(password);
+  const strengthLabel = ['', 'Fraca', 'Média', 'Boa', 'Forte'][passwordStrength];
   const strengthColor =
     passwordStrength === 1 ? 'bg-destructive'
     : passwordStrength === 2 ? 'bg-orange-500'
     : passwordStrength === 3 ? 'bg-amber-400'
-    : 'bg-emerald-500'
+    : 'bg-emerald-500';
 
   useEffect(() => {
-    document.title = 'Redefinir senha | Barbearia'
-  }, [])
+    document.title = 'Redefinir senha | Barbearia';
+  }, []);
 
   async function onSubmit(values: ResetPasswordValues) {
-    form.clearErrors('root.server')
-    setInvalidToken(false)
+    form.clearErrors('root.server');
+    setInvalidToken(false);
     try {
-      await mutation.mutateAsync({token: params?.token || '', password: values.password})
-      clearSession()
-      toast.success('Senha redefinida. Entre com sua nova senha.')
-      setLocation('/entrar')
+      await mutation.mutateAsync({ token: params?.token || '', password: values.password });
+      clearSession();
+      toast.success('Senha redefinida. Entre com sua nova senha.');
+      setLocation('/entrar');
     } catch (error) {
       if (error instanceof HttpError && error.status === 400) {
-        setInvalidToken(true)
-        return
+        setInvalidToken(true);
+        return;
       }
-      form.setError('root.server', {type: 'server', message: 'Não foi possível redefinir sua senha agora. Tente novamente.'})
+      form.setError('root.server', { type: 'server', message: 'Não foi possível redefinir sua senha agora. Tente novamente.' });
     }
   }
 
@@ -72,10 +72,10 @@ export default function ResetPasswordPage() {
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const isSubmitting = form.formState.isSubmitting || mutation.isPending
+  const isSubmitting = form.formState.isSubmitting || mutation.isPending;
 
   return (
     <Card className="auth-login-texture border-border/80 bg-card shadow-panel">
@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
             <FormField
               control={form.control}
               name="password"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nova senha</FormLabel>
                   <FormControl>
@@ -104,9 +104,10 @@ export default function ResetPasswordPage() {
                     aria-valuemin={0}
                     aria-valuemax={4}
                     aria-valuenow={passwordStrength}
-                    aria-valuetext={strengthLabel || 'Sem senha'}>
+                    aria-valuetext={strengthLabel || 'Sem senha'}
+                  >
                     <div className="flex gap-1.5">
-                      {[0, 1, 2, 3].map(segment => (
+                      {[0, 1, 2, 3].map((segment) => (
                         <span key={segment} className={`h-1.5 flex-1 rounded-full ${segment < passwordStrength ? strengthColor : 'bg-muted'}`} />
                       ))}
                     </div>
@@ -119,7 +120,7 @@ export default function ResetPasswordPage() {
             <FormField
               control={form.control}
               name="confirmPassword"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Confirmar nova senha</FormLabel>
                   <FormControl>
@@ -141,5 +142,5 @@ export default function ResetPasswordPage() {
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }

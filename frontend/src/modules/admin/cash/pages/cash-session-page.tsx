@@ -1,51 +1,51 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {Link} from 'wouter'
-import {Printer} from 'lucide-react'
-import type {CashDenominationKey, CashMethodTotals, CashSessionRecord} from '@/modules/admin/cash/api/cash'
-import {useCashSessionMovements, useCashSummary, useCloseCashSession, useOpenCashSession} from '@/modules/admin/cash/hooks/use-cash'
-import {cashSessionCloseSchema, cashSessionOpenSchema, type CashSessionCloseValues, type CashSessionOpenValues} from '@/modules/admin/cash/schemas/cash-session.schema'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {formatBRL, formatDateTime} from '@/shared/lib/format'
-import {useCan} from '@/shared/hooks/use-can'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {MoneyInput} from '@/shared/components/money-input'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Link } from 'wouter';
+import { Printer } from 'lucide-react';
+import type { CashDenominationKey, CashMethodTotals, CashSessionRecord } from '@/modules/admin/cash/api/cash';
+import { useCashSessionMovements, useCashSummary, useCloseCashSession, useOpenCashSession } from '@/modules/admin/cash/hooks/use-cash';
+import { cashSessionCloseSchema, cashSessionOpenSchema, type CashSessionCloseValues, type CashSessionOpenValues } from '@/modules/admin/cash/schemas/cash-session.schema';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { formatBRL, formatDateTime } from '@/shared/lib/format';
+import { useCan } from '@/shared/hooks/use-can';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { MoneyInput } from '@/shared/components/money-input';
+import { Skeleton } from '@/shared/ui/skeleton';
 
-const denominations: {key: CashDenominationKey; cents: number; label: string}[] = [
-  {key: '20000', cents: 20_000, label: 'R$ 200'},
-  {key: '10000', cents: 10_000, label: 'R$ 100'},
-  {key: '5000', cents: 5_000, label: 'R$ 50'},
-  {key: '2000', cents: 2_000, label: 'R$ 20'},
-  {key: '1000', cents: 1_000, label: 'R$ 10'},
-  {key: '500', cents: 500, label: 'R$ 5'},
-  {key: '200', cents: 200, label: 'R$ 2'}
-]
+const denominations: { key: CashDenominationKey; cents: number; label: string }[] = [
+  { key: '20000', cents: 20_000, label: 'R$ 200' },
+  { key: '10000', cents: 10_000, label: 'R$ 100' },
+  { key: '5000', cents: 5_000, label: 'R$ 50' },
+  { key: '2000', cents: 2_000, label: 'R$ 20' },
+  { key: '1000', cents: 1_000, label: 'R$ 10' },
+  { key: '500', cents: 500, label: 'R$ 5' },
+  { key: '200', cents: 200, label: 'R$ 2' },
+];
 
-const paymentMethods: {key: keyof CashMethodTotals; label: string}[] = [
-  {key: 'cash', label: 'Dinheiro'},
-  {key: 'pix', label: 'Pix'},
-  {key: 'debit', label: 'Débito'},
-  {key: 'credit', label: 'Crédito'}
-]
+const paymentMethods: { key: keyof CashMethodTotals; label: string }[] = [
+  { key: 'cash', label: 'Dinheiro' },
+  { key: 'pix', label: 'Pix' },
+  { key: 'debit', label: 'Débito' },
+  { key: 'credit', label: 'Crédito' },
+];
 
-const emptyCounts: CashMethodTotals = {cash: 0, pix: 0, debit: 0, credit: 0}
-const emptyDenominations: Record<CashDenominationKey, number> = {20000: 0, 10000: 0, 5000: 0, 2000: 0, 1000: 0, 500: 0, 200: 0}
+const emptyCounts: CashMethodTotals = { cash: 0, pix: 0, debit: 0, credit: 0 };
+const emptyDenominations: Record<CashDenominationKey, number> = { 20000: 0, 10000: 0, 5000: 0, 2000: 0, 1000: 0, 500: 0, 200: 0 };
 
 function defaultCloseValues(): CashSessionCloseValues {
-  return {countedByMethod: {...emptyCounts}, countedCashByDenomination: {...emptyDenominations}, countedOtherCashCents: 0, closingNote: ''}
+  return { countedByMethod: { ...emptyCounts }, countedCashByDenomination: { ...emptyDenominations }, countedOtherCashCents: 0, closingNote: '' };
 }
 
-function MethodComparison({expected, counted}: {expected: CashMethodTotals; counted: CashMethodTotals}) {
+function MethodComparison({ expected, counted }: { expected: CashMethodTotals; counted: CashMethodTotals }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[34rem] text-left text-sm">
@@ -58,8 +58,8 @@ function MethodComparison({expected, counted}: {expected: CashMethodTotals; coun
           </tr>
         </thead>
         <tbody>
-          {paymentMethods.map(method => {
-            const difference = counted[method.key] - expected[method.key]
+          {paymentMethods.map((method) => {
+            const difference = counted[method.key] - expected[method.key];
             return (
               <tr key={method.key} className="border-b last:border-0">
                 <th scope="row" className="py-3 pr-3 font-medium">
@@ -69,66 +69,66 @@ function MethodComparison({expected, counted}: {expected: CashMethodTotals; coun
                 <td className="px-3 py-3 text-right tabular-nums">{formatBRL(counted[method.key])}</td>
                 <td className={`py-3 pl-3 text-right font-medium tabular-nums ${difference ? 'text-destructive' : 'text-muted-foreground'}`}>{formatBRL(difference)}</td>
               </tr>
-            )
+            );
           })}
         </tbody>
       </table>
     </div>
-  )
+  );
 }
 
 export default function CashSessionPage() {
-  const summaryQuery = useCashSummary()
-  const openSessionMutation = useOpenCashSession()
-  const closeSessionMutation = useCloseCashSession()
-  const user = useSessionStore(state => state.user)
-  const canManageCash = useCan('cash.manage')
-  const [closedReport, setClosedReport] = useState<CashSessionRecord | null>(null)
-  const [openError, setOpenError] = useState('')
-  const [closeError, setCloseError] = useState('')
-  const [confirmDifferenceOpen, setConfirmDifferenceOpen] = useState(false)
-  const [pendingCloseValues, setPendingCloseValues] = useState<CashSessionCloseValues | null>(null)
-  const openForm = useForm<CashSessionOpenValues>({resolver: zodResolver(cashSessionOpenSchema), defaultValues: {openingCents: 0}, mode: 'onChange'})
-  const closeForm = useForm<CashSessionCloseValues>({resolver: zodResolver(cashSessionCloseSchema), defaultValues: defaultCloseValues(), mode: 'onChange'})
-  const session = summaryQuery.data?.session ?? null
-  const reportSessionId = closedReport?.id ?? session?.id ?? 0
-  const movementsQuery = useCashSessionMovements(reportSessionId)
-  const countedValues = closeForm.watch()
-  const expectedValues = summaryQuery.data?.balanceByMethod ?? emptyCounts
+  const summaryQuery = useCashSummary();
+  const openSessionMutation = useOpenCashSession();
+  const closeSessionMutation = useCloseCashSession();
+  const user = useSessionStore((state) => state.user);
+  const canManageCash = useCan('cash.manage');
+  const [closedReport, setClosedReport] = useState<CashSessionRecord | null>(null);
+  const [openError, setOpenError] = useState('');
+  const [closeError, setCloseError] = useState('');
+  const [confirmDifferenceOpen, setConfirmDifferenceOpen] = useState(false);
+  const [pendingCloseValues, setPendingCloseValues] = useState<CashSessionCloseValues | null>(null);
+  const openForm = useForm<CashSessionOpenValues>({ resolver: zodResolver(cashSessionOpenSchema), defaultValues: { openingCents: 0 }, mode: 'onChange' });
+  const closeForm = useForm<CashSessionCloseValues>({ resolver: zodResolver(cashSessionCloseSchema), defaultValues: defaultCloseValues(), mode: 'onChange' });
+  const session = summaryQuery.data?.session ?? null;
+  const reportSessionId = closedReport?.id ?? session?.id ?? 0;
+  const movementsQuery = useCashSessionMovements(reportSessionId);
+  const countedValues = closeForm.watch();
+  const expectedValues = summaryQuery.data?.balanceByMethod ?? emptyCounts;
   const countedCashFromDenominations = denominations.reduce(
     (total, denomination) => total + denomination.cents * countedValues.countedCashByDenomination[denomination.key],
-    countedValues.countedOtherCashCents
-  )
-  const cashDifferenceCents = countedValues.countedByMethod.cash - expectedValues.cash
-  const differenceNeedsApproval = Math.abs(cashDifferenceCents) > 500
-  const cashDenominationsMatch = countedValues.countedByMethod.cash === countedCashFromDenominations
-  const busy = openSessionMutation.isPending || closeSessionMutation.isPending
-  const responsibleName = user?.name || 'Equipe'
+    countedValues.countedOtherCashCents,
+  );
+  const cashDifferenceCents = countedValues.countedByMethod.cash - expectedValues.cash;
+  const differenceNeedsApproval = Math.abs(cashDifferenceCents) > 500;
+  const cashDenominationsMatch = countedValues.countedByMethod.cash === countedCashFromDenominations;
+  const busy = openSessionMutation.isPending || closeSessionMutation.isPending;
+  const responsibleName = user?.name || 'Equipe';
 
   useEffect(() => {
-    document.title = 'Sessão do caixa | Painel administrativo'
-  }, [])
+    document.title = 'Sessão do caixa | Painel administrativo';
+  }, []);
 
   useEffect(() => {
-    if (!session) return
-    closeForm.reset(defaultCloseValues())
-    void closeForm.trigger()
-  }, [closeForm.reset, closeForm.trigger, session?.id])
+    if (!session) return;
+    closeForm.reset(defaultCloseValues());
+    void closeForm.trigger();
+  }, [closeForm.reset, closeForm.trigger, session?.id]);
 
   async function submitOpen(values: CashSessionOpenValues) {
-    setOpenError('')
+    setOpenError('');
     try {
-      await openSessionMutation.mutateAsync(values.openingCents)
-      openForm.reset({openingCents: 0})
-      setClosedReport(null)
+      await openSessionMutation.mutateAsync(values.openingCents);
+      openForm.reset({ openingCents: 0 });
+      setClosedReport(null);
     } catch (error) {
-      setOpenError(error instanceof Error ? error.message : 'Não foi possível abrir o caixa.')
+      setOpenError(error instanceof Error ? error.message : 'Não foi possível abrir o caixa.');
     }
   }
 
   async function saveClose(values: CashSessionCloseValues, approveDifference = false) {
-    if (!session) return
-    setCloseError('')
+    if (!session) return;
+    setCloseError('');
     try {
       const closed = await closeSessionMutation.mutateAsync({
         id: session.id,
@@ -137,49 +137,49 @@ export default function CashSessionPage() {
           countedCashByDenomination: values.countedCashByDenomination,
           countedOtherCashCents: values.countedOtherCashCents,
           closingNote: values.closingNote.trim(),
-          ...(approveDifference ? {approveDifference: true} : {})
-        }
-      })
-      setClosedReport({...closed, openedByName: session.openedByName, closedByName: responsibleName})
-      setCloseError('')
-      setConfirmDifferenceOpen(false)
-      setPendingCloseValues(null)
+          ...(approveDifference ? { approveDifference: true } : {}),
+        },
+      });
+      setClosedReport({ ...closed, openedByName: session.openedByName, closedByName: responsibleName });
+      setCloseError('');
+      setConfirmDifferenceOpen(false);
+      setPendingCloseValues(null);
     } catch (error) {
-      setCloseError(error instanceof Error ? error.message : 'Não foi possível fechar o caixa.')
-      setConfirmDifferenceOpen(false)
-      setPendingCloseValues(null)
+      setCloseError(error instanceof Error ? error.message : 'Não foi possível fechar o caixa.');
+      setConfirmDifferenceOpen(false);
+      setPendingCloseValues(null);
     }
   }
 
   function submitClose(values: CashSessionCloseValues) {
-    setCloseError('')
+    setCloseError('');
     if (!cashDenominationsMatch) {
-      setCloseError('A contagem de cédulas e moedas precisa corresponder ao total contado em dinheiro.')
-      return
+      setCloseError('A contagem de cédulas e moedas precisa corresponder ao total contado em dinheiro.');
+      return;
     }
     if (differenceNeedsApproval && !canManageCash) {
-      setCloseError('A diferença em dinheiro acima de R$ 5,00 exige a permissão cash.manage.')
-      return
+      setCloseError('A diferença em dinheiro acima de R$ 5,00 exige a permissão cash.manage.');
+      return;
     }
     if (differenceNeedsApproval) {
-      setPendingCloseValues(values)
-      setConfirmDifferenceOpen(true)
-      return
+      setPendingCloseValues(values);
+      setConfirmDifferenceOpen(true);
+      return;
     }
-    void saveClose(values)
+    void saveClose(values);
   }
 
   function confirmCloseWithDifference() {
-    if (!pendingCloseValues) return
-    void saveClose(pendingCloseValues, true)
+    if (!pendingCloseValues) return;
+    void saveClose(pendingCloseValues, true);
   }
 
   if (closedReport) {
-    const expected = closedReport.expectedByMethod ?? emptyCounts
-    const counted = closedReport.countedByMethod ?? emptyCounts
-    const transferredTabIds = closedReport.transferredTabIds ?? []
-    const closedDenominations = closedReport.countedCashByDenomination ?? emptyDenominations
-    const otherCoinsCents = closedReport.countedOtherCashCents ?? 0
+    const expected = closedReport.expectedByMethod ?? emptyCounts;
+    const counted = closedReport.countedByMethod ?? emptyCounts;
+    const transferredTabIds = closedReport.transferredTabIds ?? [];
+    const closedDenominations = closedReport.countedCashByDenomination ?? emptyDenominations;
+    const otherCoinsCents = closedReport.countedOtherCashCents ?? 0;
     return (
       <div className="space-y-6">
         <PageHeader
@@ -245,7 +245,7 @@ export default function CashSessionPage() {
               <div>
                 <p className="text-sm font-medium">Contagem de cédulas e moedas</p>
                 <ul className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
-                  {denominations.map(denomination => (
+                  {denominations.map((denomination) => (
                     <li key={denomination.key} className="flex justify-between gap-3">
                       <span>{denomination.label}</span>
                       <span className="tabular-nums">
@@ -273,7 +273,7 @@ export default function CashSessionPage() {
                 <Skeleton className="h-20 rounded-lg" />
               : movementsQuery.data?.length ?
                 <ul className="divide-y">
-                  {movementsQuery.data.map(movement => (
+                  {movementsQuery.data.map((movement) => (
                     <li key={movement.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
                       <div>
                         <p className="font-medium">
@@ -307,17 +307,17 @@ export default function CashSessionPage() {
             </CardHeader>
             <CardContent className="text-sm">
               {transferredTabIds.length ?
-                <p>As comandas permaneceram abertas e foram transferidas para a próxima sessão: {transferredTabIds.map(id => `#${id}`).join(', ')}.</p>
+                <p>As comandas permaneceram abertas e foram transferidas para a próxima sessão: {transferredTabIds.map((id) => `#${id}`).join(', ')}.</p>
               : <p className="text-muted-foreground">Não havia comandas abertas para transferir.</p>}
             </CardContent>
           </Card>
         </div>
       </div>
-    )
+    );
   }
 
   if (summaryQuery.isError) {
-    return <ErrorState title="Não foi possível carregar a sessão do caixa" description="Confira sua conexão e tente novamente." onRetry={() => void summaryQuery.refetch()} />
+    return <ErrorState title="Não foi possível carregar a sessão do caixa" description="Confira sua conexão e tente novamente." onRetry={() => void summaryQuery.refetch()} />;
   }
 
   if (summaryQuery.isPending || !summaryQuery.data) {
@@ -326,7 +326,7 @@ export default function CashSessionPage() {
         <Skeleton className="h-24 rounded-xl" />
         <Skeleton className="h-64 rounded-xl" />
       </div>
-    )
+    );
   }
 
   return (
@@ -378,12 +378,12 @@ export default function CashSessionPage() {
                       <p className="text-sm text-muted-foreground">Informe o valor que encontrou. O dinheiro contado deve coincidir com as cédulas e moedas.</p>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      {paymentMethods.map(method => (
+                      {paymentMethods.map((method) => (
                         <FormField
                           key={method.key}
                           control={closeForm.control}
                           name={`countedByMethod.${method.key}`}
-                          render={({field}) => (
+                          render={({ field }) => (
                             <FormItem>
                               <FormLabel>{method.label} contado</FormLabel>
                               <FormControl>
@@ -401,12 +401,12 @@ export default function CashSessionPage() {
                         <p className="text-sm text-muted-foreground">Digite a quantidade de cada valor.</p>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        {denominations.map(denomination => (
+                        {denominations.map((denomination) => (
                           <FormField
                             key={denomination.key}
                             control={closeForm.control}
                             name={`countedCashByDenomination.${denomination.key}`}
-                            render={({field}) => (
+                            render={({ field }) => (
                               <FormItem>
                                 <FormLabel>{denomination.label} · quantidade</FormLabel>
                                 <FormControl>
@@ -417,7 +417,7 @@ export default function CashSessionPage() {
                                     step={1}
                                     className="min-h-11"
                                     value={field.value}
-                                    onChange={event => field.onChange(event.target.value === '' ? 0 : Number(event.target.value))}
+                                    onChange={(event) => field.onChange(event.target.value === '' ? 0 : Number(event.target.value))}
                                     disabled={busy}
                                   />
                                 </FormControl>
@@ -430,7 +430,7 @@ export default function CashSessionPage() {
                       <FormField
                         control={closeForm.control}
                         name="countedOtherCashCents"
-                        render={({field}) => (
+                        render={({ field }) => (
                           <FormItem className="max-w-sm">
                             <FormLabel>Moedas</FormLabel>
                             <FormControl>
@@ -485,7 +485,7 @@ export default function CashSessionPage() {
                         fechada automaticamente.
                       </p>
                       <ul className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-                        {summaryQuery.data.openTabs.map(tab => (
+                        {summaryQuery.data.openTabs.map((tab) => (
                           <li key={tab.id}>
                             #{tab.id} · {tab.customerName}
                           </li>
@@ -497,7 +497,7 @@ export default function CashSessionPage() {
                   <FormField
                     control={closeForm.control}
                     name="closingNote"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Observação do fechamento</FormLabel>
                         <FormControl>
@@ -537,7 +537,7 @@ export default function CashSessionPage() {
                 <Skeleton className="h-20 rounded-lg" />
               : movementsQuery.data?.length ?
                 <ul className="divide-y">
-                  {movementsQuery.data.map(movement => (
+                  {movementsQuery.data.map((movement) => (
                     <li key={movement.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
                       <div>
                         <p className="font-medium">
@@ -571,7 +571,7 @@ export default function CashSessionPage() {
                 <FormField
                   control={openForm.control}
                   name="openingCents"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Fundo inicial</FormLabel>
                       <FormControl>
@@ -605,5 +605,5 @@ export default function CashSessionPage() {
         onConfirm={confirmCloseWithDifference}
       />
     </div>
-  )
+  );
 }

@@ -1,50 +1,50 @@
-import {useEffect} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {Link, useParams} from 'wouter'
-import {useForm, useWatch} from 'react-hook-form'
-import {ArrowLeft, Printer, Receipt, ShoppingBag, Scissors, Percent} from 'lucide-react'
-import {CashItemSheet} from '@/modules/admin/cash/components/cash-item-sheet'
-import {useCashTabDetail, useUpdateCashTabDiscount} from '@/modules/admin/cash/hooks/use-cash'
-import {cashTabDiscountSchema, type CashTabDiscountValues} from '@/modules/admin/cash/schemas/cash-tab-discount.schema'
-import {useOverlay} from '@/shared/hooks/use-overlay'
-import {useCan} from '@/shared/hooks/use-can'
-import {MoneyInput} from '@/shared/components/money-input'
-import {calculatePricing} from '@/shared/lib/pricing'
-import {formatBRL, formatDateTime, formatDuration} from '@/shared/lib/format'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
+import { useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Link, useParams } from 'wouter';
+import { useForm, useWatch } from 'react-hook-form';
+import { ArrowLeft, Printer, Receipt, ShoppingBag, Scissors, Percent } from 'lucide-react';
+import { CashItemSheet } from '@/modules/admin/cash/components/cash-item-sheet';
+import { useCashTabDetail, useUpdateCashTabDiscount } from '@/modules/admin/cash/hooks/use-cash';
+import { cashTabDiscountSchema, type CashTabDiscountValues } from '@/modules/admin/cash/schemas/cash-tab-discount.schema';
+import { useOverlay } from '@/shared/hooks/use-overlay';
+import { useCan } from '@/shared/hooks/use-can';
+import { MoneyInput } from '@/shared/components/money-input';
+import { calculatePricing } from '@/shared/lib/pricing';
+import { formatBRL, formatDateTime, formatDuration } from '@/shared/lib/format';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 
 export default function CashTabDetailPage() {
-  const params = useParams<{id: string}>()
-  const tabId = Number(params.id)
-  const tabQuery = useCashTabDetail(tabId)
-  const itemOverlay = useOverlay('item')
-  const canManageDiscount = useCan('cash.manage')
-  const updateDiscount = useUpdateCashTabDiscount()
-  const discountForm = useForm<CashTabDiscountValues>({resolver: zodResolver(cashTabDiscountSchema), defaultValues: {discountCents: 0}})
-  const {reset, setError, clearErrors} = discountForm
-  const discountDraft = useWatch({control: discountForm.control, name: 'discountCents'}) ?? 0
+  const params = useParams<{ id: string }>();
+  const tabId = Number(params.id);
+  const tabQuery = useCashTabDetail(tabId);
+  const itemOverlay = useOverlay('item');
+  const canManageDiscount = useCan('cash.manage');
+  const updateDiscount = useUpdateCashTabDiscount();
+  const discountForm = useForm<CashTabDiscountValues>({ resolver: zodResolver(cashTabDiscountSchema), defaultValues: { discountCents: 0 } });
+  const { reset, setError, clearErrors } = discountForm;
+  const discountDraft = useWatch({ control: discountForm.control, name: 'discountCents' }) ?? 0;
 
   useEffect(() => {
-    document.title = Number.isInteger(tabId) && tabId > 0 ? `Comanda #${tabId} | Painel administrativo` : 'Comanda | Painel administrativo'
-  }, [tabId])
+    document.title = Number.isInteger(tabId) && tabId > 0 ? `Comanda #${tabId} | Painel administrativo` : 'Comanda | Painel administrativo';
+  }, [tabId]);
 
   useEffect(() => {
-    if (tabQuery.data) reset({discountCents: tabQuery.data.tab.discount})
-  }, [reset, tabQuery.data?.tab.discount])
+    if (tabQuery.data) reset({ discountCents: tabQuery.data.tab.discount });
+  }, [reset, tabQuery.data?.tab.discount]);
 
   if (!Number.isInteger(tabId) || tabId <= 0) {
-    return <ErrorState title="Comanda inválida" description="Confira o endereço e tente novamente." />
+    return <ErrorState title="Comanda inválida" description="Confira o endereço e tente novamente." />;
   }
 
   if (tabQuery.isError) {
-    return <ErrorState title="Não foi possível carregar a comanda" description="A comanda pode não existir ou seu acesso pode ter mudado." onRetry={() => void tabQuery.refetch()} />
+    return <ErrorState title="Não foi possível carregar a comanda" description="A comanda pode não existir ou seu acesso pode ter mudado." onRetry={() => void tabQuery.refetch()} />;
   }
 
   if (tabQuery.isPending || !tabQuery.data) {
@@ -54,29 +54,29 @@ export default function CashTabDetailPage() {
         <Skeleton className="h-52 rounded-xl" />
         <Skeleton className="h-40 rounded-xl" />
       </div>
-    )
+    );
   }
 
-  const {tab, appointment, customer, barber, barbers, maxDiscountPct} = tabQuery.data
+  const { tab, appointment, customer, barber, barbers, maxDiscountPct } = tabQuery.data;
   const pricing = calculatePricing(
-    tab.items.map(item => ({quantity: item.qty, unitPriceCents: item.unitPrice, discountCents: item.discount})),
+    tab.items.map((item) => ({ quantity: item.qty, unitPriceCents: item.unitPrice, discountCents: item.discount })),
     tab.discount,
-    tab.tip
-  )
-  const discountExceedsSubtotal = discountDraft > pricing.subtotalCents
-  const discountNeedsPermission = discountDraft > 0 && pricing.subtotalCents > 0 && (discountDraft / pricing.subtotalCents) * 100 > maxDiscountPct && !canManageDiscount
-  const applyDiscount = discountForm.handleSubmit(values => {
+    tab.tip,
+  );
+  const discountExceedsSubtotal = discountDraft > pricing.subtotalCents;
+  const discountNeedsPermission = discountDraft > 0 && pricing.subtotalCents > 0 && (discountDraft / pricing.subtotalCents) * 100 > maxDiscountPct && !canManageDiscount;
+  const applyDiscount = discountForm.handleSubmit((values) => {
     if (values.discountCents > pricing.subtotalCents) {
-      setError('discountCents', {message: 'O desconto não pode exceder o subtotal da comanda.'})
-      return
+      setError('discountCents', { message: 'O desconto não pode exceder o subtotal da comanda.' });
+      return;
     }
     if (values.discountCents > 0 && pricing.subtotalCents > 0 && (values.discountCents / pricing.subtotalCents) * 100 > maxDiscountPct && !canManageDiscount) {
-      setError('discountCents', {message: `Descontos acima de ${maxDiscountPct}% exigem permissão cash.manage.`})
-      return
+      setError('discountCents', { message: `Descontos acima de ${maxDiscountPct}% exigem permissão cash.manage.` });
+      return;
     }
-    clearErrors('discountCents')
-    updateDiscount.mutate({id: tab.id, discountCents: values.discountCents})
-  })
+    clearErrors('discountCents');
+    updateDiscount.mutate({ id: tab.id, discountCents: values.discountCents });
+  });
 
   return (
     <div id="cash-receipt" className="space-y-6">
@@ -159,7 +159,7 @@ export default function CashTabDetailPage() {
           <CardContent className="space-y-3">
             {tab.items.length ?
               tab.items.map((item, index) => {
-                const linePricing = calculatePricing([{quantity: item.qty, unitPriceCents: item.unitPrice, discountCents: item.discount}])
+                const linePricing = calculatePricing([{ quantity: item.qty, unitPriceCents: item.unitPrice, discountCents: item.discount }]);
                 return (
                   <article key={`${item.type}-${item.refId}-${index}`} className="grid gap-3 rounded-xl border border-border p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                     <div className="min-w-0">
@@ -173,13 +173,13 @@ export default function CashTabDetailPage() {
                       <p className="mt-1 text-sm text-muted-foreground">
                         {item.qty} × {formatBRL(item.unitPrice)}
                         {' · '}
-                        {item.barberId ? (barbers.find(itemBarber => itemBarber.id === item.barberId)?.name ?? 'Profissional') : 'Sem profissional'}
+                        {item.barberId ? (barbers.find((itemBarber) => itemBarber.id === item.barberId)?.name ?? 'Profissional') : 'Sem profissional'}
                       </p>
                       {item.discount > 0 && <p className="mt-1 text-xs text-muted-foreground">Desconto no item: {formatBRL(item.discount)}</p>}
                     </div>
                     <p className="text-right font-semibold tabular-nums">{formatBRL(linePricing.totalCents)}</p>
                   </article>
-                )
+                );
               })
             : <EmptyState
                 title="Nenhum item na comanda"
@@ -211,15 +211,15 @@ export default function CashTabDetailPage() {
                   <FormField
                     control={discountForm.control}
                     name="discountCents"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Desconto da comanda</FormLabel>
                         <FormControl>
                           <MoneyInput
                             value={field.value}
-                            onValueChange={value => {
-                              field.onChange(value)
-                              clearErrors('discountCents')
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              clearErrors('discountCents');
                             }}
                             aria-label="Desconto da comanda"
                             disabled={updateDiscount.isPending}
@@ -259,7 +259,7 @@ export default function CashTabDetailPage() {
         </Card>
       </section>
 
-      <CashItemSheet open={itemOverlay.isOpen && tab.status === 'open'} onOpenChange={isOpen => itemOverlay.setOpen(isOpen)} tabId={tab.id} defaultBarberId={tab.barberId} />
+      <CashItemSheet open={itemOverlay.isOpen && tab.status === 'open'} onOpenChange={(isOpen) => itemOverlay.setOpen(isOpen)} tabId={tab.id} defaultBarberId={tab.barberId} />
     </div>
-  )
+  );
 }

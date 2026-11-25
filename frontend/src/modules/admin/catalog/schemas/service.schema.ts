@@ -1,8 +1,8 @@
-import {z} from 'zod'
+import { z } from 'zod';
 
-const nullableDuration = z.number().int().min(5).multipleOf(5).nullable()
-const nullablePrice = z.number().int().min(0).nullable()
-const nullableCommission = z.number().min(0).max(100).nullable()
+const nullableDuration = z.number().int().min(5).multipleOf(5).nullable();
+const nullablePrice = z.number().int().min(0).nullable();
+const nullableCommission = z.number().min(0).max(100).nullable();
 
 export const serviceSchema = z.object({
   name: z.string().trim().min(2, 'Informe o nome do serviço.').max(80, 'Use até 80 caracteres.'),
@@ -24,10 +24,10 @@ export const serviceSchema = z.object({
         assigned: z.boolean(),
         durationMin: nullableDuration,
         price: nullablePrice,
-        commissionPct: nullableCommission
-      })
+        commissionPct: nullableCommission,
+      }),
     )
-    .refine(items => items.some(item => item.assigned), 'Selecione ao menos um profissional.')
-})
+    .refine((items) => items.some((item) => item.assigned), 'Selecione ao menos um profissional.'),
+});
 
-export type ServiceFormValues = z.infer<typeof serviceSchema>
+export type ServiceFormValues = z.infer<typeof serviceSchema>;

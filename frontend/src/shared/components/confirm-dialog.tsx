@@ -1,20 +1,20 @@
-import {Button} from '@/shared/ui/button'
-import {X} from 'lucide-react'
-import {Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
+import { Button } from '@/shared/ui/button';
+import { X } from 'lucide-react';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
 
 export interface ConfirmDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  title: string
-  description: string
-  confirmLabel?: string
-  cancelLabel?: string
-  destructive?: boolean
-  pending?: boolean
-  onConfirm: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  destructive?: boolean;
+  pending?: boolean;
+  onConfirm: () => void;
 }
 
-export function ConfirmDialog({open, onOpenChange, title, description, confirmLabel = 'Confirmar', cancelLabel = 'Voltar', destructive = false, pending = false, onConfirm}: ConfirmDialogProps) {
+export function ConfirmDialog({ open, onOpenChange, title, description, confirmLabel = 'Confirmar', cancelLabel = 'Voltar', destructive = false, pending = false, onConfirm }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="pr-14" showCloseButton={false}>
@@ -37,5 +37,5 @@ export function ConfirmDialog({open, onOpenChange, title, description, confirmLa
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

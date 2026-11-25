@@ -1,4 +1,4 @@
-import {z} from 'zod'
+import { z } from 'zod';
 
 export const timeOffSchema = z
   .object({
@@ -8,13 +8,13 @@ export const timeOffSchema = z
     allDay: z.boolean(),
     startTime: z.string(),
     endTime: z.string(),
-    reason: z.enum(['Folga', 'Férias', 'Atestado', 'Curso'])
+    reason: z.enum(['Folga', 'Férias', 'Atestado', 'Curso']),
   })
   .superRefine((values, context) => {
-    if (values.toDate < values.fromDate) context.addIssue({code: 'custom', path: ['toDate'], message: 'A data final deve ser igual ou posterior à inicial.'})
+    if (values.toDate < values.fromDate) context.addIssue({ code: 'custom', path: ['toDate'], message: 'A data final deve ser igual ou posterior à inicial.' });
     if (!values.allDay && (!/^([01]\d|2[0-3]):[0-5]\d$/.test(values.startTime) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(values.endTime) || values.startTime >= values.endTime)) {
-      context.addIssue({code: 'custom', path: ['endTime'], message: 'O horário final precisa ser depois do inicial.'})
+      context.addIssue({ code: 'custom', path: ['endTime'], message: 'O horário final precisa ser depois do inicial.' });
     }
-  })
+  });
 
-export type TimeOffValues = z.infer<typeof timeOffSchema>
+export type TimeOffValues = z.infer<typeof timeOffSchema>;

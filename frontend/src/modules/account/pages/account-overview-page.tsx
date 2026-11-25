@@ -1,17 +1,17 @@
-import {useEffect} from 'react'
-import {useLocation, Link} from 'wouter'
-import {CalendarDays, Clock3, MapPin, Repeat2, Scissors, UserRound} from 'lucide-react'
-import {useAccountAppointments, useAccountBarbers, useAccountUser} from '@/modules/account/hooks/use-account-data'
-import {useRepeatAppointment} from '@/modules/account/hooks/use-repeat-appointment'
-import {usePublicUnit} from '@/modules/site/hooks/use-public-unit'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {StatusBadge, type AppointmentStatus} from '@/shared/components/status-badge'
-import {formatBRL, formatDateTime} from '@/shared/lib/format'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect } from 'react';
+import { useLocation, Link } from 'wouter';
+import { CalendarDays, Clock3, MapPin, Repeat2, Scissors, UserRound } from 'lucide-react';
+import { useAccountAppointments, useAccountBarbers, useAccountUser } from '@/modules/account/hooks/use-account-data';
+import { useRepeatAppointment } from '@/modules/account/hooks/use-repeat-appointment';
+import { usePublicUnit } from '@/modules/site/hooks/use-public-unit';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { StatusBadge, type AppointmentStatus } from '@/shared/components/status-badge';
+import { formatBRL, formatDateTime } from '@/shared/lib/format';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 const apiStatusLabels: Record<string, AppointmentStatus> = {
   pending: 'agendado',
@@ -20,30 +20,30 @@ const apiStatusLabels: Record<string, AppointmentStatus> = {
   in_service: 'em_atendimento',
   done: 'concluido',
   canceled: 'cancelado',
-  no_show: 'no_show'
-}
+  no_show: 'no_show',
+};
 
 export default function AccountOverviewPage() {
-  const [, navigate] = useLocation()
-  const userQuery = useAccountUser()
-  const upcomingQuery = useAccountAppointments({view: 'upcoming', page: 1, limit: 1})
-  const lastCutQuery = useAccountAppointments({view: 'past', page: 1, limit: 1, status: 'done'})
-  const barbersQuery = useAccountBarbers()
-  const unitQuery = usePublicUnit()
-  const repeatAppointment = useRepeatAppointment()
-  const upcoming = upcomingQuery.data?.items[0]
-  const lastCut = lastCutQuery.data?.items[0]
+  const [, navigate] = useLocation();
+  const userQuery = useAccountUser();
+  const upcomingQuery = useAccountAppointments({ view: 'upcoming', page: 1, limit: 1 });
+  const lastCutQuery = useAccountAppointments({ view: 'past', page: 1, limit: 1, status: 'done' });
+  const barbersQuery = useAccountBarbers();
+  const unitQuery = usePublicUnit();
+  const repeatAppointment = useRepeatAppointment();
+  const upcoming = upcomingQuery.data?.items[0];
+  const lastCut = lastCutQuery.data?.items[0];
 
   useEffect(() => {
-    document.title = 'Visão geral | Barbearia'
-    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    document.title = 'Visão geral | Barbearia';
+    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!description) {
-      description = document.createElement('meta')
-      description.name = 'description'
-      document.head.append(description)
+      description = document.createElement('meta');
+      description.name = 'description';
+      document.head.append(description);
     }
-    description.content = 'Consulte seu próximo horário e acesse rapidamente seus agendamentos.'
-  }, [])
+    description.content = 'Consulte seu próximo horário e acesse rapidamente seus agendamentos.';
+  }, []);
 
   const header = (
     <PageHeader
@@ -59,7 +59,7 @@ export default function AccountOverviewPage() {
         </Button>
       }
     />
-  )
+  );
 
   if (userQuery.isPending || upcomingQuery.isPending || lastCutQuery.isPending) {
     return (
@@ -71,7 +71,7 @@ export default function AccountOverviewPage() {
           <Skeleton className="h-28 rounded-xl" />
         </div>
       </div>
-    )
+    );
   }
 
   if (userQuery.isError || upcomingQuery.isError || lastCutQuery.isError) {
@@ -82,19 +82,19 @@ export default function AccountOverviewPage() {
           title="Não foi possível carregar sua conta"
           description="Confira sua conexão e tente carregar os dados novamente."
           onRetry={() => {
-            void userQuery.refetch()
-            void upcomingQuery.refetch()
-            void lastCutQuery.refetch()
+            void userQuery.refetch();
+            void upcomingQuery.refetch();
+            void lastCutQuery.refetch();
           }}
         />
       </div>
-    )
+    );
   }
 
-  const barberName = upcoming ? (barbersQuery.data?.find(barber => barber.id === upcoming.barberId)?.name ?? 'Profissional') : ''
-  const mapDestination = unitQuery.data?.address?.trim() || unitQuery.data?.name?.trim() || 'barbearia'
-  const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapDestination)}`
-  const serviceNames = upcoming?.items.map(item => item.name).filter(Boolean) ?? []
+  const barberName = upcoming ? (barbersQuery.data?.find((barber) => barber.id === upcoming.barberId)?.name ?? 'Profissional') : '';
+  const mapDestination = unitQuery.data?.address?.trim() || unitQuery.data?.name?.trim() || 'barbearia';
+  const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapDestination)}`;
+  const serviceNames = upcoming?.items.map((item) => item.name).filter(Boolean) ?? [];
 
   return (
     <div className="space-y-6">
@@ -205,5 +205,5 @@ export default function AccountOverviewPage() {
         </p>
       )}
     </div>
-  )
+  );
 }

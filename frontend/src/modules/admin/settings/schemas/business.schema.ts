@@ -1,27 +1,27 @@
-import {z} from 'zod'
-import {validators} from '@/shared/lib/validators'
+import { z } from 'zod';
+import { validators } from '@/shared/lib/validators';
 
 const optionalUrl = z
   .string()
   .trim()
   .max(500, 'Use no máximo 500 caracteres.')
-  .refine(value => !value || /^https?:\/\/[^ ]+$/i.test(value), 'Informe um link http ou https válido.')
+  .refine((value) => !value || /^https?:\/\/[^ ]+$/i.test(value), 'Informe um link http ou https válido.');
 
 export const businessSchema = z.object({
   name: z.string().trim().min(2, 'Informe o nome do negócio.').max(120, 'Use no máximo 120 caracteres.'),
   cnpj: z
     .string()
     .trim()
-    .refine(value => !value || validators.cnpj(value), 'Informe um CNPJ válido.'),
+    .refine((value) => !value || validators.cnpj(value), 'Informe um CNPJ válido.'),
   phone: z.string().trim().refine(validators.phone, 'Informe um telefone brasileiro válido com DDD.'),
   whatsapp: z
     .string()
     .trim()
-    .refine(value => !value || validators.phone(value), 'Informe um WhatsApp válido com DDD.'),
+    .refine((value) => !value || validators.phone(value), 'Informe um WhatsApp válido com DDD.'),
   email: z
     .string()
     .trim()
-    .refine(value => !value || z.email().safeParse(value).success, 'Informe um e-mail válido.'),
+    .refine((value) => !value || z.email().safeParse(value).success, 'Informe um e-mail válido.'),
   logo: z.string(),
   addressDetails: z.object({
     zip: z.string().trim().max(12),
@@ -35,12 +35,12 @@ export const businessSchema = z.object({
       .trim()
       .min(2, 'Informe o estado.')
       .max(2)
-      .transform(value => value.toUpperCase()),
-    reference: z.string().trim().max(200)
+      .transform((value) => value.toUpperCase()),
+    reference: z.string().trim().max(200),
   }),
-  socials: z.object({instagram: optionalUrl, facebook: optionalUrl, tiktok: optionalUrl, website: optionalUrl}),
+  socials: z.object({ instagram: optionalUrl, facebook: optionalUrl, tiktok: optionalUrl, website: optionalUrl }),
   amenities: z.array(z.string().trim().min(1).max(60)).max(20),
-  photos: z.array(z.string()).max(8)
-})
+  photos: z.array(z.string()).max(8),
+});
 
-export type BusinessFormValues = z.infer<typeof businessSchema>
+export type BusinessFormValues = z.infer<typeof businessSchema>;

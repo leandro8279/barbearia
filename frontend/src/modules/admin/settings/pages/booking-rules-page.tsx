@@ -1,18 +1,18 @@
-import {useEffect} from 'react'
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {Save, ShieldCheck} from 'lucide-react'
-import {useBookingRules, useSaveBookingRules} from '@/modules/admin/settings/hooks/use-settings'
-import type {BookingRules} from '@/modules/admin/settings/api/settings'
-import {SettingsNavigation} from '@/modules/admin/settings/components/settings-navigation'
-import {bookingSchema, type BookingFormValues} from '@/modules/admin/settings/schemas/booking.schema'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Save, ShieldCheck } from 'lucide-react';
+import { useBookingRules, useSaveBookingRules } from '@/modules/admin/settings/hooks/use-settings';
+import type { BookingRules } from '@/modules/admin/settings/api/settings';
+import { SettingsNavigation } from '@/modules/admin/settings/components/settings-navigation';
+import { bookingSchema, type BookingFormValues } from '@/modules/admin/settings/schemas/booking.schema';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 const defaults: BookingFormValues = {
   slotGranularityMin: 15,
@@ -23,15 +23,15 @@ const defaults: BookingFormValues = {
   rescheduleBeforeHours: 4,
   maxReschedules: 2,
   autoConfirm: true,
-  maxFutureAppointments: 3
-}
+  maxFutureAppointments: 3,
+};
 
 function durationLabel(minutes: number) {
-  if (!minutes) return 'sem antecedência mínima'
-  if (minutes < 60) return `${minutes} minutos`
-  const hours = Math.floor(minutes / 60)
-  const remainder = minutes % 60
-  return remainder ? `${hours} h e ${remainder} min` : `${hours} h`
+  if (!minutes) return 'sem antecedência mínima';
+  if (minutes < 60) return `${minutes} minutos`;
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  return remainder ? `${hours} h e ${remainder} min` : `${hours} h`;
 }
 
 function NumberRuleField({
@@ -40,20 +40,20 @@ function NumberRuleField({
   label,
   min,
   max,
-  suffix
+  suffix,
 }: {
-  control: ReturnType<typeof useForm<BookingFormValues>>['control']
-  name: Exclude<keyof BookingFormValues, 'slotGranularityMin' | 'autoConfirm'>
-  label: string
-  min: number
-  max: number
-  suffix: string
+  control: ReturnType<typeof useForm<BookingFormValues>>['control'];
+  name: Exclude<keyof BookingFormValues, 'slotGranularityMin' | 'autoConfirm'>;
+  label: string;
+  min: number;
+  max: number;
+  suffix: string;
 }) {
   return (
     <FormField
       control={control}
       name={name}
-      render={({field}) => (
+      render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ function NumberRuleField({
                 max={max}
                 step={name === 'defaultBufferMin' ? 5 : 1}
                 value={Number.isFinite(field.value) ? field.value : ''}
-                onChange={event => field.onChange(event.target.value === '' ? undefined : event.target.valueAsNumber)}
+                onChange={(event) => field.onChange(event.target.value === '' ? undefined : event.target.valueAsNumber)}
               />
             </FormControl>
             <span className="min-w-24 text-sm text-muted-foreground">{suffix}</span>
@@ -73,24 +73,24 @@ function NumberRuleField({
         </FormItem>
       )}
     />
-  )
+  );
 }
 
 export default function BookingRulesPage() {
-  const query = useBookingRules()
-  const saveMutation = useSaveBookingRules()
-  const form = useForm<BookingFormValues>({resolver: zodResolver(bookingSchema), defaultValues: defaults})
+  const query = useBookingRules();
+  const saveMutation = useSaveBookingRules();
+  const form = useForm<BookingFormValues>({ resolver: zodResolver(bookingSchema), defaultValues: defaults });
 
   useEffect(() => {
-    document.title = 'Regras de agendamento | Configurações'
-  }, [])
+    document.title = 'Regras de agendamento | Configurações';
+  }, []);
 
   useEffect(() => {
-    if (query.data) form.reset(query.data as BookingRules)
-  }, [form, query.data])
+    if (query.data) form.reset(query.data as BookingRules);
+  }, [form, query.data]);
 
-  const values = form.watch()
-  const canSubmit = !saveMutation.isPending
+  const values = form.watch();
+  const canSubmit = !saveMutation.isPending;
 
   if (query.isPending)
     return (
@@ -99,15 +99,15 @@ export default function BookingRulesPage() {
         <Skeleton className="h-72" />
         <Skeleton className="h-56" />
       </div>
-    )
-  if (query.isError || !query.data) return <ErrorState title="Não foi possível carregar as regras" description="Confira a conexão e tente novamente." onRetry={() => void query.refetch()} />
+    );
+  if (query.isError || !query.data) return <ErrorState title="Não foi possível carregar as regras" description="Confira a conexão e tente novamente." onRetry={() => void query.refetch()} />;
 
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Configurações" title="Regras de agendamento" description="Defina as condições para novos horários solicitados pelos clientes." />
       <SettingsNavigation active="/admin/config/agendamento" />
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(input => saveMutation.mutate(input))} className="space-y-5">
+        <form onSubmit={form.handleSubmit((input) => saveMutation.mutate(input))} className="space-y-5">
           <Card>
             <CardHeader>
               <CardTitle>Disponibilidade</CardTitle>
@@ -116,11 +116,11 @@ export default function BookingRulesPage() {
               <FormField
                 control={form.control}
                 name="slotGranularityMin"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Intervalo da grade</FormLabel>
                     <FormControl>
-                      <select className="min-h-11 w-full rounded-md border border-input bg-background px-3" value={field.value} onChange={event => field.onChange(Number(event.target.value))}>
+                      <select className="min-h-11 w-full rounded-md border border-input bg-background px-3" value={field.value} onChange={(event) => field.onChange(Number(event.target.value))}>
                         <option value={15}>A cada 15 minutos</option>
                         <option value={30}>A cada 30 minutos</option>
                       </select>
@@ -155,14 +155,15 @@ export default function BookingRulesPage() {
               <FormField
                 control={form.control}
                 name="autoConfirm"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Como confirmar novos agendamentos</FormLabel>
                     <FormControl>
                       <select
                         className="min-h-11 w-full max-w-xl rounded-md border border-input bg-background px-3"
                         value={String(field.value)}
-                        onChange={event => field.onChange(event.target.value === 'true')}>
+                        onChange={(event) => field.onChange(event.target.value === 'true')}
+                      >
                         <option value="true">Confirmar automaticamente</option>
                         <option value="false">Aguardar confirmação manual</option>
                       </select>
@@ -203,5 +204,5 @@ export default function BookingRulesPage() {
         </form>
       </Form>
     </div>
-  )
+  );
 }

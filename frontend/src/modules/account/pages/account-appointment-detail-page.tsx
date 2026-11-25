@@ -1,17 +1,17 @@
-import {useEffect} from 'react'
-import {useRoute, Link} from 'wouter'
-import {CalendarDays, Clock3, CreditCard, Scissors, UserRound} from 'lucide-react'
-import {AppointmentActionOverlays} from '@/modules/account/components/appointment-action-overlays'
-import {useAccountAppointment} from '@/modules/account/hooks/use-account-data'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {StatusBadge, type AppointmentStatus} from '@/shared/components/status-badge'
-import {formatBRL, formatDateTime, formatDuration} from '@/shared/lib/format'
-import {useOverlay} from '@/shared/hooks/use-overlay'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect } from 'react';
+import { useRoute, Link } from 'wouter';
+import { CalendarDays, Clock3, CreditCard, Scissors, UserRound } from 'lucide-react';
+import { AppointmentActionOverlays } from '@/modules/account/components/appointment-action-overlays';
+import { useAccountAppointment } from '@/modules/account/hooks/use-account-data';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { StatusBadge, type AppointmentStatus } from '@/shared/components/status-badge';
+import { formatBRL, formatDateTime, formatDuration } from '@/shared/lib/format';
+import { useOverlay } from '@/shared/hooks/use-overlay';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 const statusLabels: Record<string, AppointmentStatus> = {
   pending: 'agendado',
@@ -20,8 +20,8 @@ const statusLabels: Record<string, AppointmentStatus> = {
   in_service: 'em_atendimento',
   done: 'concluido',
   canceled: 'cancelado',
-  no_show: 'no_show'
-}
+  no_show: 'no_show',
+};
 
 const eventLabels: Record<string, string> = {
   created: 'Agendamento criado',
@@ -32,19 +32,19 @@ const eventLabels: Record<string, string> = {
   done: 'Atendimento concluído',
   canceled: 'Agendamento cancelado',
   no_show: 'Cliente não compareceu',
-  items_updated: 'Serviços atualizados'
-}
+  items_updated: 'Serviços atualizados',
+};
 
-const paymentMethods: Record<string, string> = {cash: 'Dinheiro', pix: 'Pix', credit: 'Cartão de crédito', debit: 'Cartão de débito'}
+const paymentMethods: Record<string, string> = { cash: 'Dinheiro', pix: 'Pix', credit: 'Cartão de crédito', debit: 'Cartão de débito' };
 
 function downloadCalendarEvent(appointment: NonNullable<ReturnType<typeof useAccountAppointment>['data']>) {
-  const escape = (value: string) => value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
+  const escape = (value: string) => value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
   const formatUtc = (value: string) =>
     new Date(value)
       .toISOString()
       .replace(/[-:]/g, '')
-      .replace(/\.\d{3}Z$/, 'Z')
-  const services = appointment.items.map(item => item.name).join(', ')
+      .replace(/\.\d{3}Z$/, 'Z');
+  const services = appointment.items.map((item) => item.name).join(', ');
   const content = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -58,33 +58,33 @@ function downloadCalendarEvent(appointment: NonNullable<ReturnType<typeof useAcc
     `SUMMARY:${escape(`Agendamento na Barbearia — ${services}`)}`,
     `DESCRIPTION:${escape(`Profissional: ${appointment.barber.name}\nCódigo: ${appointment.code}`)}`,
     'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\r\n')
-  const url = URL.createObjectURL(new Blob([content], {type: 'text/calendar;charset=utf-8'}))
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.download = `agendamento-${appointment.code}.ics`
-  document.body.append(anchor)
-  anchor.click()
-  anchor.remove()
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    'END:VCALENDAR',
+  ].join('\r\n');
+  const url = URL.createObjectURL(new Blob([content], { type: 'text/calendar;charset=utf-8' }));
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `agendamento-${appointment.code}.ics`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export default function AccountAppointmentDetailPage() {
-  const [, params] = useRoute('/conta/agendamentos/:id')
-  const id = params?.id ?? ''
-  const validId = /^\d+$/.test(id)
-  const appointmentQuery = useAccountAppointment(id, validId)
-  const appointment = appointmentQuery.data
-  const rescheduleOverlay = useOverlay('reagendar')
-  const cancelOverlay = useOverlay('cancelar')
+  const [, params] = useRoute('/conta/agendamentos/:id');
+  const id = params?.id ?? '';
+  const validId = /^\d+$/.test(id);
+  const appointmentQuery = useAccountAppointment(id, validId);
+  const appointment = appointmentQuery.data;
+  const rescheduleOverlay = useOverlay('reagendar');
+  const cancelOverlay = useOverlay('cancelar');
 
   useEffect(() => {
-    document.title = `${appointment ? `Agendamento ${appointment.code}` : 'Detalhe do agendamento'} | Barbearia`
-  }, [appointment])
+    document.title = `${appointment ? `Agendamento ${appointment.code}` : 'Detalhe do agendamento'} | Barbearia`;
+  }, [appointment]);
 
   if (!validId) {
-    return <ErrorState title="Agendamento não encontrado" description="Confira o endereço ou volte para sua lista de agendamentos." />
+    return <ErrorState title="Agendamento não encontrado" description="Confira o endereço ou volte para sua lista de agendamentos." />;
   }
 
   if (appointmentQuery.isPending) {
@@ -94,18 +94,18 @@ export default function AccountAppointmentDetailPage() {
         <Skeleton className="h-56 rounded-2xl" />
         <Skeleton className="h-40 rounded-2xl" />
       </div>
-    )
+    );
   }
 
   if (appointmentQuery.isError || !appointment) {
-    return <ErrorState title="Não foi possível carregar este agendamento" description="Ele pode não existir ou não estar vinculado à sua conta." onRetry={() => void appointmentQuery.refetch()} />
+    return <ErrorState title="Não foi possível carregar este agendamento" description="Ele pode não existir ou não estar vinculado à sua conta." onRetry={() => void appointmentQuery.refetch()} />;
   }
 
-  const status = statusLabels[appointment.status] ?? appointment.status.replaceAll('_', ' ')
-  const canActOnAppointment = new Date(appointment.start).getTime() > Date.now()
-  const canReschedule = canActOnAppointment && ['pending', 'confirmed'].includes(appointment.status) && appointment.rescheduleCount < 2
-  const canCancel = canActOnAppointment && ['pending', 'confirmed', 'checked_in'].includes(appointment.status)
-  const events = [...(appointment.events ?? [])].sort((left, right) => new Date(left.at).getTime() - new Date(right.at).getTime())
+  const status = statusLabels[appointment.status] ?? appointment.status.replaceAll('_', ' ');
+  const canActOnAppointment = new Date(appointment.start).getTime() > Date.now();
+  const canReschedule = canActOnAppointment && ['pending', 'confirmed'].includes(appointment.status) && appointment.rescheduleCount < 2;
+  const canCancel = canActOnAppointment && ['pending', 'confirmed', 'checked_in'].includes(appointment.status);
+  const events = [...(appointment.events ?? [])].sort((left, right) => new Date(left.at).getTime() - new Date(right.at).getTime());
 
   return (
     <div className="space-y-6">
@@ -175,7 +175,7 @@ export default function AccountAppointmentDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {appointment.items.map(item => (
+            {appointment.items.map((item) => (
               <div key={`${appointment.id}-${item.serviceId}`} className="flex items-start justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0">
                 <div>
                   <p className="font-medium">{item.name}</p>
@@ -200,7 +200,7 @@ export default function AccountAppointmentDetailPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {appointment.payments.length ?
-              appointment.payments.map(payment => (
+              appointment.payments.map((payment) => (
                 <div key={payment.id} className="flex items-center justify-between gap-3 text-sm">
                   <span>
                     {paymentMethods[payment.method] ?? payment.method} · {payment.status === 'paid' ? 'Pago' : payment.status}
@@ -251,5 +251,5 @@ export default function AccountAppointmentDetailPage() {
       </div>
       <AppointmentActionOverlays appointment={appointment} />
     </div>
-  )
+  );
 }

@@ -1,135 +1,135 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {CalendarOff, LoaderCircle} from 'lucide-react'
-import {RescheduleAppointmentDialog} from '@/modules/admin/agenda/components/reschedule-appointment-dialog'
-import type {TeamScheduleImpact, TimeOffInput} from '@/modules/admin/team/api/team-management'
-import type {TeamBarber} from '@/modules/admin/team/api/team'
-import {timeOffSchema, type TimeOffValues} from '@/modules/admin/team/schemas/time-off.schema'
-import {useCreateTimeOff, usePreviewTimeOff} from '@/modules/admin/team/hooks/use-team-management'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {formatDateTime} from '@/shared/lib/format'
-import {useCan} from '@/shared/hooks/use-can'
-import {Button} from '@/shared/ui/button'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { CalendarOff, LoaderCircle } from 'lucide-react';
+import { RescheduleAppointmentDialog } from '@/modules/admin/agenda/components/reschedule-appointment-dialog';
+import type { TeamScheduleImpact, TimeOffInput } from '@/modules/admin/team/api/team-management';
+import type { TeamBarber } from '@/modules/admin/team/api/team';
+import { timeOffSchema, type TimeOffValues } from '@/modules/admin/team/schemas/time-off.schema';
+import { useCreateTimeOff, usePreviewTimeOff } from '@/modules/admin/team/hooks/use-team-management';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { formatDateTime } from '@/shared/lib/format';
+import { useCan } from '@/shared/hooks/use-can';
+import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 function todayInBusinessTime() {
-  return new Intl.DateTimeFormat('en-CA', {timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date())
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }
 
 function emptyValues(): TimeOffValues {
-  const today = todayInBusinessTime()
-  return {barberIds: [], fromDate: today, toDate: today, allDay: true, startTime: '09:00', endTime: '10:00', reason: 'Folga'}
+  const today = todayInBusinessTime();
+  return { barberIds: [], fromDate: today, toDate: today, allDay: true, startTime: '09:00', endTime: '10:00', reason: 'Folga' };
 }
 
 interface TeamTimeOffDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  barbers: TeamBarber[]
-  barbersPending: boolean
-  barbersError: boolean
-  onRetryBarbers: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  barbers: TeamBarber[];
+  barbersPending: boolean;
+  barbersError: boolean;
+  onRetryBarbers: () => void;
 }
 
-export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, barbersError, onRetryBarbers}: TeamTimeOffDialogProps) {
-  const canReschedule = useCan('agenda.write')
-  const previewMutation = usePreviewTimeOff()
-  const createMutation = useCreateTimeOff()
-  const form = useForm<TimeOffValues>({resolver: zodResolver(timeOffSchema), defaultValues: emptyValues()})
-  const allDay = form.watch('allDay')
-  const [preview, setPreview] = useState<{conflicts: TeamScheduleImpact[]; count: number} | null>(null)
-  const [reviewedInput, setReviewedInput] = useState<TimeOffInput | null>(null)
-  const [completed, setCompleted] = useState(false)
-  const [discardOpen, setDiscardOpen] = useState(false)
-  const [rescheduleQueue, setRescheduleQueue] = useState<number[]>([])
-  const [rescheduleIndex, setRescheduleIndex] = useState(0)
-  const [rescheduleOpen, setRescheduleOpen] = useState(false)
-  const [formError, setFormError] = useState('')
+export function TeamTimeOffDialog({ open, onOpenChange, barbers, barbersPending, barbersError, onRetryBarbers }: TeamTimeOffDialogProps) {
+  const canReschedule = useCan('agenda.write');
+  const previewMutation = usePreviewTimeOff();
+  const createMutation = useCreateTimeOff();
+  const form = useForm<TimeOffValues>({ resolver: zodResolver(timeOffSchema), defaultValues: emptyValues() });
+  const allDay = form.watch('allDay');
+  const [preview, setPreview] = useState<{ conflicts: TeamScheduleImpact[]; count: number } | null>(null);
+  const [reviewedInput, setReviewedInput] = useState<TimeOffInput | null>(null);
+  const [completed, setCompleted] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const [rescheduleQueue, setRescheduleQueue] = useState<number[]>([]);
+  const [rescheduleIndex, setRescheduleIndex] = useState(0);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     if (!open) {
-      form.reset(emptyValues())
-      setPreview(null)
-      setReviewedInput(null)
-      setCompleted(false)
-      setFormError('')
-      setRescheduleQueue([])
-      setRescheduleIndex(0)
-      setRescheduleOpen(false)
+      form.reset(emptyValues());
+      setPreview(null);
+      setReviewedInput(null);
+      setCompleted(false);
+      setFormError('');
+      setRescheduleQueue([]);
+      setRescheduleIndex(0);
+      setRescheduleOpen(false);
     }
-  }, [form, open])
+  }, [form, open]);
 
   function requestClose(nextOpen: boolean) {
     if (!nextOpen && !completed && (form.formState.isDirty || preview !== null)) {
-      setDiscardOpen(true)
-      return
+      setDiscardOpen(true);
+      return;
     }
-    onOpenChange(nextOpen)
+    onOpenChange(nextOpen);
   }
 
   function getInput(values: TimeOffValues): TimeOffInput {
-    return {...values, startTime: values.allDay ? '00:00' : values.startTime, endTime: values.allDay ? '00:00' : values.endTime}
+    return { ...values, startTime: values.allDay ? '00:00' : values.startTime, endTime: values.allDay ? '00:00' : values.endTime };
   }
 
   async function checkConflicts(values: TimeOffValues) {
-    setFormError('')
-    setPreview(null)
-    setReviewedInput(null)
+    setFormError('');
+    setPreview(null);
+    setReviewedInput(null);
     try {
-      const input = getInput(values)
-      const result = await previewMutation.mutateAsync(input)
-      setPreview(result)
-      setReviewedInput(input)
+      const input = getInput(values);
+      const result = await previewMutation.mutateAsync(input);
+      setPreview(result);
+      setReviewedInput(input);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível conferir os agendamentos afetados.')
+      setFormError(error instanceof Error ? error.message : 'Não foi possível conferir os agendamentos afetados.');
     }
   }
 
   async function createBlocks() {
-    if (!reviewedInput || preview?.conflicts.length) return
-    setFormError('')
+    if (!reviewedInput || preview?.conflicts.length) return;
+    setFormError('');
     try {
-      await createMutation.mutateAsync(reviewedInput)
-      setCompleted(true)
+      await createMutation.mutateAsync(reviewedInput);
+      setCompleted(true);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível registrar o período.')
+      setFormError(error instanceof Error ? error.message : 'Não foi possível registrar o período.');
     }
   }
 
   async function refreshPreview() {
-    if (!reviewedInput) return
+    if (!reviewedInput) return;
     try {
-      setPreview(await previewMutation.mutateAsync(reviewedInput))
+      setPreview(await previewMutation.mutateAsync(reviewedInput));
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível atualizar os agendamentos afetados.')
+      setFormError(error instanceof Error ? error.message : 'Não foi possível atualizar os agendamentos afetados.');
     }
   }
 
   function startMassReschedule() {
-    const ids = [...new Set((preview?.conflicts ?? []).map(item => item.id))]
-    if (!ids.length) return
-    setRescheduleQueue(ids)
-    setRescheduleIndex(0)
-    setRescheduleOpen(true)
+    const ids = [...new Set((preview?.conflicts ?? []).map((item) => item.id))];
+    if (!ids.length) return;
+    setRescheduleQueue(ids);
+    setRescheduleIndex(0);
+    setRescheduleOpen(true);
   }
 
   function finishCurrentReschedule() {
     if (rescheduleIndex + 1 < rescheduleQueue.length) {
-      setRescheduleIndex(index => index + 1)
-      return
+      setRescheduleIndex((index) => index + 1);
+      return;
     }
-    setRescheduleOpen(false)
-    setRescheduleQueue([])
-    setRescheduleIndex(0)
-    void refreshPreview()
+    setRescheduleOpen(false);
+    setRescheduleQueue([]);
+    setRescheduleIndex(0);
+    void refreshPreview();
   }
 
-  const currentAppointmentId = rescheduleQueue[rescheduleIndex]
+  const currentAppointmentId = rescheduleQueue[rescheduleIndex];
 
   return (
     <>
@@ -155,11 +155,12 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
               <form
                 className="space-y-5"
                 onChange={() => {
-                  setPreview(null)
-                  setReviewedInput(null)
-                  setFormError('')
+                  setPreview(null);
+                  setReviewedInput(null);
+                  setFormError('');
                 }}
-                onSubmit={form.handleSubmit(checkConflicts)}>
+                onSubmit={form.handleSubmit(checkConflicts)}
+              >
                 <FormField
                   control={form.control}
                   name="barberIds"
@@ -181,24 +182,24 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
                           </Button>
                         </div>
                       : <div className="grid gap-2 sm:grid-cols-2">
-                          {barbers.map(barber => {
-                            const selected = form.getValues('barberIds').includes(barber.id)
+                          {barbers.map((barber) => {
+                            const selected = form.getValues('barberIds').includes(barber.id);
                             return (
                               <label key={barber.id} className="flex min-h-11 items-center gap-3 rounded-lg border border-border px-3 text-sm">
                                 <Checkbox
                                   checked={selected}
-                                  onCheckedChange={checked => {
-                                    const current = form.getValues('barberIds')
-                                    form.setValue('barberIds', checked === true ? [...new Set([...current, barber.id])] : current.filter(id => id !== barber.id), {
+                                  onCheckedChange={(checked) => {
+                                    const current = form.getValues('barberIds');
+                                    form.setValue('barberIds', checked === true ? [...new Set([...current, barber.id])] : current.filter((id) => id !== barber.id), {
                                       shouldDirty: true,
-                                      shouldValidate: true
-                                    })
+                                      shouldValidate: true,
+                                    });
                                   }}
                                 />
                                 <span>{barber.name}</span>
                                 {!barber.active && <span className="text-xs text-muted-foreground">(inativo)</span>}
                               </label>
-                            )
+                            );
                           })}
                         </div>
                       }
@@ -211,7 +212,7 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
                   <FormField
                     control={form.control}
                     name="fromDate"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Data inicial</FormLabel>
                         <FormControl>
@@ -224,7 +225,7 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
                   <FormField
                     control={form.control}
                     name="toDate"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Data final</FormLabel>
                         <FormControl>
@@ -239,7 +240,7 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
                 <FormField
                   control={form.control}
                   name="reason"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Motivo</FormLabel>
                       <Select value={field.value} onValueChange={field.onChange}>
@@ -263,10 +264,10 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
                 <FormField
                   control={form.control}
                   name="allDay"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem className="flex min-h-11 items-center gap-3">
                       <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={checked => field.onChange(checked === true)} />
+                        <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                       </FormControl>
                       <FormLabel className="cursor-pointer">Dia inteiro</FormLabel>
                     </FormItem>
@@ -277,7 +278,7 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
                     <FormField
                       control={form.control}
                       name="startTime"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Horário inicial</FormLabel>
                           <FormControl>
@@ -290,7 +291,7 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
                     <FormField
                       control={form.control}
                       name="endTime"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Horário final</FormLabel>
                           <FormControl>
@@ -316,7 +317,7 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
                           <p className="text-sm text-muted-foreground">Nenhum bloqueio será criado enquanto houver conflito.</p>
                         </div>
                         <ul className="max-h-56 space-y-2 overflow-y-auto">
-                          {preview.conflicts.map(appointment => (
+                          {preview.conflicts.map((appointment) => (
                             <li key={appointment.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-background p-3 text-sm">
                               <span>
                                 {appointment.customerName} · {appointment.barberName} · {formatDateTime(appointment.start)}
@@ -371,12 +372,12 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
         confirmLabel="Descartar"
         destructive
         onConfirm={() => {
-          setDiscardOpen(false)
-          form.reset(emptyValues())
-          setPreview(null)
-          setReviewedInput(null)
-          setFormError('')
-          onOpenChange(false)
+          setDiscardOpen(false);
+          form.reset(emptyValues());
+          setPreview(null);
+          setReviewedInput(null);
+          setFormError('');
+          onOpenChange(false);
         }}
       />
 
@@ -385,11 +386,11 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
           key={currentAppointmentId}
           appointmentId={String(currentAppointmentId)}
           open={rescheduleOpen}
-          onOpenChange={nextOpen => {
-            setRescheduleOpen(nextOpen)
+          onOpenChange={(nextOpen) => {
+            setRescheduleOpen(nextOpen);
             if (!nextOpen) {
-              setRescheduleQueue([])
-              setRescheduleIndex(0)
+              setRescheduleQueue([]);
+              setRescheduleIndex(0);
             }
           }}
           onCompleted={finishCurrentReschedule}
@@ -397,5 +398,5 @@ export function TeamTimeOffDialog({open, onOpenChange, barbers, barbersPending, 
         />
       )}
     </>
-  )
+  );
 }

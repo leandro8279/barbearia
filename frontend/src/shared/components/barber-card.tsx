@@ -1,20 +1,21 @@
-import {CalendarClock, Scissors} from 'lucide-react'
-import type {ReactNode} from 'react'
-import {Avatar, AvatarFallback, AvatarImage} from '@/shared/ui/avatar'
-import {Badge} from '@/shared/ui/badge'
-import {Card, CardContent, CardFooter} from '@/shared/ui/card'
-import {cn} from '@/shared/lib/utils'
+import { cn } from '@/shared/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
+import { Badge } from '@/shared/ui/badge';
+import { Card, CardContent, CardFooter } from '@/shared/ui/card';
 
+import { CalendarClock, Scissors } from 'lucide-react';
+
+import type { ReactNode } from 'react';
 export interface BarberCardProps {
-  name: string
-  photoUrl?: string
-  specialties?: string[]
-  nextAvailable?: string
-  availabilityText?: string
-  footer?: ReactNode
-  selected?: boolean
-  disabled?: boolean
-  onSelect?: () => void
+  name: string;
+  photoUrl?: string;
+  specialties?: string[];
+  nextAvailable?: string;
+  availabilityText?: string;
+  footer?: ReactNode;
+  selected?: boolean;
+  disabled?: boolean;
+  onSelect?: () => void;
 }
 
 function initials(name: string): string {
@@ -22,11 +23,11 @@ function initials(name: string): string {
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map(part => part[0]?.toUpperCase())
-    .join('')
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
 }
 
-export function BarberCard({name, photoUrl, specialties = [], nextAvailable, availabilityText, footer, selected = false, disabled = false, onSelect}: BarberCardProps) {
+export function BarberCard({ name, photoUrl, specialties = [], nextAvailable, availabilityText, footer, selected = false, disabled = false, onSelect }: BarberCardProps) {
   const content = (
     <Card className={cn('h-full transition-colors', selected && 'border-primary ring-2 ring-primary/30')}>
       <CardContent className="flex min-h-32 items-start gap-4">
@@ -38,7 +39,7 @@ export function BarberCard({name, photoUrl, specialties = [], nextAvailable, ava
           <h3 className="font-semibold">{name}</h3>
           {specialties.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Especialidades">
-              {specialties.map(specialty => (
+              {specialties.map((specialty) => (
                 <Badge key={specialty} variant="secondary" className="rounded-full font-normal">
                   <Scissors className="size-3" aria-hidden="true" />
                   {specialty}
@@ -62,9 +63,9 @@ export function BarberCard({name, photoUrl, specialties = [], nextAvailable, ava
       </CardContent>
       {footer && <CardFooter className="mt-auto justify-end gap-3 border-t pt-4">{footer}</CardFooter>}
     </Card>
-  )
+  );
 
-  if (!onSelect) return content
+  if (!onSelect) return content;
   return (
     <div
       role="button"
@@ -73,15 +74,16 @@ export function BarberCard({name, photoUrl, specialties = [], nextAvailable, ava
       aria-pressed={selected}
       aria-disabled={disabled}
       onClick={() => {
-        if (!disabled) onSelect()
+        if (!disabled) onSelect();
       }}
-      onKeyDown={event => {
+      onKeyDown={(event) => {
         if ((event.key === 'Enter' || event.key === ' ') && !disabled) {
-          event.preventDefault()
-          onSelect()
+          event.preventDefault();
+          onSelect();
         }
-      }}>
+      }}
+    >
       {content}
     </div>
-  )
+  );
 }

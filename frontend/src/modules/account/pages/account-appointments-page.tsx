@@ -1,28 +1,28 @@
-import {useEffect, useState} from 'react'
-import {Link, useLocation} from 'wouter'
-import {CalendarDays, ChevronLeft, ChevronRight, Scissors, UserRound} from 'lucide-react'
-import {useAccountAppointments, useAccountBarbers} from '@/modules/account/hooks/use-account-data'
-import {useRepeatAppointment} from '@/modules/account/hooks/use-repeat-appointment'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {StatusBadge, type AppointmentStatus} from '@/shared/components/status-badge'
-import {formatBRL, formatDateTime} from '@/shared/lib/format'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent} from '@/shared/ui/card'
-import {Input} from '@/shared/ui/input'
-import {Label} from '@/shared/ui/label'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/shared/ui/tabs'
-import {AppointmentActionOverlays} from '@/modules/account/components/appointment-action-overlays'
-import type {AppointmentListView, CustomerAppointment} from '@/modules/account/api/appointments'
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'wouter';
+import { CalendarDays, ChevronLeft, ChevronRight, Scissors, UserRound } from 'lucide-react';
+import { useAccountAppointments, useAccountBarbers } from '@/modules/account/hooks/use-account-data';
+import { useRepeatAppointment } from '@/modules/account/hooks/use-repeat-appointment';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { StatusBadge, type AppointmentStatus } from '@/shared/components/status-badge';
+import { formatBRL, formatDateTime } from '@/shared/lib/format';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Input } from '@/shared/ui/input';
+import { Label } from '@/shared/ui/label';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { AppointmentActionOverlays } from '@/modules/account/components/appointment-action-overlays';
+import type { AppointmentListView, CustomerAppointment } from '@/modules/account/api/appointments';
 
-const PAGE_SIZE = 8
-const views: Array<{value: AppointmentListView; label: string}> = [
-  {value: 'upcoming', label: 'Próximos'},
-  {value: 'past', label: 'Passados'},
-  {value: 'canceled', label: 'Cancelados'}
-]
+const PAGE_SIZE = 8;
+const views: Array<{ value: AppointmentListView; label: string }> = [
+  { value: 'upcoming', label: 'Próximos' },
+  { value: 'past', label: 'Passados' },
+  { value: 'canceled', label: 'Cancelados' },
+];
 
 const apiStatusLabels: Record<string, AppointmentStatus> = {
   pending: 'agendado',
@@ -31,36 +31,36 @@ const apiStatusLabels: Record<string, AppointmentStatus> = {
   in_service: 'em_atendimento',
   done: 'concluido',
   canceled: 'cancelado',
-  no_show: 'no_show'
-}
+  no_show: 'no_show',
+};
 
 export default function AccountAppointmentsPage() {
-  const [, navigate] = useLocation()
-  const [view, setView] = useState<AppointmentListView>('upcoming')
-  const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')
-  const [page, setPage] = useState(1)
-  const appointmentsQuery = useAccountAppointments({view, page, limit: PAGE_SIZE, from: from || undefined, to: to || undefined}, !from || !to || from <= to)
-  const barbersQuery = useAccountBarbers()
-  const repeatAppointment = useRepeatAppointment()
-  const invalidRange = Boolean(from && to && from > to)
-  const result = appointmentsQuery.data
-  const total = result?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
-  const rangeEnd = Math.min(page * PAGE_SIZE, total)
-  const appointmentCards = (result?.items ?? []).map(appointment => renderAppointment(appointment, view, barbersQuery.data ?? [], repeatAppointment))
+  const [, navigate] = useLocation();
+  const [view, setView] = useState<AppointmentListView>('upcoming');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [page, setPage] = useState(1);
+  const appointmentsQuery = useAccountAppointments({ view, page, limit: PAGE_SIZE, from: from || undefined, to: to || undefined }, !from || !to || from <= to);
+  const barbersQuery = useAccountBarbers();
+  const repeatAppointment = useRepeatAppointment();
+  const invalidRange = Boolean(from && to && from > to);
+  const result = appointmentsQuery.data;
+  const total = result?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, total);
+  const appointmentCards = (result?.items ?? []).map((appointment) => renderAppointment(appointment, view, barbersQuery.data ?? [], repeatAppointment));
 
   useEffect(() => {
-    document.title = 'Meus agendamentos | Barbearia'
-    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    document.title = 'Meus agendamentos | Barbearia';
+    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!description) {
-      description = document.createElement('meta')
-      description.name = 'description'
-      document.head.append(description)
+      description = document.createElement('meta');
+      description.name = 'description';
+      document.head.append(description);
     }
-    description.content = 'Consulte seus próximos horários, atendimentos passados e cancelamentos.'
-  }, [])
+    description.content = 'Consulte seus próximos horários, atendimentos passados e cancelamentos.';
+  }, []);
 
   const resultContent =
     invalidRange ?
@@ -69,7 +69,7 @@ export default function AccountAppointmentsPage() {
       </p>
     : appointmentsQuery.isPending || (barbersQuery.isPending && !result) ?
       <div className="space-y-3" aria-label="Carregando seus agendamentos">
-        {[0, 1, 2].map(item => (
+        {[0, 1, 2].map((item) => (
           <Skeleton key={item} className="h-36 rounded-xl" />
         ))}
       </div>
@@ -93,20 +93,20 @@ export default function AccountAppointmentsPage() {
             Mostrando {rangeStart}–{rangeEnd} de {total}
           </p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="min-h-11" disabled={page <= 1 || appointmentsQuery.isFetching} onClick={() => setPage(value => Math.max(1, value - 1))}>
+            <Button variant="outline" className="min-h-11" disabled={page <= 1 || appointmentsQuery.isFetching} onClick={() => setPage((value) => Math.max(1, value - 1))}>
               <ChevronLeft aria-hidden="true" />
               Anterior
             </Button>
             <span className="min-w-20 text-center text-sm" aria-label={`Página ${page} de ${totalPages}`}>
               {page} / {totalPages}
             </span>
-            <Button variant="outline" className="min-h-11" disabled={page >= totalPages || appointmentsQuery.isFetching} onClick={() => setPage(value => value + 1)}>
+            <Button variant="outline" className="min-h-11" disabled={page >= totalPages || appointmentsQuery.isFetching} onClick={() => setPage((value) => value + 1)}>
               Próxima
               <ChevronRight aria-hidden="true" />
             </Button>
           </div>
         </div>
-      </div>
+      </div>;
 
   return (
     <div className="space-y-6">
@@ -132,9 +132,9 @@ export default function AccountAppointmentsPage() {
               id="appointments-from"
               type="date"
               value={from}
-              onChange={event => {
-                setFrom(event.target.value)
-                setPage(1)
+              onChange={(event) => {
+                setFrom(event.target.value);
+                setPage(1);
               }}
               className="min-h-11"
             />
@@ -145,9 +145,9 @@ export default function AccountAppointmentsPage() {
               id="appointments-to"
               type="date"
               value={to}
-              onChange={event => {
-                setTo(event.target.value)
-                setPage(1)
+              onChange={(event) => {
+                setTo(event.target.value);
+                setPage(1);
               }}
               className="min-h-11"
             />
@@ -157,20 +157,21 @@ export default function AccountAppointmentsPage() {
 
       <Tabs
         value={view}
-        onValueChange={value => {
+        onValueChange={(value) => {
           if (value === 'upcoming' || value === 'past' || value === 'canceled') {
-            setView(value)
-            setPage(1)
+            setView(value);
+            setPage(1);
           }
-        }}>
+        }}
+      >
         <TabsList className="grid h-auto w-full grid-cols-3 sm:w-[28rem]">
-          {views.map(item => (
+          {views.map((item) => (
             <TabsTrigger key={item.value} value={item.value} className="min-h-11">
               {item.label}
             </TabsTrigger>
           ))}
         </TabsList>
-        {views.map(item => (
+        {views.map((item) => (
           <TabsContent key={item.value} value={item.value} className="mt-5">
             {resultContent}
           </TabsContent>
@@ -178,13 +179,13 @@ export default function AccountAppointmentsPage() {
       </Tabs>
       <AppointmentActionOverlays />
     </div>
-  )
+  );
 }
 
-function renderAppointment(appointment: CustomerAppointment, view: AppointmentListView, barbers: Array<{id: number; name: string}>, repeatAppointment: (appointment: CustomerAppointment) => void) {
-  const barber = barbers.find(item => item.id === appointment.barberId)?.name ?? 'Profissional'
-  const services = appointment.items.map(item => item.name).filter(Boolean)
-  const status = apiStatusLabels[appointment.status] ?? appointment.status.replaceAll('_', ' ')
+function renderAppointment(appointment: CustomerAppointment, view: AppointmentListView, barbers: Array<{ id: number; name: string }>, repeatAppointment: (appointment: CustomerAppointment) => void) {
+  const barber = barbers.find((item) => item.id === appointment.barberId)?.name ?? 'Profissional';
+  const services = appointment.items.map((item) => item.name).filter(Boolean);
+  const status = apiStatusLabels[appointment.status] ?? appointment.status.replaceAll('_', ' ');
 
   return (
     <Card key={appointment.id} className="shadow-sm">
@@ -228,5 +229,5 @@ function renderAppointment(appointment: CustomerAppointment, view: AppointmentLi
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

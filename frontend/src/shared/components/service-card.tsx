@@ -1,23 +1,23 @@
-import {Clock3} from 'lucide-react'
-import {formatDuration} from '@/shared/lib/format'
-import {cn} from '@/shared/lib/utils'
-import {Card, CardContent, CardFooter} from '@/shared/ui/card'
-import {PriceTag} from '@/shared/components/price-tag'
-import type {ReactNode} from 'react'
+import { Clock3 } from 'lucide-react';
+import { formatDuration } from '@/shared/lib/format';
+import { cn } from '@/shared/lib/utils';
+import { Card, CardContent, CardFooter } from '@/shared/ui/card';
+import { PriceTag } from '@/shared/components/price-tag';
+import type { ReactNode } from 'react';
 
 export interface ServiceCardProps {
-  name: string
-  description?: string
-  durationMinutes: number
-  priceCents: number
-  priceCaption?: string
-  footer?: ReactNode
-  selected?: boolean
-  disabled?: boolean
-  onSelect?: () => void
+  name: string;
+  description?: string;
+  durationMinutes: number;
+  priceCents: number;
+  priceCaption?: string;
+  footer?: ReactNode;
+  selected?: boolean;
+  disabled?: boolean;
+  onSelect?: () => void;
 }
 
-export function ServiceCard({name, description, durationMinutes, priceCents, priceCaption, footer, selected = false, disabled = false, onSelect}: ServiceCardProps) {
+export function ServiceCard({ name, description, durationMinutes, priceCents, priceCaption, footer, selected = false, disabled = false, onSelect }: ServiceCardProps) {
   const content = (
     <Card className={cn('h-full transition-colors', selected && 'border-primary ring-2 ring-primary/30')}>
       <CardContent className="flex min-h-28 items-start justify-between gap-3">
@@ -38,9 +38,9 @@ export function ServiceCard({name, description, durationMinutes, priceCents, pri
       </CardContent>
       {footer && <CardFooter className="mt-auto justify-between gap-3 border-t pt-4">{footer}</CardFooter>}
     </Card>
-  )
+  );
 
-  if (!onSelect) return content
+  if (!onSelect) return content;
   return (
     <div
       role="button"
@@ -49,15 +49,16 @@ export function ServiceCard({name, description, durationMinutes, priceCents, pri
       aria-pressed={selected}
       aria-disabled={disabled}
       onClick={() => {
-        if (!disabled) onSelect()
+        if (!disabled) onSelect();
       }}
-      onKeyDown={event => {
+      onKeyDown={(event) => {
         if ((event.key === 'Enter' || event.key === ' ') && !disabled) {
-          event.preventDefault()
-          onSelect()
+          event.preventDefault();
+          onSelect();
         }
-      }}>
+      }}
+    >
       {content}
     </div>
-  )
+  );
 }

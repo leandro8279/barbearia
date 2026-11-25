@@ -1,18 +1,18 @@
-import {useEffect} from 'react'
-import {Link, useParams, useSearch} from 'wouter'
-import {ArrowLeft, CalendarPlus, Clock3, DollarSign, MessageCircle, Pin, Scissors, UserRound} from 'lucide-react'
-import {CustomerDrawer} from '@/modules/admin/customers/components/customer-drawer'
-import {useAdminCustomerProfile} from '@/modules/admin/customers/hooks/use-customers'
-import {useOverlay} from '@/shared/hooks/use-overlay'
-import {formatBRL, formatDate, formatDateTime, formatPhone} from '@/shared/lib/format'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {EmptyState} from '@/shared/components/empty-state'
-import {Avatar, AvatarFallback, AvatarImage} from '@/shared/ui/avatar'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/shared/ui/tabs'
+import { useEffect } from 'react';
+import { Link, useParams, useSearch } from 'wouter';
+import { ArrowLeft, CalendarPlus, Clock3, DollarSign, MessageCircle, Pin, Scissors, UserRound } from 'lucide-react';
+import { CustomerDrawer } from '@/modules/admin/customers/components/customer-drawer';
+import { useAdminCustomerProfile } from '@/modules/admin/customers/hooks/use-customers';
+import { useOverlay } from '@/shared/hooks/use-overlay';
+import { formatBRL, formatDate, formatDateTime, formatPhone } from '@/shared/lib/format';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { EmptyState } from '@/shared/components/empty-state';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 
 const appointmentStatus: Record<string, string> = {
   pending: 'Pendente',
@@ -21,30 +21,30 @@ const appointmentStatus: Record<string, string> = {
   in_service: 'Em atendimento',
   done: 'Concluído',
   canceled: 'Cancelado',
-  no_show: 'Não compareceu'
-}
+  no_show: 'Não compareceu',
+};
 
 function initials(name: string) {
   return name
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map(part => part[0])
+    .map((part) => part[0])
     .join('')
-    .toLocaleUpperCase('pt-BR')
+    .toLocaleUpperCase('pt-BR');
 }
 
 export default function CustomerProfilePage() {
-  const {id = ''} = useParams<{id: string}>()
-  const search = useSearch()
-  const overlay = useOverlay('cliente', '')
-  const drawerId = new URLSearchParams(search).get('cliente')
-  const profileQuery = useAdminCustomerProfile(id)
-  const profile = profileQuery.data
+  const { id = '' } = useParams<{ id: string }>();
+  const search = useSearch();
+  const overlay = useOverlay('cliente', '');
+  const drawerId = new URLSearchParams(search).get('cliente');
+  const profileQuery = useAdminCustomerProfile(id);
+  const profile = profileQuery.data;
 
   useEffect(() => {
-    document.title = `${profile?.customer.name ?? 'Perfil do cliente'} | Painel administrativo`
-  }, [profile?.customer.name])
+    document.title = `${profile?.customer.name ?? 'Perfil do cliente'} | Painel administrativo`;
+  }, [profile?.customer.name]);
 
   if (profileQuery.isPending) {
     return (
@@ -57,18 +57,18 @@ export default function CustomerProfilePage() {
         </div>
         <Skeleton className="h-72 rounded-xl" />
       </div>
-    )
+    );
   }
 
   if (profileQuery.isError || !profile) {
-    return <ErrorState title="Não foi possível carregar o perfil" description="Confira se o cliente ainda existe e tente novamente." onRetry={() => void profileQuery.refetch()} />
+    return <ErrorState title="Não foi possível carregar o perfil" description="Confira se o cliente ainda existe e tente novamente." onRetry={() => void profileQuery.refetch()} />;
   }
 
-  const {customer, metrics, permissions, appointments, financial, notes} = profile
-  const phoneDigits = customer.phone.replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '')
-  const whatsappNumber = phoneDigits.length >= 10 ? `55${phoneDigits}` : ''
+  const { customer, metrics, permissions, appointments, financial, notes } = profile;
+  const phoneDigits = customer.phone.replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '');
+  const whatsappNumber = phoneDigits.length >= 10 ? `55${phoneDigits}` : '';
   const medianFrequency =
-    metrics.medianIntervalDays === null ? 'Sem histórico suficiente' : `A cada ${new Intl.NumberFormat('pt-BR', {maximumFractionDigits: 1}).format(metrics.medianIntervalDays)} dias`
+    metrics.medianIntervalDays === null ? 'Sem histórico suficiente' : `A cada ${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(metrics.medianIntervalDays)} dias`;
 
   return (
     <div className="space-y-6">
@@ -184,10 +184,10 @@ export default function CustomerProfilePage() {
             <EmptyState title="Histórico indisponível" description="Sua conta não tem permissão para consultar a agenda." />
           : appointments.length === 0 ?
             <EmptyState title="Nenhum agendamento encontrado" description="O histórico deste cliente aparecerá aqui." />
-          : appointments.map(appointment => (
+          : appointments.map((appointment) => (
               <article key={appointment.id} className="flex flex-col gap-3 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-medium">{appointment.items.map(item => item.name).join(' + ') || 'Agendamento'}</p>
+                  <p className="font-medium">{appointment.items.map((item) => item.name).join(' + ') || 'Agendamento'}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {formatDateTime(appointment.start)} · {appointment.code}
                   </p>
@@ -208,13 +208,13 @@ export default function CustomerProfilePage() {
             <EmptyState title="Dados financeiros indisponíveis" description="Sua conta não tem permissão para consultar o caixa." />
           : financial.length === 0 ?
             <EmptyState title="Nenhuma comanda finalizada" description="As comandas fechadas deste cliente aparecerão aqui." />
-          : financial.map(tab => (
+          : financial.map((tab) => (
               <article key={tab.id} className="flex flex-col gap-3 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="font-medium">Comanda #{tab.id}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{formatDateTime(tab.date)}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{tab.items.map(item => `${item.qty}× ${item.name}`).join(', ') || 'Sem itens'}</p>
-                  {tab.payments.length > 0 && <p className="mt-1 text-xs text-muted-foreground">{tab.payments.map(payment => `${payment.method}: ${formatBRL(payment.amountCents)}`).join(' · ')}</p>}
+                  <p className="mt-1 text-sm text-muted-foreground">{tab.items.map((item) => `${item.qty}× ${item.name}`).join(', ') || 'Sem itens'}</p>
+                  {tab.payments.length > 0 && <p className="mt-1 text-xs text-muted-foreground">{tab.payments.map((payment) => `${payment.method}: ${formatBRL(payment.amountCents)}`).join(' · ')}</p>}
                 </div>
                 <p className="shrink-0 text-lg font-semibold tabular-nums">{formatBRL(tab.totalCents)}</p>
               </article>
@@ -227,7 +227,7 @@ export default function CustomerProfilePage() {
             <EmptyState title="Notas indisponíveis" description="Sua conta não tem permissão para consultar as notas internas." />
           : notes.length === 0 ?
             <EmptyState title="Nenhuma nota registrada" description="As observações sobre este cliente aparecerão aqui." />
-          : notes.map(note => (
+          : notes.map((note) => (
               <article key={note.id} className="rounded-lg border border-border p-4">
                 <div className="flex items-start justify-between gap-3">
                   <p className="whitespace-pre-wrap text-sm">{note.text}</p>
@@ -242,7 +242,7 @@ export default function CustomerProfilePage() {
         </TabsContent>
       </Tabs>
 
-      <CustomerDrawer open={overlay.isOpen && permissions.edit} customerId={drawerId} onOpenChange={open => overlay.setOpen(open, drawerId ?? String(customer.id))} />
+      <CustomerDrawer open={overlay.isOpen && permissions.edit} customerId={drawerId} onOpenChange={(open) => overlay.setOpen(open, drawerId ?? String(customer.id))} />
     </div>
-  )
+  );
 }

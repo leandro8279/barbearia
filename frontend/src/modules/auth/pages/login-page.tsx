@@ -1,57 +1,57 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {Eye, EyeOff, LoaderCircle} from 'lucide-react'
-import {useForm} from 'react-hook-form'
-import {Link, useLocation, useSearch} from 'wouter'
-import {login} from '@/modules/auth/api/auth'
-import {loginSchema, type LoginFormValues} from '@/modules/auth/schemas/login.schema'
-import {ForgotPasswordDialog} from '@/modules/auth/components/forgot-password-dialog'
-import {HttpError} from '@/shared/lib/http'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {useOverlay} from '@/shared/hooks/use-overlay'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import type {UserRole} from '@/shared/types/domain'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { Link, useLocation, useSearch } from 'wouter';
+import { login } from '@/modules/auth/api/auth';
+import { loginSchema, type LoginFormValues } from '@/modules/auth/schemas/login.schema';
+import { ForgotPasswordDialog } from '@/modules/auth/components/forgot-password-dialog';
+import { HttpError } from '@/shared/lib/http';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { useOverlay } from '@/shared/hooks/use-overlay';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import type { UserRole } from '@/shared/types/domain';
 
 function destinationForRole(role: UserRole, search: string) {
-  if (role !== 'customer') return '/admin'
+  if (role !== 'customer') return '/admin';
 
-  const next = new URLSearchParams(search).get('next')
-  if (next?.startsWith('/') && !next.startsWith('//') && !next.includes('\\')) return next
-  return '/conta'
+  const next = new URLSearchParams(search).get('next');
+  if (next?.startsWith('/') && !next.startsWith('//') && !next.includes('\\')) return next;
+  return '/conta';
 }
 
 function loginErrorMessage(error: unknown) {
-  if (error instanceof HttpError && error.status === 401) return 'E-mail/telefone ou senha inválidos.'
-  return 'Não foi possível entrar agora. Tente novamente.'
+  if (error instanceof HttpError && error.status === 401) return 'E-mail/telefone ou senha inválidos.';
+  return 'Não foi possível entrar agora. Tente novamente.';
 }
 
 export default function LoginPage() {
-  const search = useSearch()
-  const [, setLocation] = useLocation()
-  const recoveryOverlay = useOverlay('recuperar')
-  const setSession = useSessionStore(state => state.setSession)
-  const [showPassword, setShowPassword] = useState(false)
-  const form = useForm<LoginFormValues>({resolver: zodResolver(loginSchema), defaultValues: {identifier: '', password: ''}})
+  const search = useSearch();
+  const [, setLocation] = useLocation();
+  const recoveryOverlay = useOverlay('recuperar');
+  const setSession = useSessionStore((state) => state.setSession);
+  const [showPassword, setShowPassword] = useState(false);
+  const form = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema), defaultValues: { identifier: '', password: '' } });
 
   useEffect(() => {
-    document.title = `${recoveryOverlay.isOpen ? 'Recuperar senha' : 'Entrar'} | Barbearia`
-  }, [recoveryOverlay.isOpen])
+    document.title = `${recoveryOverlay.isOpen ? 'Recuperar senha' : 'Entrar'} | Barbearia`;
+  }, [recoveryOverlay.isOpen]);
 
   async function onSubmit(values: LoginFormValues) {
-    form.clearErrors('root.server')
+    form.clearErrors('root.server');
     try {
-      const result = await login(values.identifier, values.password)
-      setSession(result.user, result.token)
-      setLocation(destinationForRole(result.user.role, search))
+      const result = await login(values.identifier, values.password);
+      setSession(result.user, result.token);
+      setLocation(destinationForRole(result.user.role, search));
     } catch (error) {
-      form.setError('root.server', {type: 'server', message: loginErrorMessage(error)})
+      form.setError('root.server', { type: 'server', message: loginErrorMessage(error) });
     }
   }
 
-  const isSubmitting = form.formState.isSubmitting
+  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <>
@@ -67,7 +67,7 @@ export default function LoginPage() {
               <FormField
                 control={form.control}
                 name="identifier"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>E-mail ou telefone</FormLabel>
                     <FormControl>
@@ -81,7 +81,7 @@ export default function LoginPage() {
               <FormField
                 control={form.control}
                 name="password"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between gap-3">
                       <FormLabel>Senha</FormLabel>
@@ -100,7 +100,8 @@ export default function LoginPage() {
                         className="absolute right-1 top-1 size-11"
                         aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                         aria-pressed={showPassword}
-                        onClick={() => setShowPassword(value => !value)}>
+                        onClick={() => setShowPassword((value) => !value)}
+                      >
                         {showPassword ?
                           <EyeOff aria-hidden="true" />
                         : <Eye aria-hidden="true" />}
@@ -142,7 +143,7 @@ export default function LoginPage() {
           </Button>
         </CardContent>
       </Card>
-      <ForgotPasswordDialog open={recoveryOverlay.isOpen} onOpenChange={open => recoveryOverlay.setOpen(open)} />
+      <ForgotPasswordDialog open={recoveryOverlay.isOpen} onOpenChange={(open) => recoveryOverlay.setOpen(open)} />
     </>
-  )
+  );
 }

@@ -1,31 +1,31 @@
-import {useEffect, useState} from 'react'
-import {useLocation, Link} from 'wouter'
-import {ArrowUpRight, CalendarDays, Check, Clock3, MapPin, MessageCircle, UserRound} from 'lucide-react'
-import {useConfirmedAppointment} from '@/modules/booking/hooks/use-booking-data'
-import {usePublicUnit} from '@/modules/site/hooks/use-public-unit'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {formatBRL, formatDateTime, formatDuration} from '@/shared/lib/format'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useState } from 'react';
+import { useLocation, Link } from 'wouter';
+import { ArrowUpRight, CalendarDays, Check, Clock3, MapPin, MessageCircle, UserRound } from 'lucide-react';
+import { useConfirmedAppointment } from '@/modules/booking/hooks/use-booking-data';
+import { usePublicUnit } from '@/modules/site/hooks/use-public-unit';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { formatBRL, formatDateTime, formatDuration } from '@/shared/lib/format';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 function getTokenFromFragment(): string | null {
-  return new URLSearchParams(window.location.hash.slice(1)).get('token')
+  return new URLSearchParams(window.location.hash.slice(1)).get('token');
 }
 
 function toCalendarDate(value: string): string {
   return new Date(value)
     .toISOString()
     .replace(/[-:]/g, '')
-    .replace(/\.\d{3}/, '')
+    .replace(/\.\d{3}/, '');
 }
 
 function escapeCalendarText(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
+  return value.replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
 }
 
-function downloadCalendarFile(input: {id: number; code: string; start: string; end: string; title: string; description: string; location: string}) {
+function downloadCalendarFile(input: { id: number; code: string; start: string; end: string; title: string; description: string; location: string }) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -40,34 +40,34 @@ function downloadCalendarFile(input: {id: number; code: string; start: string; e
     `DESCRIPTION:${escapeCalendarText(input.description)}`,
     `LOCATION:${escapeCalendarText(input.location)}`,
     'END:VEVENT',
-    'END:VCALENDAR'
-  ]
-  const file = new Blob([`${lines.join('\r\n')}\r\n`], {type: 'text/calendar;charset=utf-8'})
-  const url = URL.createObjectURL(file)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `agendamento-${input.code}.ics`
-  document.body.append(link)
-  link.click()
-  link.remove()
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+    'END:VCALENDAR',
+  ];
+  const file = new Blob([`${lines.join('\r\n')}\r\n`], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(file);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `agendamento-${input.code}.ics`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export default function BookingConfirmedPage() {
-  const [location, navigate] = useLocation()
-  const appointmentId = location.match(/^\/agendar\/confirmado\/(\d+)$/)?.[1] ?? ''
-  const [guestToken, setGuestToken] = useState(getTokenFromFragment)
-  const appointmentQuery = useConfirmedAppointment(appointmentId, guestToken)
-  const unitQuery = usePublicUnit()
-  const appointment = appointmentQuery.data
-  const unit = unitQuery.data
-  const address = unit?.address?.trim() ?? ''
-  const serviceNames = appointment?.items.map(item => item.name).filter(Boolean) ?? []
-  const serviceLabel = serviceNames.length ? serviceNames.join(', ') : 'Serviços agendados'
+  const [location, navigate] = useLocation();
+  const appointmentId = location.match(/^\/agendar\/confirmado\/(\d+)$/)?.[1] ?? '';
+  const [guestToken, setGuestToken] = useState(getTokenFromFragment);
+  const appointmentQuery = useConfirmedAppointment(appointmentId, guestToken);
+  const unitQuery = usePublicUnit();
+  const appointment = appointmentQuery.data;
+  const unit = unitQuery.data;
+  const address = unit?.address?.trim() ?? '';
+  const serviceNames = appointment?.items.map((item) => item.name).filter(Boolean) ?? [];
+  const serviceLabel = serviceNames.length ? serviceNames.join(', ') : 'Serviços agendados';
   const confirmationText =
     appointment ?
       `Agendamento ${appointment.code} confirmado para ${formatDateTime(appointment.start)} com ${appointment.barber.name}. Serviços: ${serviceLabel}. Total: ${formatBRL(appointment.total)}.`
-    : ''
+    : '';
   const googleCalendarUrl =
     appointment ?
       `https://calendar.google.com/calendar/render?${new URLSearchParams({
@@ -75,28 +75,28 @@ export default function BookingConfirmedPage() {
         text: `Barbearia — ${serviceLabel}`,
         dates: `${toCalendarDate(appointment.start)}/${toCalendarDate(appointment.end)}`,
         details: confirmationText,
-        location: address
+        location: address,
       }).toString()}`
-    : ''
-  const whatsappUrl = appointment ? `https://wa.me/?text=${encodeURIComponent(confirmationText)}` : ''
-  const directionsUrl = address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}` : ''
-  const rescheduleUrl = appointment ? `/conta/agendamentos?reagendar=1&appointmentId=${appointment.id}` : '/conta/agendamentos?reagendar=1'
-  const cancelUrl = appointment ? `/conta/agendamentos?cancelar=1&appointmentId=${appointment.id}` : '/conta/agendamentos?cancelar=1'
+    : '';
+  const whatsappUrl = appointment ? `https://wa.me/?text=${encodeURIComponent(confirmationText)}` : '';
+  const directionsUrl = address ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}` : '';
+  const rescheduleUrl = appointment ? `/conta/agendamentos?reagendar=1&appointmentId=${appointment.id}` : '/conta/agendamentos?reagendar=1';
+  const cancelUrl = appointment ? `/conta/agendamentos?cancelar=1&appointmentId=${appointment.id}` : '/conta/agendamentos?cancelar=1';
 
   useEffect(() => {
-    setGuestToken(getTokenFromFragment())
-  }, [appointmentId])
+    setGuestToken(getTokenFromFragment());
+  }, [appointmentId]);
 
   useEffect(() => {
-    document.title = 'Agendamento confirmado | Barbearia'
-    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    document.title = 'Agendamento confirmado | Barbearia';
+    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!description) {
-      description = document.createElement('meta')
-      description.name = 'description'
-      document.head.append(description)
+      description = document.createElement('meta');
+      description.name = 'description';
+      document.head.append(description);
     }
-    description.content = 'Confira os dados do seu agendamento confirmado.'
-  }, [])
+    description.content = 'Confira os dados do seu agendamento confirmado.';
+  }, []);
 
   if (!appointmentId) {
     return (
@@ -104,7 +104,7 @@ export default function BookingConfirmedPage() {
         <PageHeader title="Agendamento confirmado" description="Use o link recebido após confirmar para consultar os dados do seu horário." />
         <ErrorState title="Link de confirmação inválido" description="O identificador deste agendamento não é válido." onRetry={() => navigate('/')} retryLabel="Voltar ao início" />
       </div>
-    )
+    );
   }
 
   if (appointmentQuery.isPending) {
@@ -118,7 +118,7 @@ export default function BookingConfirmedPage() {
           <Skeleton className="h-12 w-full" />
         </div>
       </div>
-    )
+    );
   }
 
   if (appointmentQuery.isError || !appointment) {
@@ -140,7 +140,7 @@ export default function BookingConfirmedPage() {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   const calendarDetails = {
@@ -150,8 +150,8 @@ export default function BookingConfirmedPage() {
     end: appointment.end,
     title: `Barbearia — ${serviceLabel}`,
     description: confirmationText,
-    location: address
-  }
+    location: address,
+  };
 
   return (
     <div className="space-y-7">
@@ -197,7 +197,7 @@ export default function BookingConfirmedPage() {
             <div>
               <p className="text-sm text-muted-foreground">Serviços</p>
               <ul className="mt-1 list-inside list-disc space-y-1">
-                {appointment.items.map(item => (
+                {appointment.items.map((item) => (
                   <li key={item.serviceId}>{item.name}</li>
                 ))}
               </ul>
@@ -285,5 +285,5 @@ export default function BookingConfirmedPage() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

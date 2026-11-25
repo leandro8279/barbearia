@@ -1,45 +1,45 @@
-import {useEffect} from 'react'
-import {useMutation} from '@tanstack/react-query'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {Link, useLocation} from 'wouter'
-import {login} from '@/modules/auth/api/auth'
-import {staffLoginSchema, type StaffLoginValues} from '@/modules/auth/schemas/staff-login.schema'
-import {HttpError} from '@/shared/lib/http'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
+import { useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Link, useLocation } from 'wouter';
+import { login } from '@/modules/auth/api/auth';
+import { staffLoginSchema, type StaffLoginValues } from '@/modules/auth/schemas/staff-login.schema';
+import { HttpError } from '@/shared/lib/http';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
 
 function getLoginError(error: unknown) {
-  if (error instanceof HttpError && error.status === 429) return 'Muitas tentativas. Aguarde antes de tentar novamente.'
-  return 'E-mail ou senha inválidos.'
+  if (error instanceof HttpError && error.status === 429) return 'Muitas tentativas. Aguarde antes de tentar novamente.';
+  return 'E-mail ou senha inválidos.';
 }
 
 export default function StaffLoginPage() {
-  const [, setLocation] = useLocation()
-  const setSession = useSessionStore(state => state.setSession)
-  const mutation = useMutation({mutationFn: (values: StaffLoginValues) => login(values.email, values.password, true)})
-  const form = useForm<StaffLoginValues>({resolver: zodResolver(staffLoginSchema), defaultValues: {email: '', password: '', rememberOnDevice: false}})
+  const [, setLocation] = useLocation();
+  const setSession = useSessionStore((state) => state.setSession);
+  const mutation = useMutation({ mutationFn: (values: StaffLoginValues) => login(values.email, values.password, true) });
+  const form = useForm<StaffLoginValues>({ resolver: zodResolver(staffLoginSchema), defaultValues: { email: '', password: '', rememberOnDevice: false } });
 
   useEffect(() => {
-    document.title = 'Login da equipe | Barbearia'
-  }, [])
+    document.title = 'Login da equipe | Barbearia';
+  }, []);
 
   async function onSubmit(values: StaffLoginValues) {
-    form.clearErrors('root.server')
+    form.clearErrors('root.server');
     try {
-      const result = await mutation.mutateAsync(values)
-      setSession(result.user, result.token, values.rememberOnDevice)
-      setLocation(result.user.role === 'barber' ? '/admin/meu-dia' : '/admin')
+      const result = await mutation.mutateAsync(values);
+      setSession(result.user, result.token, values.rememberOnDevice);
+      setLocation(result.user.role === 'barber' ? '/admin/meu-dia' : '/admin');
     } catch (error) {
-      form.setError('root.server', {type: 'server', message: getLoginError(error)})
+      form.setError('root.server', { type: 'server', message: getLoginError(error) });
     }
   }
 
-  const isSubmitting = form.formState.isSubmitting || mutation.isPending
+  const isSubmitting = form.formState.isSubmitting || mutation.isPending;
 
   return (
     <Card className="auth-login-texture border-border/80 bg-card shadow-panel">
@@ -54,7 +54,7 @@ export default function StaffLoginPage() {
             <FormField
               control={form.control}
               name="email"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>E-mail</FormLabel>
                   <FormControl>
@@ -67,7 +67,7 @@ export default function StaffLoginPage() {
             <FormField
               control={form.control}
               name="password"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Senha</FormLabel>
                   <FormControl>
@@ -80,10 +80,10 @@ export default function StaffLoginPage() {
             <FormField
               control={form.control}
               name="rememberOnDevice"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem className="flex items-center gap-3 rounded-lg border border-border p-3">
                   <FormControl>
-                    <Checkbox checked={field.value} onCheckedChange={checked => field.onChange(checked === true)} />
+                    <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                   </FormControl>
                   <FormLabel className="cursor-pointer leading-relaxed">Manter conectado neste aparelho</FormLabel>
                 </FormItem>
@@ -116,5 +116,5 @@ export default function StaffLoginPage() {
         </p>
       </CardContent>
     </Card>
-  )
+  );
 }

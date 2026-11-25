@@ -1,80 +1,80 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {Link} from 'wouter'
-import {useCreateCashMovement} from '@/modules/admin/cash/hooks/use-cash'
-import {cashMovementSchema, type CashMovementValues} from '@/modules/admin/cash/schemas/cash-movement.schema'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {MoneyInput} from '@/shared/components/money-input'
-import {formatBRL} from '@/shared/lib/format'
-import {Button} from '@/shared/ui/button'
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Textarea} from '@/shared/ui/textarea'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Link } from 'wouter';
+import { useCreateCashMovement } from '@/modules/admin/cash/hooks/use-cash';
+import { cashMovementSchema, type CashMovementValues } from '@/modules/admin/cash/schemas/cash-movement.schema';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { MoneyInput } from '@/shared/components/money-input';
+import { formatBRL } from '@/shared/lib/format';
+import { Button } from '@/shared/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Textarea } from '@/shared/ui/textarea';
 
 interface CashMovementDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  cashSessionOpen: boolean
-  cashSessionLoading: boolean
-  cashSessionError: boolean
-  onRetryCashSession: () => void
-  cashBalanceCents: number
-  responsibleName: string
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  cashSessionOpen: boolean;
+  cashSessionLoading: boolean;
+  cashSessionError: boolean;
+  onRetryCashSession: () => void;
+  cashBalanceCents: number;
+  responsibleName: string;
 }
 
-const defaultValues: CashMovementValues = {type: 'withdraw', amountCents: 0, reason: ''}
+const defaultValues: CashMovementValues = { type: 'withdraw', amountCents: 0, reason: '' };
 
-export function CashMovementDialog({open, onOpenChange, cashSessionOpen, cashSessionLoading, cashSessionError, onRetryCashSession, cashBalanceCents, responsibleName}: CashMovementDialogProps) {
-  const movement = useCreateCashMovement()
-  const [formError, setFormError] = useState('')
-  const [discardOpen, setDiscardOpen] = useState(false)
-  const form = useForm<CashMovementValues>({resolver: zodResolver(cashMovementSchema), defaultValues, mode: 'onChange'})
-  const busy = movement.isPending
+export function CashMovementDialog({ open, onOpenChange, cashSessionOpen, cashSessionLoading, cashSessionError, onRetryCashSession, cashBalanceCents, responsibleName }: CashMovementDialogProps) {
+  const movement = useCreateCashMovement();
+  const [formError, setFormError] = useState('');
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const form = useForm<CashMovementValues>({ resolver: zodResolver(cashMovementSchema), defaultValues, mode: 'onChange' });
+  const busy = movement.isPending;
 
   useEffect(() => {
     if (!open) {
-      form.reset(defaultValues)
-      setFormError('')
-      return
+      form.reset(defaultValues);
+      setFormError('');
+      return;
     }
-    form.reset(defaultValues)
-    setFormError('')
-    const frame = window.requestAnimationFrame(() => document.getElementById('cash-movement-type')?.focus())
-    return () => window.cancelAnimationFrame(frame)
-  }, [form.reset, open])
+    form.reset(defaultValues);
+    setFormError('');
+    const frame = window.requestAnimationFrame(() => document.getElementById('cash-movement-type')?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [form.reset, open]);
 
   function requestClose(nextOpen: boolean) {
-    if (!nextOpen && busy) return
+    if (!nextOpen && busy) return;
     if (!nextOpen && form.formState.isDirty) {
-      setDiscardOpen(true)
-      return
+      setDiscardOpen(true);
+      return;
     }
-    setFormError('')
-    onOpenChange(nextOpen)
+    setFormError('');
+    onOpenChange(nextOpen);
   }
 
   function discardChanges() {
-    form.reset(defaultValues)
-    setFormError('')
-    setDiscardOpen(false)
-    onOpenChange(false)
+    form.reset(defaultValues);
+    setFormError('');
+    setDiscardOpen(false);
+    onOpenChange(false);
   }
 
   async function submit(values: CashMovementValues) {
     if (!cashSessionOpen) {
-      setFormError('Abra uma sessão de caixa antes de registrar movimentações.')
-      return
+      setFormError('Abra uma sessão de caixa antes de registrar movimentações.');
+      return;
     }
     try {
-      await movement.mutateAsync(values)
-      form.reset(defaultValues)
-      setFormError('')
-      onOpenChange(false)
+      await movement.mutateAsync(values);
+      form.reset(defaultValues);
+      setFormError('');
+      onOpenChange(false);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível registrar a movimentação. Nenhuma alteração foi gravada.')
+      setFormError(error instanceof Error ? error.message : 'Não foi possível registrar a movimentação. Nenhuma alteração foi gravada.');
     }
   }
 
@@ -120,16 +120,17 @@ export function CashMovementDialog({open, onOpenChange, cashSessionOpen, cashSes
                 <FormField
                   control={form.control}
                   name="type"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Tipo de movimentação</FormLabel>
                       <Select
                         value={field.value}
-                        onValueChange={value => {
-                          field.onChange(value)
-                          setFormError('')
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setFormError('');
                         }}
-                        disabled={busy}>
+                        disabled={busy}
+                      >
                         <FormControl>
                           <SelectTrigger id="cash-movement-type" className="min-h-11 w-full">
                             <SelectValue />
@@ -148,15 +149,15 @@ export function CashMovementDialog({open, onOpenChange, cashSessionOpen, cashSes
                 <FormField
                   control={form.control}
                   name="amountCents"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Valor</FormLabel>
                       <FormControl>
                         <MoneyInput
                           value={field.value}
-                          onValueChange={value => {
-                            field.onChange(value)
-                            setFormError('')
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setFormError('');
                           }}
                           aria-label="Valor da movimentação"
                           disabled={busy}
@@ -170,7 +171,7 @@ export function CashMovementDialog({open, onOpenChange, cashSessionOpen, cashSes
                 <FormField
                   control={form.control}
                   name="reason"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Motivo</FormLabel>
                       <FormControl>
@@ -180,9 +181,9 @@ export function CashMovementDialog({open, onOpenChange, cashSessionOpen, cashSes
                           rows={3}
                           placeholder="Ex.: pagamento de entrega"
                           disabled={busy}
-                          onChange={event => {
-                            field.onChange(event)
-                            setFormError('')
+                          onChange={(event) => {
+                            field.onChange(event);
+                            setFormError('');
                           }}
                         />
                       </FormControl>
@@ -227,5 +228,5 @@ export function CashMovementDialog({open, onOpenChange, cashSessionOpen, cashSes
         onConfirm={discardChanges}
       />
     </>
-  )
+  );
 }

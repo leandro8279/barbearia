@@ -1,4 +1,4 @@
-import {z} from 'zod'
+import { z } from 'zod';
 
 export const createAppointmentSchema = z.object({
   customerId: z.string().min(1, 'Selecione um cliente.'),
@@ -9,7 +9,7 @@ export const createAppointmentSchema = z.object({
   notes: z.string().max(500, 'As observações devem ter até 500 caracteres.'),
   expectedPaymentMethod: z.enum(['', 'cash', 'pix', 'debit', 'credit']),
   bypassAdvance: z.boolean(),
-  allowOutOfHours: z.boolean()
-})
+  allowOutOfHours: z.boolean(),
+});
 
-export type CreateAppointmentValues = z.infer<typeof createAppointmentSchema>
+export type CreateAppointmentValues = z.infer<typeof createAppointmentSchema>;

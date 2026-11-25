@@ -1,29 +1,29 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {AlertCircle, Copy, LoaderCircle} from 'lucide-react'
-import {teamProfileSchema, type TeamProfileValues} from '@/modules/admin/team/schemas/team-profile.schema'
-import type {TeamProfile, TeamProfileInput, TeamServiceAssignment} from '@/modules/admin/team/api/team-management'
-import {TeamPhotoField} from '@/modules/admin/team/components/team-photo-field'
-import {formatBRL, formatDuration} from '@/shared/lib/format'
-import {toast} from 'sonner'
-import {Button} from '@/shared/ui/button'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {MoneyInput} from '@/shared/components/money-input'
-import {Switch} from '@/shared/ui/switch'
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/shared/ui/tabs'
-import {Textarea} from '@/shared/ui/textarea'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { AlertCircle, Copy, LoaderCircle } from 'lucide-react';
+import { teamProfileSchema, type TeamProfileValues } from '@/modules/admin/team/schemas/team-profile.schema';
+import type { TeamProfile, TeamProfileInput, TeamServiceAssignment } from '@/modules/admin/team/api/team-management';
+import { TeamPhotoField } from '@/modules/admin/team/components/team-photo-field';
+import { formatBRL, formatDuration } from '@/shared/lib/format';
+import { toast } from 'sonner';
+import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { MoneyInput } from '@/shared/components/money-input';
+import { Switch } from '@/shared/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { Textarea } from '@/shared/ui/textarea';
 
 interface TeamProfileFormProps {
-  profile: TeamProfile | null
-  serviceCatalog: TeamServiceAssignment[]
-  isCreating: boolean
-  isPending: boolean
-  inviteUrl: string | null
-  inviteSent: boolean
-  onSave: (input: TeamProfileInput) => Promise<void>
+  profile: TeamProfile | null;
+  serviceCatalog: TeamServiceAssignment[];
+  isCreating: boolean;
+  isPending: boolean;
+  inviteUrl: string | null;
+  inviteSent: boolean;
+  onSave: (input: TeamProfileInput) => Promise<void>;
 }
 
 function createValues(profile: TeamProfile | null, services: TeamServiceAssignment[]): TeamProfileValues {
@@ -39,45 +39,45 @@ function createValues(profile: TeamProfile | null, services: TeamServiceAssignme
     commissionServicePct: profile?.barber.commissionServicePct ?? 45,
     commissionProductPct: profile?.barber.commissionProductPct ?? 10,
     active: profile?.barber.active ?? true,
-    services: services.map(service => ({serviceId: service.serviceId, assigned: service.assigned, durationMin: service.durationMin, price: service.price, commissionPct: service.commissionPct}))
-  }
+    services: services.map((service) => ({ serviceId: service.serviceId, assigned: service.assigned, durationMin: service.durationMin, price: service.price, commissionPct: service.commissionPct })),
+  };
 }
 
-export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending, inviteUrl, inviteSent, onSave}: TeamProfileFormProps) {
-  const [photoError, setPhotoError] = useState('')
-  const form = useForm<TeamProfileValues>({resolver: zodResolver(teamProfileSchema), defaultValues: createValues(profile, profile?.services ?? serviceCatalog)})
+export function TeamProfileForm({ profile, serviceCatalog, isCreating, isPending, inviteUrl, inviteSent, onSave }: TeamProfileFormProps) {
+  const [photoError, setPhotoError] = useState('');
+  const form = useForm<TeamProfileValues>({ resolver: zodResolver(teamProfileSchema), defaultValues: createValues(profile, profile?.services ?? serviceCatalog) });
 
   useEffect(() => {
-    form.reset(createValues(profile, profile?.services ?? serviceCatalog))
-  }, [form, profile, serviceCatalog])
+    form.reset(createValues(profile, profile?.services ?? serviceCatalog));
+  }, [form, profile, serviceCatalog]);
 
   async function submit(values: TeamProfileValues) {
-    form.clearErrors('root.server')
+    form.clearErrors('root.server');
     try {
       await onSave({
         ...values,
-        specialties: values.specialties.map(value => value.trim()).filter(Boolean),
+        specialties: values.specialties.map((value) => value.trim()).filter(Boolean),
         pixKey: values.pixKey.trim(),
         phone: values.phone.replace(/\D/g, ''),
         cpf: values.cpf.replace(/\D/g, ''),
-        services: values.services
-      })
+        services: values.services,
+      });
     } catch (error) {
-      form.setError('root.server', {type: 'server', message: error instanceof Error ? error.message : 'Não foi possível salvar o profissional.'})
+      form.setError('root.server', { type: 'server', message: error instanceof Error ? error.message : 'Não foi possível salvar o profissional.' });
     }
   }
 
   async function copyInvite() {
-    if (!inviteUrl) return
+    if (!inviteUrl) return;
     try {
-      await navigator.clipboard.writeText(inviteUrl)
-      toast.success('Link do convite copiado.')
+      await navigator.clipboard.writeText(inviteUrl);
+      toast.success('Link do convite copiado.');
     } catch {
-      toast.error('Não foi possível copiar o link. Selecione e copie o endereço abaixo.')
+      toast.error('Não foi possível copiar o link. Selecione e copie o endereço abaixo.');
     }
   }
 
-  const serviceErrors = form.formState.errors.services
+  const serviceErrors = form.formState.errors.services;
 
   return (
     <Form {...form}>
@@ -105,7 +105,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
               <FormField
                 control={form.control}
                 name="name"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nome completo</FormLabel>
                     <FormControl>
@@ -118,7 +118,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
               <FormField
                 control={form.control}
                 name="phone"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Telefone</FormLabel>
                     <FormControl>
@@ -131,7 +131,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
               <FormField
                 control={form.control}
                 name="cpf"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>CPF</FormLabel>
                     <FormControl>
@@ -144,7 +144,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
               <FormField
                 control={form.control}
                 name="pixKey"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Chave Pix</FormLabel>
                     <FormControl>
@@ -159,16 +159,16 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
             <FormField
               control={form.control}
               name="photo"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormControl>
                     <TeamPhotoField
                       value={field.value}
-                      onChange={value => {
-                        field.onChange(value)
-                        setPhotoError('')
+                      onChange={(value) => {
+                        field.onChange(value);
+                        setPhotoError('');
                       }}
-                      onError={message => setPhotoError(message || '')}
+                      onError={(message) => setPhotoError(message || '')}
                     />
                   </FormControl>
                   {photoError && (
@@ -184,7 +184,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
             <FormField
               control={form.control}
               name="bio"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Biografia</FormLabel>
                   <FormControl>
@@ -198,18 +198,18 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
             <FormField
               control={form.control}
               name="specialties"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Especialidades</FormLabel>
                   <FormControl>
                     <Input
                       value={field.value.join(', ')}
-                      onChange={event =>
+                      onChange={(event) =>
                         field.onChange(
                           event.target.value
                             .split(',')
-                            .map(value => value.trim())
-                            .filter(Boolean)
+                            .map((value) => value.trim())
+                            .filter(Boolean),
                         )
                       }
                       className="min-h-11"
@@ -225,7 +225,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
             <FormField
               control={form.control}
               name="active"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem className="flex min-h-14 items-center justify-between gap-4 rounded-lg border border-border p-4">
                   <div>
                     <FormLabel>Profissional ativo</FormLabel>
@@ -242,17 +242,17 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
           <TabsContent value="servicos" className="space-y-4 p-4 sm:p-6">
             <p className="text-sm text-muted-foreground">Escolha os serviços realizados. Campos sem valor específico usam o padrão do catálogo.</p>
             {form.watch('services').map((assignment, index) => {
-              const service = profile?.services.find(item => item.serviceId === assignment.serviceId) ?? serviceCatalog.find(item => item.serviceId === assignment.serviceId)
-              if (!service) return null
+              const service = profile?.services.find((item) => item.serviceId === assignment.serviceId) ?? serviceCatalog.find((item) => item.serviceId === assignment.serviceId);
+              if (!service) return null;
               return (
                 <section key={assignment.serviceId} className="space-y-4 rounded-xl border border-border p-4">
                   <FormField
                     control={form.control}
                     name={`services.${index}.assigned`}
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem className="flex min-h-11 items-center gap-3">
                         <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={checked => field.onChange(checked === true)} aria-label={`Profissional realiza ${service.name}`} />
+                          <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} aria-label={`Profissional realiza ${service.name}`} />
                         </FormControl>
                         <FormLabel className="cursor-pointer">{service.name}</FormLabel>
                       </FormItem>
@@ -263,7 +263,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
                       <FormField
                         control={form.control}
                         name={`services.${index}.durationMin`}
-                        render={({field}) => (
+                        render={({ field }) => (
                           <FormItem>
                             <FormLabel>Duração específica (min)</FormLabel>
                             <FormControl>
@@ -273,7 +273,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
                                 step="5"
                                 className="min-h-11"
                                 value={field.value ?? ''}
-                                onChange={event => field.onChange(event.target.value === '' ? null : Number(event.target.value))}
+                                onChange={(event) => field.onChange(event.target.value === '' ? null : Number(event.target.value))}
                                 placeholder={`${service.defaultDurationMin}`}
                               />
                             </FormControl>
@@ -285,7 +285,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
                       <FormField
                         control={form.control}
                         name={`services.${index}.price`}
-                        render={({field}) => (
+                        render={({ field }) => (
                           <FormItem>
                             <FormLabel>Preço específico</FormLabel>
                             <FormControl>
@@ -307,7 +307,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
                       <FormField
                         control={form.control}
                         name={`services.${index}.commissionPct`}
-                        render={({field}) => (
+                        render={({ field }) => (
                           <FormItem>
                             <FormLabel>Comissão específica (%)</FormLabel>
                             <FormControl>
@@ -318,7 +318,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
                                 step="0.1"
                                 className="min-h-11"
                                 value={field.value ?? ''}
-                                onChange={event => field.onChange(event.target.value === '' ? null : Number(event.target.value))}
+                                onChange={(event) => field.onChange(event.target.value === '' ? null : Number(event.target.value))}
                                 placeholder={`${service.defaultCommissionPct}`}
                               />
                             </FormControl>
@@ -330,7 +330,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
                     </div>
                   )}
                 </section>
-              )
+              );
             })}
             {typeof serviceErrors?.message === 'string' && (
               <p className="text-sm text-destructive" role="alert">
@@ -344,11 +344,11 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
               <FormField
                 control={form.control}
                 name="commissionServicePct"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Comissão padrão de serviços (%)</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" max="100" step="0.1" className="min-h-11" {...field} onChange={event => field.onChange(Number(event.target.value))} />
+                      <Input type="number" min="0" max="100" step="0.1" className="min-h-11" {...field} onChange={(event) => field.onChange(Number(event.target.value))} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -357,11 +357,11 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
               <FormField
                 control={form.control}
                 name="commissionProductPct"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Comissão padrão de produtos (%)</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" max="100" step="0.1" className="min-h-11" {...field} onChange={event => field.onChange(Number(event.target.value))} />
+                      <Input type="number" min="0" max="100" step="0.1" className="min-h-11" {...field} onChange={(event) => field.onChange(Number(event.target.value))} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -377,7 +377,7 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
             <FormField
               control={form.control}
               name="email"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>E-mail de acesso</FormLabel>
                   <FormControl>
@@ -438,5 +438,5 @@ export function TeamProfileForm({profile, serviceCatalog, isCreating, isPending,
         </div>
       </form>
     </Form>
-  )
+  );
 }

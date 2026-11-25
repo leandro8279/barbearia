@@ -1,41 +1,41 @@
-import {useMemo, useState} from 'react'
-import {flexRender, getCoreRowModel, useReactTable, type ColumnDef, type PaginationState, type RowData, type RowSelectionState, type SortingState, type Updater} from '@tanstack/react-table'
-import {ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronLeft, ChevronRight, Minus} from 'lucide-react'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {Button} from '@/shared/ui/button'
-import {Input} from '@/shared/ui/input'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/shared/ui/table'
+import { useMemo, useState } from 'react';
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type PaginationState, type RowData, type RowSelectionState, type SortingState, type Updater } from '@tanstack/react-table';
+import { ArrowDown, ArrowUp, ArrowUpDown, Check, ChevronLeft, ChevronRight, Minus } from 'lucide-react';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 
 function applyUpdater<T>(updater: Updater<T>, current: T): T {
   if (typeof updater === 'function') {
-    return (updater as (previous: T) => T)(current)
+    return (updater as (previous: T) => T)(current);
   }
-  return updater
+  return updater;
 }
 
 export interface DataTableProps<TData extends RowData, TValue = unknown> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  rowCount?: number
-  getRowId?: (row: TData, index: number) => string
-  pagination?: PaginationState
-  onPaginationChange?: (pagination: PaginationState) => void
-  sorting?: SortingState
-  onSortingChange?: (sorting: SortingState) => void
-  rowSelection?: RowSelectionState
-  onRowSelectionChange?: (selection: RowSelectionState) => void
-  query?: string
-  onSearchChange?: (query: string) => void
-  searchPlaceholder?: string
-  enableRowSelection?: boolean
-  loading?: boolean
-  error?: boolean
-  onRetry?: () => void
-  emptyTitle?: string
-  emptyDescription?: string
-  pageSizeOptions?: number[]
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  rowCount?: number;
+  getRowId?: (row: TData, index: number) => string;
+  pagination?: PaginationState;
+  onPaginationChange?: (pagination: PaginationState) => void;
+  sorting?: SortingState;
+  onSortingChange?: (sorting: SortingState) => void;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (selection: RowSelectionState) => void;
+  query?: string;
+  onSearchChange?: (query: string) => void;
+  searchPlaceholder?: string;
+  enableRowSelection?: boolean;
+  loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  pageSizeOptions?: number[];
 }
 
 export function DataTable<TData extends RowData, TValue = unknown>({
@@ -58,20 +58,20 @@ export function DataTable<TData extends RowData, TValue = unknown>({
   onRetry,
   emptyTitle = 'Nenhum resultado encontrado',
   emptyDescription = 'Tente alterar a busca ou os filtros.',
-  pageSizeOptions = [10, 20, 50]
+  pageSizeOptions = [10, 20, 50],
 }: DataTableProps<TData, TValue>) {
-  const [internalPagination, setInternalPagination] = useState<PaginationState>({pageIndex: 0, pageSize: 10})
-  const [internalSorting, setInternalSorting] = useState<SortingState>([])
-  const [internalSelection, setInternalSelection] = useState<RowSelectionState>({})
-  const [internalQuery, setInternalQuery] = useState('')
-  const pagination = controlledPagination ?? internalPagination
-  const sorting = controlledSorting ?? internalSorting
-  const rowSelection = controlledSelection ?? internalSelection
-  const query = controlledQuery ?? internalQuery
+  const [internalPagination, setInternalPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  const [internalSorting, setInternalSorting] = useState<SortingState>([]);
+  const [internalSelection, setInternalSelection] = useState<RowSelectionState>({});
+  const [internalQuery, setInternalQuery] = useState('');
+  const pagination = controlledPagination ?? internalPagination;
+  const sorting = controlledSorting ?? internalSorting;
+  const rowSelection = controlledSelection ?? internalSelection;
+  const query = controlledQuery ?? internalQuery;
   const selectionColumn = useMemo<ColumnDef<TData, TValue>>(
     () => ({
       id: 'selecionar',
-      header: ({table}) => (
+      header: ({ table }) => (
         <button
           type="button"
           role="checkbox"
@@ -83,7 +83,8 @@ export function DataTable<TData extends RowData, TValue = unknown>({
             : false
           }
           className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-ring"
-          onClick={() => table.toggleAllPageRowsSelected(!table.getIsAllPageRowsSelected())}>
+          onClick={() => table.toggleAllPageRowsSelected(!table.getIsAllPageRowsSelected())}
+        >
           <span className="flex size-5 items-center justify-center rounded border border-input bg-background">
             {table.getIsAllPageRowsSelected() ?
               <Check className="size-4" aria-hidden="true" />
@@ -93,14 +94,15 @@ export function DataTable<TData extends RowData, TValue = unknown>({
           </span>
         </button>
       ),
-      cell: ({row}) => (
+      cell: ({ row }) => (
         <button
           type="button"
           role="checkbox"
           aria-label={`Selecionar linha ${row.index + 1}`}
           aria-checked={row.getIsSelected()}
           className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-ring"
-          onClick={() => row.toggleSelected(!row.getIsSelected())}>
+          onClick={() => row.toggleSelected(!row.getIsSelected())}
+        >
           <span className="flex size-5 items-center justify-center rounded border border-input bg-background">
             {row.getIsSelected() ?
               <Check className="size-4" aria-hidden="true" />
@@ -109,41 +111,41 @@ export function DataTable<TData extends RowData, TValue = unknown>({
         </button>
       ),
       enableSorting: false,
-      enableHiding: false
+      enableHiding: false,
     }),
-    []
-  )
-  const tableColumns = useMemo(() => (enableRowSelection ? [selectionColumn, ...columns] : columns), [columns, enableRowSelection, selectionColumn])
+    [],
+  );
+  const tableColumns = useMemo(() => (enableRowSelection ? [selectionColumn, ...columns] : columns), [columns, enableRowSelection, selectionColumn]);
 
   const table = useReactTable({
     data,
     columns: tableColumns,
     rowCount,
     getRowId,
-    state: {pagination, sorting, rowSelection},
+    state: { pagination, sorting, rowSelection },
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
     enableRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    onPaginationChange: updater => {
-      const next = applyUpdater(updater, pagination)
-      if (controlledPagination === undefined) setInternalPagination(next)
-      onPaginationChange?.(next)
+    onPaginationChange: (updater) => {
+      const next = applyUpdater(updater, pagination);
+      if (controlledPagination === undefined) setInternalPagination(next);
+      onPaginationChange?.(next);
     },
-    onSortingChange: updater => {
-      const next = applyUpdater(updater, sorting)
-      if (controlledSorting === undefined) setInternalSorting(next)
-      onSortingChange?.(next)
+    onSortingChange: (updater) => {
+      const next = applyUpdater(updater, sorting);
+      if (controlledSorting === undefined) setInternalSorting(next);
+      onSortingChange?.(next);
     },
-    onRowSelectionChange: updater => {
-      const next = applyUpdater(updater, rowSelection)
-      if (controlledSelection === undefined) setInternalSelection(next)
-      onRowSelectionChange?.(next)
-    }
-  })
-  const pageCount = Math.max(1, table.getPageCount())
-  const selectedCount = Object.values(rowSelection).filter(Boolean).length
+    onRowSelectionChange: (updater) => {
+      const next = applyUpdater(updater, rowSelection);
+      if (controlledSelection === undefined) setInternalSelection(next);
+      onRowSelectionChange?.(next);
+    },
+  });
+  const pageCount = Math.max(1, table.getPageCount());
+  const selectedCount = Object.values(rowSelection).filter(Boolean).length;
 
   return (
     <section className="space-y-3">
@@ -155,11 +157,11 @@ export function DataTable<TData extends RowData, TValue = unknown>({
             className="min-h-11"
             placeholder={searchPlaceholder}
             value={query}
-            onChange={event => {
-              const next = event.target.value
-              if (controlledQuery === undefined) setInternalQuery(next)
-              onSearchChange?.(next)
-              table.setPageIndex(0)
+            onChange={(event) => {
+              const next = event.target.value;
+              if (controlledQuery === undefined) setInternalQuery(next);
+              onSearchChange?.(next);
+              table.setPageIndex(0);
             }}
           />
         </label>
@@ -175,9 +177,9 @@ export function DataTable<TData extends RowData, TValue = unknown>({
           <ErrorState onRetry={onRetry} />
         : <Table>
             <TableHeader>
-              {table.getHeaderGroups().map(headerGroup => (
+              {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
+                  {headerGroup.headers.map((header) => (
                     <TableHead key={header.id}>
                       {header.isPlaceholder ?
                         null
@@ -187,7 +189,8 @@ export function DataTable<TData extends RowData, TValue = unknown>({
                           variant="ghost"
                           className="min-h-11 px-2"
                           onClick={header.column.getToggleSortingHandler()}
-                          aria-label={`Ordenar por ${String(header.column.columnDef.header ?? header.column.id)}`}>
+                          aria-label={`Ordenar por ${String(header.column.columnDef.header ?? header.column.id)}`}
+                        >
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {header.column.getIsSorted() === 'asc' ?
                             <ArrowUp className="size-4" aria-hidden="true" />
@@ -203,9 +206,9 @@ export function DataTable<TData extends RowData, TValue = unknown>({
             </TableHeader>
             <TableBody>
               {loading ?
-                Array.from({length: Math.min(pagination.pageSize, 5)}, (_, index) => (
+                Array.from({ length: Math.min(pagination.pageSize, 5) }, (_, index) => (
                   <TableRow key={`skeleton-${index}`} aria-hidden="true">
-                    {table.getVisibleLeafColumns().map(column => (
+                    {table.getVisibleLeafColumns().map((column) => (
                       <TableCell key={column.id}>
                         <Skeleton className="h-5 w-3/4" />
                       </TableCell>
@@ -213,9 +216,9 @@ export function DataTable<TData extends RowData, TValue = unknown>({
                   </TableRow>
                 ))
               : table.getRowModel().rows.length > 0 ?
-                table.getRowModel().rows.map(row => (
+                table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined}>
-                    {row.getVisibleCells().map(cell => (
+                    {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                     ))}
                   </TableRow>
@@ -237,9 +240,10 @@ export function DataTable<TData extends RowData, TValue = unknown>({
           <select
             className="min-h-11 rounded-md border border-input bg-background px-3 text-foreground"
             value={pagination.pageSize}
-            onChange={event => table.setPageSize(Number(event.target.value))}
-            aria-label="Itens por página">
-            {pageSizeOptions.map(size => (
+            onChange={(event) => table.setPageSize(Number(event.target.value))}
+            aria-label="Itens por página"
+          >
+            {pageSizeOptions.map((size) => (
               <option key={size} value={size}>
                 {size}
               </option>
@@ -261,5 +265,5 @@ export function DataTable<TData extends RowData, TValue = unknown>({
         </div>
       </div>
     </section>
-  )
+  );
 }

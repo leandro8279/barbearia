@@ -1,47 +1,52 @@
-import {Menu, UserRound} from 'lucide-react'
-import type {ReactNode} from 'react'
-import {Link, useLocation} from 'wouter'
-import {Brand} from '@/shared/components/brand'
-import {Button} from '@/shared/ui/button'
-import {Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger} from '@/shared/ui/sheet'
-import {usePublicUnit} from '@/modules/site/hooks/use-public-unit'
+import { Menu, UserRound } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Link, useLocation } from 'wouter';
+import { Brand } from '@/shared/components/brand';
+import { Button } from '@/shared/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/ui/sheet';
+import { usePublicUnit } from '@/modules/site/hooks/use-public-unit';
 
 const links = [
-  {href: '/servicos', label: 'Serviços'},
-  {href: '/barbeiros', label: 'Profissionais'},
-  {href: '/contato', label: 'Contato'}
-]
+  { href: '/servicos', label: 'Serviços' },
+  { href: '/barbeiros', label: 'Profissionais' },
+  { href: '/contato', label: 'Contato' },
+];
 
 const footerWeekdays = [
-  {weekday: 1, label: 'Seg'},
-  {weekday: 2, label: 'Ter'},
-  {weekday: 3, label: 'Qua'},
-  {weekday: 4, label: 'Qui'},
-  {weekday: 5, label: 'Sex'},
-  {weekday: 6, label: 'Sáb'},
-  {weekday: 0, label: 'Dom'}
-]
+  { weekday: 1, label: 'Seg' },
+  { weekday: 2, label: 'Ter' },
+  { weekday: 3, label: 'Qua' },
+  { weekday: 4, label: 'Qui' },
+  { weekday: 5, label: 'Sex' },
+  { weekday: 6, label: 'Sáb' },
+  { weekday: 0, label: 'Dom' },
+];
 
 function footerHours(unit?: ReturnType<typeof usePublicUnit>['data']) {
-  if (!unit?.businessHours?.length) return null
-  return footerWeekdays.map(day => {
-    const ranges = unit.businessHours?.find(item => Number(item.weekday) === day.weekday)?.ranges ?? []
-    const hours = ranges.length ? ranges.map(range => {
-      const [start, end] = Array.isArray(range) ? range : [range.start, range.end]
-      return `${start}–${end}`
-    }).join(' · ') : 'Fechado'
-    return {label: day.label, hours}
-  })
+  if (!unit?.businessHours?.length) return null;
+  return footerWeekdays.map((day) => {
+    const ranges = unit.businessHours?.find((item) => Number(item.weekday) === day.weekday)?.ranges ?? [];
+    const hours =
+      ranges.length ?
+        ranges
+          .map((range) => {
+            const [start, end] = Array.isArray(range) ? range : [range.start, range.end];
+            return `${start}–${end}`;
+          })
+          .join(' · ')
+      : 'Fechado';
+    return { label: day.label, hours };
+  });
 }
 
 interface SiteLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
-export function SiteLayout({children}: SiteLayoutProps) {
-  const [location] = useLocation()
-  const unitQuery = usePublicUnit()
-  const hours = footerHours(unitQuery.data)
+export function SiteLayout({ children }: SiteLayoutProps) {
+  const [location] = useLocation();
+  const unitQuery = usePublicUnit();
+  const hours = footerHours(unitQuery.data);
 
   return (
     <div className="min-h-screen">
@@ -49,7 +54,7 @@ export function SiteLayout({children}: SiteLayoutProps) {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Brand />
           <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">
-            {links.map(link => (
+            {links.map((link) => (
               <Link key={link.href} href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                 {link.label}
               </Link>
@@ -77,7 +82,7 @@ export function SiteLayout({children}: SiteLayoutProps) {
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="mt-8 grid gap-2" aria-label="Menu móvel">
-                  {links.map(link => (
+                  {links.map((link) => (
                     <Link key={link.href} href={link.href} className="rounded-lg px-3 py-3 text-sm hover:bg-muted">
                       {link.label}
                     </Link>
@@ -102,9 +107,21 @@ export function SiteLayout({children}: SiteLayoutProps) {
             <p className="font-medium text-foreground">Horários</p>
             {hours ?
               <ul className="mt-1 grid grid-cols-2 gap-x-5 gap-y-0.5 sm:justify-items-end">
-                {hours.map(day => <li key={day.label}>{day.label}: {day.hours}</li>)}
+                {hours.map((day) => (
+                  <li key={day.label}>
+                    {day.label}: {day.hours}
+                  </li>
+                ))}
               </ul>
-            : <p>{unitQuery.isPending ? 'Carregando horários…' : <Link href="/contato" className="underline underline-offset-4">Consulte os horários</Link>}</p>}
+            : <p>
+                {unitQuery.isPending ?
+                  'Carregando horários…'
+                : <Link href="/contato" className="underline underline-offset-4">
+                    Consulte os horários
+                  </Link>
+                }
+              </p>
+            }
           </div>
         </div>
       </footer>
@@ -115,10 +132,11 @@ export function SiteLayout({children}: SiteLayoutProps) {
           </Button>
         </div>
       : !['/servicos', '/barbeiros', '/contato'].includes(location) && (
-        <Button asChild className="fixed bottom-4 right-4 z-30 min-h-12 rounded-full px-6 shadow-gold sm:hidden">
-          <Link href="/agendar">Agendar</Link>
-        </Button>
-      )}
+          <Button asChild className="fixed bottom-4 right-4 z-30 min-h-12 rounded-full px-6 shadow-gold sm:hidden">
+            <Link href="/agendar">Agendar</Link>
+          </Button>
+        )
+      }
     </div>
-  )
+  );
 }

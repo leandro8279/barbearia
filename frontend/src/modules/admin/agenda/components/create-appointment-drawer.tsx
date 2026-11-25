@@ -1,82 +1,82 @@
-import {useEffect, useMemo, useState} from 'react'
-import {useQueryClient} from '@tanstack/react-query'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm, useWatch} from 'react-hook-form'
-import {useLocation, useSearch} from 'wouter'
-import {toast} from 'sonner'
+import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
+import { useLocation, useSearch } from 'wouter';
+import { toast } from 'sonner';
 import {
   useAgendaBarbers,
   useAgendaAvailabilitySlots,
   useAgendaCustomerSuggestions,
   useAgendaEligibleBarbers,
   useAgendaServices,
-  useCreateAgendaAppointment
-} from '@/modules/admin/agenda/hooks/use-agenda'
-import type {AgendaCustomer} from '@/modules/admin/agenda/api/agenda'
-import {createAppointmentSchema, type CreateAppointmentValues} from '@/modules/admin/agenda/schemas/create-appointment.schema'
-import {createQuickAgendaCustomer} from '@/modules/admin/agenda/api/agenda'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {formatBRL, formatDuration, formatDateTime} from '@/shared/lib/format'
-import {BUSINESS_TIME_ZONE} from '@/shared/lib/time'
-import {Button} from '@/shared/ui/button'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from '@/shared/ui/sheet'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Textarea} from '@/shared/ui/textarea'
-import {SlotGrid} from '@/shared/components/slot-grid'
-import {ErrorState} from '@/shared/components/error-state'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
+  useCreateAgendaAppointment,
+} from '@/modules/admin/agenda/hooks/use-agenda';
+import type { AgendaCustomer } from '@/modules/admin/agenda/api/agenda';
+import { createAppointmentSchema, type CreateAppointmentValues } from '@/modules/admin/agenda/schemas/create-appointment.schema';
+import { createQuickAgendaCustomer } from '@/modules/admin/agenda/api/agenda';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { formatBRL, formatDuration, formatDateTime } from '@/shared/lib/format';
+import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
+import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Textarea } from '@/shared/ui/textarea';
+import { SlotGrid } from '@/shared/components/slot-grid';
+import { ErrorState } from '@/shared/components/error-state';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
 
-const stepTitles = ['Cliente', 'Serviços', 'Horário', 'Revisão']
+const stepTitles = ['Cliente', 'Serviços', 'Horário', 'Revisão'];
 
 function dateTimeParts(value: string | null) {
-  if (!value) return {date: '', time: ''}
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return {date: '', time: ''}
-  const parts = new Intl.DateTimeFormat('en-CA', {timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'}).format(date)
-  const time = new Intl.DateTimeFormat('pt-BR', {timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}).format(date)
-  return {date: parts, time}
+  if (!value) return { date: '', time: '' };
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return { date: '', time: '' };
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+  const time = new Intl.DateTimeFormat('pt-BR', { timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date);
+  return { date: parts, time };
 }
 
 function localTime(value: string) {
-  return new Intl.DateTimeFormat('pt-BR', {timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}).format(new Date(value))
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(value));
 }
 
 function todayInBusinessTimeZone() {
-  return new Intl.DateTimeFormat('en-CA', {timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date())
+  return new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }
 
 function phoneForDisplay(value?: string | null) {
-  return value?.trim() || 'Telefone não informado'
+  return value?.trim() || 'Telefone não informado';
 }
 
 interface CreateAppointmentDrawerProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentDrawerProps) {
-  const search = useSearch()
-  const [, setLocation] = useLocation()
-  const queryClient = useQueryClient()
-  const user = useSessionStore(state => state.user)
-  const params = useMemo(() => new URLSearchParams(search), [search])
-  const prefillStart = params.get('start')
-  const prefillBarberId = params.get('barberId') ?? ''
-  const initialDateTime = dateTimeParts(prefillStart)
-  const canManage = Boolean(user && (user.role === 'admin' || user.role === 'manager' || user.role === 'reception' || user.permissions.includes('agenda.manage')))
-  const isBarber = user?.role === 'barber'
-  const [step, setStep] = useState(0)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCustomer, setSelectedCustomer] = useState<AgendaCustomer | null>(null)
-  const [quickCustomerName, setQuickCustomerName] = useState('')
-  const [quickCustomerPhone, setQuickCustomerPhone] = useState('')
-  const [quickCustomerError, setQuickCustomerError] = useState('')
-  const [formError, setFormError] = useState('')
-  const [discardOpen, setDiscardOpen] = useState(false)
+export function CreateAppointmentDrawer({ open, onOpenChange }: CreateAppointmentDrawerProps) {
+  const search = useSearch();
+  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  const user = useSessionStore((state) => state.user);
+  const params = useMemo(() => new URLSearchParams(search), [search]);
+  const prefillStart = params.get('start');
+  const prefillBarberId = params.get('barberId') ?? '';
+  const initialDateTime = dateTimeParts(prefillStart);
+  const canManage = Boolean(user && (user.role === 'admin' || user.role === 'manager' || user.role === 'reception' || user.permissions.includes('agenda.manage')));
+  const isBarber = user?.role === 'barber';
+  const [step, setStep] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState<AgendaCustomer | null>(null);
+  const [quickCustomerName, setQuickCustomerName] = useState('');
+  const [quickCustomerPhone, setQuickCustomerPhone] = useState('');
+  const [quickCustomerError, setQuickCustomerError] = useState('');
+  const [formError, setFormError] = useState('');
+  const [discardOpen, setDiscardOpen] = useState(false);
   const form = useForm<CreateAppointmentValues>({
     resolver: zodResolver(createAppointmentSchema),
     defaultValues: {
@@ -88,39 +88,39 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
       notes: '',
       expectedPaymentMethod: '',
       bypassAdvance: false,
-      allowOutOfHours: false
-    }
-  })
-  const customerId = useWatch({control: form.control, name: 'customerId'})
-  const serviceIds = useWatch({control: form.control, name: 'serviceIds'})
-  const barberId = useWatch({control: form.control, name: 'barberId'})
-  const date = useWatch({control: form.control, name: 'date'})
-  const selectedStart = useWatch({control: form.control, name: 'start'})
-  const expectedPaymentMethod = useWatch({control: form.control, name: 'expectedPaymentMethod'})
-  const bypassAdvance = useWatch({control: form.control, name: 'bypassAdvance'})
-  const allowOutOfHours = useWatch({control: form.control, name: 'allowOutOfHours'})
-  const servicesQuery = useAgendaServices()
-  const customerSuggestions = useAgendaCustomerSuggestions(searchTerm)
-  const barberProfiles = useAgendaBarbers(isBarber ? Number(user?.id) : undefined)
-  const barberOptions = useAgendaEligibleBarbers(serviceIds.map(Number))
-  const eligibleBarbers = isBarber ? (barberOptions.data?.filter(barber => barber.id === barberProfiles.data?.[0]?.id) ?? []) : (barberOptions.data ?? [])
-  const availability = useAgendaAvailabilitySlots({serviceIds: serviceIds.map(Number), barberId: barberId ? Number(barberId) : null, date, bypassAdvance, allowOutOfHours})
-  const createMutation = useCreateAgendaAppointment()
-  const slots = availability.data ?? []
-  const selectedSlot = slots.find(slot => slot.start === selectedStart)
-  const selectedBarber = eligibleBarbers.find(barber => barber.id === Number(barberId))
-  const selectedServices = (servicesQuery.data ?? []).filter(service => serviceIds.includes(String(service.id)))
-  const queryClientId = String(customerId || '')
+      allowOutOfHours: false,
+    },
+  });
+  const customerId = useWatch({ control: form.control, name: 'customerId' });
+  const serviceIds = useWatch({ control: form.control, name: 'serviceIds' });
+  const barberId = useWatch({ control: form.control, name: 'barberId' });
+  const date = useWatch({ control: form.control, name: 'date' });
+  const selectedStart = useWatch({ control: form.control, name: 'start' });
+  const expectedPaymentMethod = useWatch({ control: form.control, name: 'expectedPaymentMethod' });
+  const bypassAdvance = useWatch({ control: form.control, name: 'bypassAdvance' });
+  const allowOutOfHours = useWatch({ control: form.control, name: 'allowOutOfHours' });
+  const servicesQuery = useAgendaServices();
+  const customerSuggestions = useAgendaCustomerSuggestions(searchTerm);
+  const barberProfiles = useAgendaBarbers(isBarber ? Number(user?.id) : undefined);
+  const barberOptions = useAgendaEligibleBarbers(serviceIds.map(Number));
+  const eligibleBarbers = isBarber ? (barberOptions.data?.filter((barber) => barber.id === barberProfiles.data?.[0]?.id) ?? []) : (barberOptions.data ?? []);
+  const availability = useAgendaAvailabilitySlots({ serviceIds: serviceIds.map(Number), barberId: barberId ? Number(barberId) : null, date, bypassAdvance, allowOutOfHours });
+  const createMutation = useCreateAgendaAppointment();
+  const slots = availability.data ?? [];
+  const selectedSlot = slots.find((slot) => slot.start === selectedStart);
+  const selectedBarber = eligibleBarbers.find((barber) => barber.id === Number(barberId));
+  const selectedServices = (servicesQuery.data ?? []).filter((service) => serviceIds.includes(String(service.id)));
+  const queryClientId = String(customerId || '');
 
   useEffect(() => {
-    if (!open) return
-    setStep(0)
-    setSearchTerm('')
-    setSelectedCustomer(null)
-    setQuickCustomerName('')
-    setQuickCustomerPhone('')
-    setQuickCustomerError('')
-    setFormError('')
+    if (!open) return;
+    setStep(0);
+    setSearchTerm('');
+    setSelectedCustomer(null);
+    setQuickCustomerName('');
+    setQuickCustomerPhone('');
+    setQuickCustomerError('');
+    setFormError('');
     form.reset({
       customerId: '',
       serviceIds: [],
@@ -130,101 +130,101 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
       notes: '',
       expectedPaymentMethod: '',
       bypassAdvance: false,
-      allowOutOfHours: false
-    })
-  }, [form, initialDateTime.date, open, prefillBarberId])
+      allowOutOfHours: false,
+    });
+  }, [form, initialDateTime.date, open, prefillBarberId]);
 
   useEffect(() => {
-    if (isBarber && barberProfiles.data?.[0]) form.setValue('barberId', String(barberProfiles.data[0].id), {shouldValidate: true})
-  }, [barberProfiles.data, form, isBarber])
+    if (isBarber && barberProfiles.data?.[0]) form.setValue('barberId', String(barberProfiles.data[0].id), { shouldValidate: true });
+  }, [barberProfiles.data, form, isBarber]);
 
   useEffect(() => {
-    if (!prefillStart || !slots.length || form.getValues('start')) return
-    const target = new Date(prefillStart).getTime()
-    const match = slots.find(slot => new Date(slot.start).getTime() === target)
-    if (match) form.setValue('start', match.start, {shouldValidate: true})
-  }, [form, prefillStart, slots])
+    if (!prefillStart || !slots.length || form.getValues('start')) return;
+    const target = new Date(prefillStart).getTime();
+    const match = slots.find((slot) => new Date(slot.start).getTime() === target);
+    if (match) form.setValue('start', match.start, { shouldValidate: true });
+  }, [form, prefillStart, slots]);
 
   function closeDrawer(nextOpen: boolean) {
     if (!nextOpen) {
       if (form.formState.isDirty || quickCustomerName.trim() || quickCustomerPhone.trim()) {
-        setDiscardOpen(true)
-        return
+        setDiscardOpen(true);
+        return;
       }
-      onOpenChange(false)
-      setLocation('/admin/agenda')
-      return
+      onOpenChange(false);
+      setLocation('/admin/agenda');
+      return;
     }
-    onOpenChange(true)
+    onOpenChange(true);
   }
 
   function chooseCustomer(customer: AgendaCustomer) {
-    setSelectedCustomer(customer)
-    setSearchTerm('')
-    setQuickCustomerError('')
-    form.setValue('customerId', String(customer.id), {shouldValidate: true, shouldDirty: true})
+    setSelectedCustomer(customer);
+    setSearchTerm('');
+    setQuickCustomerError('');
+    form.setValue('customerId', String(customer.id), { shouldValidate: true, shouldDirty: true });
   }
 
   async function registerQuickCustomer() {
-    setQuickCustomerError('')
-    const name = quickCustomerName.trim()
-    const phone = quickCustomerPhone.replace(/\D/g, '')
+    setQuickCustomerError('');
+    const name = quickCustomerName.trim();
+    const phone = quickCustomerPhone.replace(/\D/g, '');
     if (name.length < 2) {
-      setQuickCustomerError('Informe o nome completo do cliente.')
-      return
+      setQuickCustomerError('Informe o nome completo do cliente.');
+      return;
     }
     if (phone.length < 10) {
-      setQuickCustomerError('Informe um telefone com DDD.')
-      return
+      setQuickCustomerError('Informe um telefone com DDD.');
+      return;
     }
     try {
-      const customer = await createQuickAgendaCustomer({name, phone})
-      chooseCustomer(customer)
-      await queryClient.invalidateQueries({queryKey: ['admin-agenda-customer-suggestions']})
-      toast.success('Cadastro rápido criado.')
+      const customer = await createQuickAgendaCustomer({ name, phone });
+      chooseCustomer(customer);
+      await queryClient.invalidateQueries({ queryKey: ['admin-agenda-customer-suggestions'] });
+      toast.success('Cadastro rápido criado.');
     } catch (error) {
-      setQuickCustomerError(error instanceof Error ? error.message : 'Não foi possível cadastrar o cliente.')
+      setQuickCustomerError(error instanceof Error ? error.message : 'Não foi possível cadastrar o cliente.');
     }
   }
 
   function selectService(serviceId: number) {
-    const id = String(serviceId)
-    const current = form.getValues('serviceIds')
-    const next = current.includes(id) ? current.filter(item => item !== id) : [...current, id]
+    const id = String(serviceId);
+    const current = form.getValues('serviceIds');
+    const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
     if (next.length > 4) {
-      setFormError('Selecione no máximo quatro serviços.')
-      return
+      setFormError('Selecione no máximo quatro serviços.');
+      return;
     }
-    setFormError('')
-    form.setValue('serviceIds', next, {shouldValidate: true, shouldDirty: true})
-    form.setValue('start', '', {shouldDirty: true})
-    form.setValue('barberId', isBarber ? String(barberProfiles.data?.[0]?.id ?? '') : '', {shouldValidate: true, shouldDirty: true})
+    setFormError('');
+    form.setValue('serviceIds', next, { shouldValidate: true, shouldDirty: true });
+    form.setValue('start', '', { shouldDirty: true });
+    form.setValue('barberId', isBarber ? String(barberProfiles.data?.[0]?.id ?? '') : '', { shouldValidate: true, shouldDirty: true });
   }
 
   function selectBarber(value: string) {
-    form.setValue('barberId', value, {shouldValidate: true, shouldDirty: true})
-    form.setValue('start', '', {shouldDirty: true})
+    form.setValue('barberId', value, { shouldValidate: true, shouldDirty: true });
+    form.setValue('start', '', { shouldDirty: true });
   }
 
   function selectDate(value: string) {
-    form.setValue('date', value, {shouldValidate: true, shouldDirty: true})
-    form.setValue('start', '', {shouldDirty: true})
+    form.setValue('date', value, { shouldValidate: true, shouldDirty: true });
+    form.setValue('start', '', { shouldDirty: true });
   }
 
   async function continueStep() {
-    setFormError('')
+    setFormError('');
     const fields: Array<keyof CreateAppointmentValues> =
       step === 0 ? ['customerId']
       : step === 1 ? ['serviceIds']
       : step === 2 ? ['barberId', 'date', 'start']
-      : []
-    const valid = fields.length ? await form.trigger(fields) : true
-    if (!valid) return
-    if (step < stepTitles.length - 1) setStep(current => current + 1)
+      : [];
+    const valid = fields.length ? await form.trigger(fields) : true;
+    if (!valid) return;
+    if (step < stepTitles.length - 1) setStep((current) => current + 1);
   }
 
   async function submit(values: CreateAppointmentValues) {
-    setFormError('')
+    setFormError('');
     try {
       await createMutation.mutateAsync({
         customerId: Number(values.customerId),
@@ -234,20 +234,20 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
         notes: values.notes,
         expectedPaymentMethod: values.expectedPaymentMethod || null,
         bypassAdvance: values.bypassAdvance,
-        allowOutOfHours: values.allowOutOfHours
-      })
-      form.reset(values)
-      onOpenChange(false)
-      setLocation('/admin/agenda')
+        allowOutOfHours: values.allowOutOfHours,
+      });
+      form.reset(values);
+      onOpenChange(false);
+      setLocation('/admin/agenda');
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível criar o agendamento.')
+      setFormError(error instanceof Error ? error.message : 'Não foi possível criar o agendamento.');
     }
   }
 
-  const timeSlots = slots.map(slot => ({time: localTime(slot.start), available: true}))
-  const estimatedDuration = selectedSlot?.durationMin ?? selectedBarber?.durationMin
-  const estimatedTotal = selectedSlot?.subtotal ?? selectedBarber?.subtotal
-  const serviceError = form.formState.errors.serviceIds?.message
+  const timeSlots = slots.map((slot) => ({ time: localTime(slot.start), available: true }));
+  const estimatedDuration = selectedSlot?.durationMin ?? selectedBarber?.durationMin;
+  const estimatedTotal = selectedSlot?.subtotal ?? selectedBarber?.subtotal;
+  const serviceError = form.formState.errors.serviceIds?.message;
 
   return (
     <Sheet open={open} onOpenChange={closeDrawer}>
@@ -265,7 +265,8 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                   step === index ? 'bg-primary text-primary-foreground'
                   : index < step ? 'bg-primary/10 text-foreground'
                   : 'bg-muted text-muted-foreground'
-                }`}>
+                }`}
+              >
                 <span className="font-semibold">{index + 1}.</span> {title}
               </li>
             ))}
@@ -294,9 +295,10 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                       variant="outline"
                       className="min-h-11 shrink-0"
                       onClick={() => {
-                        setSelectedCustomer(null)
-                        form.setValue('customerId', '', {shouldValidate: true, shouldDirty: true})
-                      }}>
+                        setSelectedCustomer(null);
+                        form.setValue('customerId', '', { shouldValidate: true, shouldDirty: true });
+                      }}
+                    >
                       Trocar
                     </Button>
                   </div>
@@ -308,7 +310,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                         <FormItem>
                           <FormLabel>Buscar cliente</FormLabel>
                           <FormControl>
-                            <Input value={searchTerm} onChange={event => setSearchTerm(event.target.value)} placeholder="Nome ou telefone" className="min-h-11" autoFocus />
+                            <Input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Nome ou telefone" className="min-h-11" autoFocus />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -318,12 +320,13 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                     {customerSuggestions.isError && <ErrorState title="Não foi possível buscar clientes" onRetry={() => void customerSuggestions.refetch()} />}
                     {(customerSuggestions.data?.length ?? 0) > 0 && (
                       <ul className="max-h-52 space-y-2 overflow-y-auto rounded-lg border border-border p-2" aria-label="Resultados da busca de clientes">
-                        {customerSuggestions.data?.map(customer => (
+                        {customerSuggestions.data?.map((customer) => (
                           <li key={customer.id}>
                             <button
                               type="button"
                               className="min-h-14 w-full rounded-md px-3 py-2 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                              onClick={() => chooseCustomer(customer)}>
+                              onClick={() => chooseCustomer(customer)}
+                            >
                               <span className="block font-medium">{customer.name}</span>
                               <span className="block text-sm text-muted-foreground">{phoneForDisplay(customer.phone)}</span>
                             </button>
@@ -338,7 +341,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                       <h4 className="font-medium">Cadastro rápido</h4>
                       <label className="grid gap-2 text-sm font-medium" htmlFor="quick-customer-name">
                         Nome
-                        <Input id="quick-customer-name" value={quickCustomerName} onChange={event => setQuickCustomerName(event.target.value)} placeholder="Nome do cliente" className="min-h-11" />
+                        <Input id="quick-customer-name" value={quickCustomerName} onChange={(event) => setQuickCustomerName(event.target.value)} placeholder="Nome do cliente" className="min-h-11" />
                       </label>
                       <label className="grid gap-2 text-sm font-medium" htmlFor="quick-customer-phone">
                         Telefone
@@ -347,7 +350,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                           type="tel"
                           inputMode="tel"
                           value={quickCustomerPhone}
-                          onChange={event => setQuickCustomerPhone(event.target.value)}
+                          onChange={(event) => setQuickCustomerPhone(event.target.value)}
                           placeholder="(11) 99999-9999"
                           className="min-h-11"
                         />
@@ -381,22 +384,23 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                 </div>
                 {servicesQuery.isPending ?
                   <div className="space-y-2">
-                    {Array.from({length: 4}, (_, index) => (
+                    {Array.from({ length: 4 }, (_, index) => (
                       <Skeleton key={index} className="h-16 rounded-lg" />
                     ))}
                   </div>
                 : servicesQuery.isError ?
                   <ErrorState title="Não foi possível carregar os serviços" onRetry={() => void servicesQuery.refetch()} />
                 : <div className="space-y-2">
-                    {(servicesQuery.data ?? []).map(service => {
-                      const checked = serviceIds.includes(String(service.id))
+                    {(servicesQuery.data ?? []).map((service) => {
+                      const checked = serviceIds.includes(String(service.id));
                       return (
                         <button
                           key={service.id}
                           type="button"
                           aria-pressed={checked}
                           onClick={() => selectService(service.id)}
-                          className={`flex min-h-16 w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${checked ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}>
+                          className={`flex min-h-16 w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${checked ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}
+                        >
                           <Checkbox checked={checked} aria-hidden="true" tabIndex={-1} />
                           <span className="min-w-0 flex-1">
                             <span className="block font-medium">{service.name}</span>
@@ -404,7 +408,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                           </span>
                           <span className="text-sm font-semibold">{formatBRL(service.price)}</span>
                         </button>
-                      )
+                      );
                     })}
                   </div>
                 }
@@ -439,7 +443,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                         <SelectValue placeholder={barberOptions.isPending ? 'Carregando...' : 'Selecione'} />
                       </SelectTrigger>
                       <SelectContent>
-                        {eligibleBarbers.map(barber => (
+                        {eligibleBarbers.map((barber) => (
                           <SelectItem key={barber.id} value={String(barber.id)}>
                             {barber.name}
                           </SelectItem>
@@ -457,7 +461,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                   </div>
                   <label className="grid gap-2 text-sm font-medium" htmlFor="appointment-date">
                     Data
-                    <Input id="appointment-date" type="date" value={date} onChange={event => selectDate(event.target.value)} className="min-h-11" />
+                    <Input id="appointment-date" type="date" value={date} onChange={(event) => selectDate(event.target.value)} className="min-h-11" />
                   </label>
                 </div>
                 {canManage && (
@@ -466,9 +470,9 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                     <label className="flex min-h-11 items-start gap-3 text-sm">
                       <Checkbox
                         checked={allowOutOfHours}
-                        onCheckedChange={checked => {
-                          form.setValue('allowOutOfHours', checked === true, {shouldDirty: true})
-                          form.setValue('start', '', {shouldDirty: true})
+                        onCheckedChange={(checked) => {
+                          form.setValue('allowOutOfHours', checked === true, { shouldDirty: true });
+                          form.setValue('start', '', { shouldDirty: true });
                         }}
                       />
                       <span>
@@ -479,9 +483,9 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                     <label className="flex min-h-11 items-start gap-3 text-sm">
                       <Checkbox
                         checked={bypassAdvance}
-                        onCheckedChange={checked => {
-                          form.setValue('bypassAdvance', checked === true, {shouldDirty: true})
-                          form.setValue('start', '', {shouldDirty: true})
+                        onCheckedChange={(checked) => {
+                          form.setValue('bypassAdvance', checked === true, { shouldDirty: true });
+                          form.setValue('start', '', { shouldDirty: true });
                         }}
                       />
                       <span>
@@ -503,9 +507,9 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                   : <SlotGrid
                       slots={timeSlots}
                       selectedTime={selectedSlot ? localTime(selectedSlot.start) : null}
-                      onSelect={time => {
-                        const slot = slots.find(item => localTime(item.start) === time)
-                        form.setValue('start', slot?.start ?? '', {shouldValidate: true, shouldDirty: true})
+                      onSelect={(time) => {
+                        const slot = slots.find((item) => localTime(item.start) === time);
+                        form.setValue('start', slot?.start ?? '', { shouldValidate: true, shouldDirty: true });
                       }}
                       emptyMessage={date && barberId ? 'Sem horários livres. Altere a data ou use uma exceção autorizada.' : 'Selecione serviços, profissional e data para ver sugestões.'}
                     />
@@ -551,7 +555,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Serviços</p>
-                    <p className="font-medium">{selectedServices.map(service => service.name).join(', ') || '—'}</p>
+                    <p className="font-medium">{selectedServices.map((service) => service.name).join(', ') || '—'}</p>
                   </div>
                   <div className="flex justify-between gap-4 border-t border-border pt-3">
                     <span className="text-muted-foreground">Duração e total</span>
@@ -564,7 +568,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                 <FormField
                   control={form.control}
                   name="notes"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Observações</FormLabel>
                       <FormControl>
@@ -578,7 +582,10 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                   <label htmlFor="expected-payment-method" className="text-sm font-medium">
                     Forma de pagamento prevista
                   </label>
-                  <Select value={expectedPaymentMethod} onValueChange={value => form.setValue('expectedPaymentMethod', value as CreateAppointmentValues['expectedPaymentMethod'], {shouldDirty: true})}>
+                  <Select
+                    value={expectedPaymentMethod}
+                    onValueChange={(value) => form.setValue('expectedPaymentMethod', value as CreateAppointmentValues['expectedPaymentMethod'], { shouldDirty: true })}
+                  >
                     <SelectTrigger id="expected-payment-method" className="min-h-11 w-full">
                       <SelectValue placeholder="Não informada" />
                     </SelectTrigger>
@@ -589,7 +596,7 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
                       <SelectItem value="credit">Cartão de crédito</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button type="button" variant="ghost" className="min-h-11 px-2" onClick={() => form.setValue('expectedPaymentMethod', '', {shouldDirty: true})}>
+                  <Button type="button" variant="ghost" className="min-h-11 px-2" onClick={() => form.setValue('expectedPaymentMethod', '', { shouldDirty: true })}>
                     Limpar forma prevista
                   </Button>
                 </div>
@@ -616,9 +623,10 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
               className="min-h-11"
               disabled={createMutation.isPending}
               onClick={() => {
-                setFormError('')
-                setStep(current => Math.max(0, current - 1))
-              }}>
+                setFormError('');
+                setStep((current) => Math.max(0, current - 1));
+              }}
+            >
               Voltar
             </Button>
           )}
@@ -640,12 +648,12 @@ export function CreateAppointmentDrawer({open, onOpenChange}: CreateAppointmentD
         confirmLabel="Descartar rascunho"
         destructive
         onConfirm={() => {
-          setDiscardOpen(false)
-          form.reset()
-          onOpenChange(false)
-          setLocation('/admin/agenda')
+          setDiscardOpen(false);
+          form.reset();
+          onOpenChange(false);
+          setLocation('/admin/agenda');
         }}
       />
     </Sheet>
-  )
+  );
 }

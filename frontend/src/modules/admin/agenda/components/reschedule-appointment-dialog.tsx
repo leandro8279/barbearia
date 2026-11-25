@@ -1,101 +1,104 @@
-import {useEffect, useRef, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {ArrowRight, MessageCircle} from 'lucide-react'
-import {useAgendaAppointmentDetail, useAgendaAvailabilitySlots, useAgendaEligibleBarbers, useRescheduleAgendaAppointment} from '@/modules/admin/agenda/hooks/use-agenda'
-import {rescheduleAppointmentSchema, type RescheduleAppointmentValues} from '@/modules/admin/agenda/schemas/agenda-overlays.schema'
-import {formatBRL, formatDateTime, formatDuration} from '@/shared/lib/format'
-import {BUSINESS_TIME_ZONE} from '@/shared/lib/time'
-import {Button} from '@/shared/ui/button'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Textarea} from '@/shared/ui/textarea'
-import {SlotGrid} from '@/shared/components/slot-grid'
-import {ErrorState} from '@/shared/components/error-state'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
+import { useEffect, useRef, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { ArrowRight, MessageCircle } from 'lucide-react';
+import { useAgendaAppointmentDetail, useAgendaAvailabilitySlots, useAgendaEligibleBarbers, useRescheduleAgendaAppointment } from '@/modules/admin/agenda/hooks/use-agenda';
+import { rescheduleAppointmentSchema, type RescheduleAppointmentValues } from '@/modules/admin/agenda/schemas/agenda-overlays.schema';
+import { formatBRL, formatDateTime, formatDuration } from '@/shared/lib/format';
+import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
+import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Textarea } from '@/shared/ui/textarea';
+import { SlotGrid } from '@/shared/components/slot-grid';
+import { ErrorState } from '@/shared/components/error-state';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
 
 function dateOf(value: string) {
-  return new Intl.DateTimeFormat('en-CA', {timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date(value))
+  return new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(value));
 }
 
 function today() {
-  return new Intl.DateTimeFormat('en-CA', {timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date())
+  return new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }
 
 function timeOf(value: string) {
-  return new Intl.DateTimeFormat('pt-BR', {timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}).format(new Date(value))
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: BUSINESS_TIME_ZONE, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(value));
 }
 
 interface RescheduleAppointmentDialogProps {
-  open: boolean
-  appointmentId: string | null
-  onOpenChange: (open: boolean) => void
-  onCompleted?: () => void
-  completedActionLabel?: string
+  open: boolean;
+  appointmentId: string | null;
+  onOpenChange: (open: boolean) => void;
+  onCompleted?: () => void;
+  completedActionLabel?: string;
 }
 
-export function RescheduleAppointmentDialog({open, appointmentId, onOpenChange, onCompleted, completedActionLabel = 'Fechar'}: RescheduleAppointmentDialogProps) {
-  const id = appointmentId && /^\d+$/.test(appointmentId) ? Number(appointmentId) : null
-  const detailQuery = useAgendaAppointmentDetail(id)
-  const appointment = detailQuery.data?.appointment
-  const customer = detailQuery.data?.customer
-  const serviceIds = appointment?.items.map(item => item.serviceId) ?? []
-  const barberQuery = useAgendaEligibleBarbers(serviceIds)
-  const form = useForm<RescheduleAppointmentValues>({resolver: zodResolver(rescheduleAppointmentSchema), defaultValues: {barberId: '', date: today(), start: '', reason: '', notifyCustomer: true}})
-  const barberId = form.watch('barberId')
-  const date = form.watch('date')
-  const notifyCustomer = form.watch('notifyCustomer')
-  const slotsQuery = useAgendaAvailabilitySlots({serviceIds, barberId: barberId ? Number(barberId) : null, date, bypassAdvance: false, allowOutOfHours: false})
-  const mutation = useRescheduleAgendaAppointment()
-  const initialized = useRef(false)
-  const [formError, setFormError] = useState('')
-  const [whatsAppHref, setWhatsAppHref] = useState('')
-  const [discardOpen, setDiscardOpen] = useState(false)
-  const [completed, setCompleted] = useState(false)
-  const slots = slotsQuery.data ?? []
-  const selectedSlot = slots.find(slot => slot.start === form.watch('start'))
+export function RescheduleAppointmentDialog({ open, appointmentId, onOpenChange, onCompleted, completedActionLabel = 'Fechar' }: RescheduleAppointmentDialogProps) {
+  const id = appointmentId && /^\d+$/.test(appointmentId) ? Number(appointmentId) : null;
+  const detailQuery = useAgendaAppointmentDetail(id);
+  const appointment = detailQuery.data?.appointment;
+  const customer = detailQuery.data?.customer;
+  const serviceIds = appointment?.items.map((item) => item.serviceId) ?? [];
+  const barberQuery = useAgendaEligibleBarbers(serviceIds);
+  const form = useForm<RescheduleAppointmentValues>({
+    resolver: zodResolver(rescheduleAppointmentSchema),
+    defaultValues: { barberId: '', date: today(), start: '', reason: '', notifyCustomer: true },
+  });
+  const barberId = form.watch('barberId');
+  const date = form.watch('date');
+  const notifyCustomer = form.watch('notifyCustomer');
+  const slotsQuery = useAgendaAvailabilitySlots({ serviceIds, barberId: barberId ? Number(barberId) : null, date, bypassAdvance: false, allowOutOfHours: false });
+  const mutation = useRescheduleAgendaAppointment();
+  const initialized = useRef(false);
+  const [formError, setFormError] = useState('');
+  const [whatsAppHref, setWhatsAppHref] = useState('');
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const slots = slotsQuery.data ?? [];
+  const selectedSlot = slots.find((slot) => slot.start === form.watch('start'));
 
   useEffect(() => {
     if (!open) {
-      initialized.current = false
-      setFormError('')
-      setWhatsAppHref('')
-      setCompleted(false)
-      return
+      initialized.current = false;
+      setFormError('');
+      setWhatsAppHref('');
+      setCompleted(false);
+      return;
     }
     if (appointment && !initialized.current) {
-      initialized.current = true
-      form.reset({barberId: String(appointment.barberId), date: dateOf(appointment.start), start: '', reason: '', notifyCustomer: true})
+      initialized.current = true;
+      form.reset({ barberId: String(appointment.barberId), date: dateOf(appointment.start), start: '', reason: '', notifyCustomer: true });
     }
-  }, [appointment, form, open])
+  }, [appointment, form, open]);
 
   function requestClose(nextOpen: boolean) {
     if (!nextOpen && form.formState.isDirty && !completed) {
-      setDiscardOpen(true)
-      return
+      setDiscardOpen(true);
+      return;
     }
-    onOpenChange(nextOpen)
+    onOpenChange(nextOpen);
   }
 
   async function submit(values: RescheduleAppointmentValues) {
-    if (!appointment) return
-    setFormError('')
+    if (!appointment) return;
+    setFormError('');
     try {
-      await mutation.mutateAsync({id: appointment.id, barberId: Number(values.barberId), start: values.start, reason: values.reason, notifyCustomer: values.notifyCustomer})
-      const phone = (customer?.phone ?? '').replace(/\D/g, '')
+      await mutation.mutateAsync({ id: appointment.id, barberId: Number(values.barberId), start: values.start, reason: values.reason, notifyCustomer: values.notifyCustomer });
+      const phone = (customer?.phone ?? '').replace(/\D/g, '');
       if (values.notifyCustomer && phone.length >= 10) {
-        const text = `Olá, ${customer?.name}. Seu agendamento foi remarcado:\n${formatDateTime(appointment.start)} → ${formatDateTime(values.start)}.`
-        setWhatsAppHref(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`)
+        const text = `Olá, ${customer?.name}. Seu agendamento foi remarcado:\n${formatDateTime(appointment.start)} → ${formatDateTime(values.start)}.`;
+        setWhatsAppHref(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`);
       } else {
-        setWhatsAppHref('')
+        setWhatsAppHref('');
       }
-      setCompleted(true)
+      setCompleted(true);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível remarcar o agendamento.')
+      setFormError(error instanceof Error ? error.message : 'Não foi possível remarcar o agendamento.');
     }
   }
 
@@ -137,22 +140,23 @@ export function RescheduleAppointmentDialog({open, appointmentId, onOpenChange, 
                   <FormField
                     control={form.control}
                     name="barberId"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Barbeiro</FormLabel>
                         <Select
                           value={field.value}
-                          onValueChange={value => {
-                            field.onChange(value)
-                            form.setValue('start', '', {shouldDirty: true})
-                          }}>
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('start', '', { shouldDirty: true });
+                          }}
+                        >
                           <FormControl>
                             <SelectTrigger className="min-h-11 w-full">
                               <SelectValue placeholder={barberQuery.isPending ? 'Carregando...' : 'Selecione'} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {(barberQuery.data ?? []).map(barber => (
+                            {(barberQuery.data ?? []).map((barber) => (
                               <SelectItem key={barber.id} value={String(barber.id)}>
                                 {barber.name}
                               </SelectItem>
@@ -166,7 +170,7 @@ export function RescheduleAppointmentDialog({open, appointmentId, onOpenChange, 
                   <FormField
                     control={form.control}
                     name="date"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Data</FormLabel>
                         <FormControl>
@@ -175,9 +179,9 @@ export function RescheduleAppointmentDialog({open, appointmentId, onOpenChange, 
                             min={today()}
                             className="min-h-11"
                             {...field}
-                            onChange={event => {
-                              field.onChange(event)
-                              form.setValue('start', '', {shouldDirty: true})
+                            onChange={(event) => {
+                              field.onChange(event);
+                              form.setValue('start', '', { shouldDirty: true });
                             }}
                           />
                         </FormControl>
@@ -194,11 +198,11 @@ export function RescheduleAppointmentDialog({open, appointmentId, onOpenChange, 
                   : slotsQuery.isError ?
                     <ErrorState title="Não foi possível consultar horários" onRetry={() => void slotsQuery.refetch()} />
                   : <SlotGrid
-                      slots={slots.map(slot => ({time: timeOf(slot.start), available: true}))}
+                      slots={slots.map((slot) => ({ time: timeOf(slot.start), available: true }))}
                       selectedTime={selectedSlot ? timeOf(selectedSlot.start) : null}
-                      onSelect={time => {
-                        const slot = slots.find(item => timeOf(item.start) === time)
-                        form.setValue('start', slot?.start ?? '', {shouldValidate: true, shouldDirty: true})
+                      onSelect={(time) => {
+                        const slot = slots.find((item) => timeOf(item.start) === time);
+                        form.setValue('start', slot?.start ?? '', { shouldValidate: true, shouldDirty: true });
                       }}
                       emptyMessage="Não há horários disponíveis nessa data para este barbeiro."
                     />
@@ -216,7 +220,7 @@ export function RescheduleAppointmentDialog({open, appointmentId, onOpenChange, 
                 <FormField
                   control={form.control}
                   name="reason"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Motivo da remarcação</FormLabel>
                       <FormControl>
@@ -229,10 +233,10 @@ export function RescheduleAppointmentDialog({open, appointmentId, onOpenChange, 
                 <FormField
                   control={form.control}
                   name="notifyCustomer"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem className="flex items-start gap-3 rounded-lg border p-3">
                       <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={value => field.onChange(value === true)} />
+                        <Checkbox checked={field.value} onCheckedChange={(value) => field.onChange(value === true)} />
                       </FormControl>
                       <div>
                         <FormLabel className="cursor-pointer">Avisar cliente por WhatsApp</FormLabel>
@@ -285,11 +289,11 @@ export function RescheduleAppointmentDialog({open, appointmentId, onOpenChange, 
         confirmLabel="Descartar"
         destructive
         onConfirm={() => {
-          setDiscardOpen(false)
-          form.reset()
-          onOpenChange(false)
+          setDiscardOpen(false);
+          form.reset();
+          onOpenChange(false);
         }}
       />
     </>
-  )
+  );
 }

@@ -1,18 +1,18 @@
-import type {ReactNode} from 'react'
-import {useMediaQuery} from '@/shared/hooks/use-media-query'
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle} from '@/shared/ui/drawer'
+import type { ReactNode } from 'react';
+import { useMediaQuery } from '@/shared/hooks/use-media-query';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/shared/ui/drawer';
 
 interface ResponsiveAccountOverlayProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  title: string
-  description: string
-  children: ReactNode
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  children: ReactNode;
 }
 
-export function ResponsiveAccountOverlay({open, onOpenChange, title, description, children}: ResponsiveAccountOverlayProps) {
-  const isDesktop = useMediaQuery('(min-width: 768px)')
+export function ResponsiveAccountOverlay({ open, onOpenChange, title, description, children }: ResponsiveAccountOverlayProps) {
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   if (isDesktop) {
     return (
@@ -25,7 +25,7 @@ export function ResponsiveAccountOverlay({open, onOpenChange, title, description
           {children}
         </DialogContent>
       </Dialog>
-    )
+    );
   }
 
   return (
@@ -38,5 +38,5 @@ export function ResponsiveAccountOverlay({open, onOpenChange, title, description
         <div className="px-4 pb-6">{children}</div>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }

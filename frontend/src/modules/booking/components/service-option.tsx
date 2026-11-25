@@ -1,20 +1,20 @@
-import {Clock3} from 'lucide-react'
-import type {PublicService} from '@/modules/site/api/services'
-import {formatBRL, formatDuration} from '@/shared/lib/format'
-import {Card, CardContent} from '@/shared/ui/card'
-import {Checkbox} from '@/shared/ui/checkbox'
+import { Clock3 } from 'lucide-react';
+import type { PublicService } from '@/modules/site/api/services';
+import { formatBRL, formatDuration } from '@/shared/lib/format';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Checkbox } from '@/shared/ui/checkbox';
 
 interface ServiceOptionProps {
-  service: PublicService
-  inputId: string
-  selected: boolean
-  disabled: boolean
-  price: number
-  priceCaption?: string
-  onToggle: () => void
+  service: PublicService;
+  inputId: string;
+  selected: boolean;
+  disabled: boolean;
+  price: number;
+  priceCaption?: string;
+  onToggle: () => void;
 }
 
-export function ServiceOption({service, inputId, selected, disabled, price, priceCaption, onToggle}: ServiceOptionProps) {
+export function ServiceOption({ service, inputId, selected, disabled, price, priceCaption, onToggle }: ServiceOptionProps) {
   return (
     <label htmlFor={inputId} className={`block ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
       <Card className={`h-full transition-colors ${selected ? 'border-primary ring-2 ring-primary/30' : ''}`}>
@@ -35,5 +35,5 @@ export function ServiceOption({service, inputId, selected, disabled, price, pric
         </CardContent>
       </Card>
     </label>
-  )
+  );
 }

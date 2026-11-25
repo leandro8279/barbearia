@@ -1,24 +1,24 @@
-import {Link, useLocation} from 'wouter'
-import type {ReactNode} from 'react'
-import {Brand} from '@/shared/components/brand'
-import {useBookingDraftUrlSync} from '@/shared/hooks/use-booking-draft-url-sync'
-import {Button} from '@/shared/ui/button'
+import { Link, useLocation } from 'wouter';
+import type { ReactNode } from 'react';
+import { Brand } from '@/shared/components/brand';
+import { useBookingDraftUrlSync } from '@/shared/hooks/use-booking-draft-url-sync';
+import { Button } from '@/shared/ui/button';
 
 const steps = [
-  {href: '/agendar', label: 'Serviços', number: '01'},
-  {href: '/agendar/profissional', label: 'Profissional', number: '02'},
-  {href: '/agendar/horario', label: 'Data e hora', number: '03'},
-  {href: '/agendar/dados', label: 'Dados e revisão', number: '04'}
-]
+  { href: '/agendar', label: 'Serviços', number: '01' },
+  { href: '/agendar/profissional', label: 'Profissional', number: '02' },
+  { href: '/agendar/horario', label: 'Data e hora', number: '03' },
+  { href: '/agendar/dados', label: 'Dados e revisão', number: '04' },
+];
 
 interface BookingLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
-export function BookingLayout({children}: BookingLayoutProps) {
-  const [location] = useLocation()
-  useBookingDraftUrlSync()
-  const activeIndex = location === '/agendar/revisao' || location.startsWith('/agendar/confirmado/') ? steps.length - 1 : steps.findIndex(step => step.href === location)
+export function BookingLayout({ children }: BookingLayoutProps) {
+  const [location] = useLocation();
+  useBookingDraftUrlSync();
+  const activeIndex = location === '/agendar/revisao' || location.startsWith('/agendar/confirmado/') ? steps.length - 1 : steps.findIndex((step) => step.href === location);
 
   return (
     <div className="min-h-screen pb-24">
@@ -37,7 +37,8 @@ export function BookingLayout({children}: BookingLayoutProps) {
               <li key={step.href}>
                 <div
                   aria-current={index === activeIndex ? 'step' : undefined}
-                  className={`border-t-2 pt-2 ${index <= activeIndex ? 'border-primary text-foreground' : 'border-border text-muted-foreground'}`}>
+                  className={`border-t-2 pt-2 ${index <= activeIndex ? 'border-primary text-foreground' : 'border-border text-muted-foreground'}`}
+                >
                   <span className="text-[10px] font-semibold tracking-wider sm:text-xs">{step.number}</span>
                   <span className="mt-1 hidden text-xs sm:block">{step.label}</span>
                 </div>
@@ -48,5 +49,5 @@ export function BookingLayout({children}: BookingLayoutProps) {
         <main className="mt-8">{children}</main>
       </div>
     </div>
-  )
+  );
 }

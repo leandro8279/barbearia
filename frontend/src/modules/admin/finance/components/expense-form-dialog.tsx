@@ -1,20 +1,20 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {AlertCircle, X} from 'lucide-react'
-import type {Expense, ExpenseCategory, ExpenseInput} from '@/modules/admin/finance/api/finance'
-import {expenseSchema, type ExpenseFormValues} from '@/modules/admin/finance/schemas/expense.schema'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/components/form-field'
-import {formatDate} from '@/shared/lib/format'
-import {MoneyInput} from '@/shared/components/money-input'
-import {Button} from '@/shared/ui/button'
-import {Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Switch} from '@/shared/ui/switch'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { AlertCircle, X } from 'lucide-react';
+import type { Expense, ExpenseCategory, ExpenseInput } from '@/modules/admin/finance/api/finance';
+import { expenseSchema, type ExpenseFormValues } from '@/modules/admin/finance/schemas/expense.schema';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/form-field';
+import { formatDate } from '@/shared/lib/format';
+import { MoneyInput } from '@/shared/components/money-input';
+import { Button } from '@/shared/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Switch } from '@/shared/ui/switch';
 
-const defaultValues: ExpenseFormValues = {description: '', category: '', amountCents: 0, dueDate: '', recurring: false}
+const defaultValues: ExpenseFormValues = { description: '', category: '', amountCents: 0, dueDate: '', recurring: false };
 
 export function ExpenseFormDialog({
   open,
@@ -25,60 +25,60 @@ export function ExpenseFormDialog({
   categoriesError,
   pending,
   onRetryCategories,
-  onSave
+  onSave,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  expense: Expense | null
-  categories: ExpenseCategory[]
-  categoriesLoading: boolean
-  categoriesError: boolean
-  pending: boolean
-  onRetryCategories: () => void
-  onSave: (id: number | null, input: ExpenseInput) => Promise<void>
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  expense: Expense | null;
+  categories: ExpenseCategory[];
+  categoriesLoading: boolean;
+  categoriesError: boolean;
+  pending: boolean;
+  onRetryCategories: () => void;
+  onSave: (id: number | null, input: ExpenseInput) => Promise<void>;
 }) {
-  const [discardOpen, setDiscardOpen] = useState(false)
-  const form = useForm<ExpenseFormValues>({resolver: zodResolver(expenseSchema), defaultValues, mode: 'onChange'})
-  const error = form.formState.errors.root?.server?.message
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const form = useForm<ExpenseFormValues>({ resolver: zodResolver(expenseSchema), defaultValues, mode: 'onChange' });
+  const error = form.formState.errors.root?.server?.message;
 
   useEffect(() => {
-    if (!open) return
+    if (!open) return;
     form.reset({
       description: expense?.description ?? '',
-      category: categories.find(item => item.name === expense?.category)?.slug ?? expense?.category ?? '',
+      category: categories.find((item) => item.name === expense?.category)?.slug ?? expense?.category ?? '',
       amountCents: expense?.amountCents ?? 0,
       dueDate: expense ? formatDate(expense.dueAt, 'yyyy-MM-dd') : '',
-      recurring: expense?.recurring ?? false
-    })
-  }, [categories, expense, form, open])
+      recurring: expense?.recurring ?? false,
+    });
+  }, [categories, expense, form, open]);
 
   function requestClose(nextOpen: boolean) {
-    if (!nextOpen && pending) return
+    if (!nextOpen && pending) return;
     if (!nextOpen && form.formState.isDirty) {
-      setDiscardOpen(true)
-      return
+      setDiscardOpen(true);
+      return;
     }
-    onOpenChange(nextOpen)
+    onOpenChange(nextOpen);
   }
 
   function discardChanges() {
-    form.reset(defaultValues)
-    setDiscardOpen(false)
-    onOpenChange(false)
+    form.reset(defaultValues);
+    setDiscardOpen(false);
+    onOpenChange(false);
   }
 
   async function submit(values: ExpenseFormValues) {
-    const input: ExpenseInput = {description: values.description, category: values.category, amountCents: values.amountCents, dueAt: `${values.dueDate}T12:00:00-03:00`, recurring: values.recurring}
+    const input: ExpenseInput = { description: values.description, category: values.category, amountCents: values.amountCents, dueAt: `${values.dueDate}T12:00:00-03:00`, recurring: values.recurring };
     try {
-      await onSave(expense?.id ?? null, input)
-      form.reset(defaultValues)
-      onOpenChange(false)
+      await onSave(expense?.id ?? null, input);
+      form.reset(defaultValues);
+      onOpenChange(false);
     } catch (saveError) {
-      form.setError('root.server', {type: 'server', message: saveError instanceof Error ? saveError.message : 'Não foi possível salvar. Confira sua conexão e tente novamente.'})
+      form.setError('root.server', { type: 'server', message: saveError instanceof Error ? saveError.message : 'Não foi possível salvar. Confira sua conexão e tente novamente.' });
     }
   }
 
-  const categoryUnavailable = categoriesLoading || categoriesError || categories.length === 0
+  const categoryUnavailable = categoriesLoading || categoriesError || categories.length === 0;
 
   return (
     <>
@@ -98,7 +98,7 @@ export function ExpenseFormDialog({
               <FormField
                 control={form.control}
                 name="description"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Descrição</FormLabel>
                     <FormControl>
@@ -112,7 +112,7 @@ export function ExpenseFormDialog({
                 <FormField
                   control={form.control}
                   name="category"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoria</FormLabel>
                       <Select value={field.value} onValueChange={field.onChange} disabled={categoryUnavailable || pending}>
@@ -122,7 +122,7 @@ export function ExpenseFormDialog({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map(item => (
+                          {categories.map((item) => (
                             <SelectItem key={item.id} value={item.slug}>
                               {item.name}
                             </SelectItem>
@@ -145,7 +145,7 @@ export function ExpenseFormDialog({
                 <FormField
                   control={form.control}
                   name="amountCents"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Valor</FormLabel>
                       <FormControl>
@@ -159,7 +159,7 @@ export function ExpenseFormDialog({
               <FormField
                 control={form.control}
                 name="dueDate"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Vencimento</FormLabel>
                     <FormControl>
@@ -172,7 +172,7 @@ export function ExpenseFormDialog({
               <FormField
                 control={form.control}
                 name="recurring"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm transition-colors hover:bg-muted/50">
                       <Switch checked={field.value} onCheckedChange={field.onChange} disabled={pending} aria-label="Repetir mensalmente" />
@@ -216,5 +216,5 @@ export function ExpenseFormDialog({
         onConfirm={discardChanges}
       />
     </>
-  )
+  );
 }

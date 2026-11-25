@@ -1,10 +1,10 @@
-import {QueryClient, QueryClientProvider, type Query} from '@tanstack/react-query'
-import {useEffect} from 'react'
-import {Router} from '@/app/router'
-import {AppErrorBoundary} from '@/shared/components/app-error-boundary'
-import {syncOpenGraph} from '@/shared/lib/page-meta'
-import {TooltipProvider} from '@/shared/ui/tooltip'
-import {Toaster} from '@/shared/ui/sonner'
+import { QueryClient, QueryClientProvider, type Query } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { Router } from '@/app/router';
+import { AppErrorBoundary } from '@/shared/components/app-error-boundary';
+import { syncOpenGraph } from '@/shared/lib/page-meta';
+import { TooltipProvider } from '@/shared/ui/tooltip';
+import { Toaster } from '@/shared/ui/sonner';
 
 const entityStaleTimes: Record<string, number> = {
   appointments: 15_000,
@@ -66,23 +66,23 @@ const entityStaleTimes: Record<string, number> = {
   'team-service-catalog': 5 * 60_000,
   'team-timeoff-barbers': 5 * 60_000,
   'team-profile': 60_000,
-  'team-schedule': 60_000
-}
+  'team-schedule': 60_000,
+};
 
 function staleTimeForEntity(query: Query): number {
-  const entity = query.queryKey[0]
-  return typeof entity === 'string' ? entityStaleTimes[entity] ?? 30_000 : 30_000
+  const entity = query.queryKey[0];
+  return typeof entity === 'string' ? (entityStaleTimes[entity] ?? 30_000) : 30_000;
 }
 
-const queryClient = new QueryClient({defaultOptions: {queries: {staleTime: staleTimeForEntity, retry: 1, refetchOnWindowFocus: false}}})
+const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: staleTimeForEntity, retry: 1, refetchOnWindowFocus: false } } });
 
 export default function App() {
   useEffect(() => {
-    const observer = new MutationObserver(syncOpenGraph)
-    observer.observe(document.head, {attributes: true, attributeFilter: ['content'], childList: true, characterData: true, subtree: true})
-    syncOpenGraph()
-    return () => observer.disconnect()
-  }, [])
+    const observer = new MutationObserver(syncOpenGraph);
+    observer.observe(document.head, { attributes: true, attributeFilter: ['content'], childList: true, characterData: true, subtree: true });
+    syncOpenGraph();
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -93,5 +93,5 @@ export default function App() {
         </AppErrorBoundary>
       </TooltipProvider>
     </QueryClientProvider>
-  )
+  );
 }

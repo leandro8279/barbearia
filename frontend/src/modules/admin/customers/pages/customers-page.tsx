@@ -1,35 +1,35 @@
-import {useEffect, useMemo, useState} from 'react'
-import type {ColumnDef, PaginationState, SortingState} from '@tanstack/react-table'
-import {Link, useSearch} from 'wouter'
-import {UserPlus} from 'lucide-react'
-import type {AdminCustomer} from '@/modules/admin/customers/api/customers'
-import {useAdminCustomers} from '@/modules/admin/customers/hooks/use-customers'
-import {CustomerDrawer} from '@/modules/admin/customers/components/customer-drawer'
-import {DataTable} from '@/shared/components/data-table'
-import {PageHeader} from '@/shared/components/page-header'
-import {useDebounce} from '@/shared/hooks/use-debounce'
-import {useOverlay} from '@/shared/hooks/use-overlay'
-import {useCan} from '@/shared/hooks/use-can'
-import {formatBRL, formatDate, formatPhone} from '@/shared/lib/format'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
+import { useEffect, useMemo, useState } from 'react';
+import type { ColumnDef, PaginationState, SortingState } from '@tanstack/react-table';
+import { Link, useSearch } from 'wouter';
+import { UserPlus } from 'lucide-react';
+import type { AdminCustomer } from '@/modules/admin/customers/api/customers';
+import { useAdminCustomers } from '@/modules/admin/customers/hooks/use-customers';
+import { CustomerDrawer } from '@/modules/admin/customers/components/customer-drawer';
+import { DataTable } from '@/shared/components/data-table';
+import { PageHeader } from '@/shared/components/page-header';
+import { useDebounce } from '@/shared/hooks/use-debounce';
+import { useOverlay } from '@/shared/hooks/use-overlay';
+import { useCan } from '@/shared/hooks/use-can';
+import { formatBRL, formatDate, formatPhone } from '@/shared/lib/format';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 
-type NoVisitFilter = 'all' | '30' | '60' | '90'
-type BirthdayFilter = 'all' | 'month'
+type NoVisitFilter = 'all' | '30' | '60' | '90';
+type BirthdayFilter = 'all' | 'month';
 
 export default function CustomersPage() {
-  const searchParams = new URLSearchParams(useSearch())
-  const customerDrawer = useOverlay('cliente', '')
-  const canWrite = useCan('customers.write')
-  const customerDrawerId = searchParams.get('cliente')
-  const [pagination, setPagination] = useState<PaginationState>({pageIndex: 0, pageSize: 10})
-  const [sorting, setSorting] = useState<SortingState>([{id: 'name', desc: false}])
-  const [search, setSearch] = useState('')
-  const [noVisitFilter, setNoVisitFilter] = useState<NoVisitFilter>('all')
-  const [birthdayFilter, setBirthdayFilter] = useState<BirthdayFilter>('all')
-  const debouncedSearch = useDebounce(search, 250)
-  const sort = sorting[0] ?? {id: 'name', desc: false}
+  const searchParams = new URLSearchParams(useSearch());
+  const customerDrawer = useOverlay('cliente', '');
+  const canWrite = useCan('customers.write');
+  const customerDrawerId = searchParams.get('cliente');
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'name', desc: false }]);
+  const [search, setSearch] = useState('');
+  const [noVisitFilter, setNoVisitFilter] = useState<NoVisitFilter>('all');
+  const [birthdayFilter, setBirthdayFilter] = useState<BirthdayFilter>('all');
+  const debouncedSearch = useDebounce(search, 250);
+  const sort = sorting[0] ?? { id: 'name', desc: false };
   const customersQuery = useAdminCustomers({
     page: pagination.pageIndex + 1,
     pageSize: pagination.pageSize,
@@ -37,42 +37,42 @@ export default function CustomersPage() {
     noVisitDays: noVisitFilter === 'all' ? undefined : Number(noVisitFilter),
     birthday: birthdayFilter === 'all' ? undefined : birthdayFilter,
     sortBy: sort.id,
-    sortOrder: sort.desc ? 'desc' : 'asc'
-  })
+    sortOrder: sort.desc ? 'desc' : 'asc',
+  });
 
   useEffect(() => {
-    document.title = 'Clientes | Painel administrativo'
-  }, [])
+    document.title = 'Clientes | Painel administrativo';
+  }, []);
 
   const columns = useMemo<ColumnDef<AdminCustomer>[]>(
     () => [
       {
         accessorKey: 'name',
         header: 'Nome',
-        cell: ({row}) => (
+        cell: ({ row }) => (
           <Link href={`/admin/clientes/${row.original.id}`} className="font-medium text-primary underline-offset-4 hover:underline">
             {row.original.name}
           </Link>
-        )
+        ),
       },
       {
         accessorKey: 'phone',
         header: 'Telefone',
         enableSorting: false,
-        cell: ({row}) => {
-          const customer = row.original
-          const phone = customer.phoneMasked ? customer.phone : formatPhone(customer.phone)
-          return <span title={customer.phoneMasked ? 'Telefone parcialmente oculto por permissão' : undefined}>{phone || '—'}</span>
-        }
+        cell: ({ row }) => {
+          const customer = row.original;
+          const phone = customer.phoneMasked ? customer.phone : formatPhone(customer.phone);
+          return <span title={customer.phoneMasked ? 'Telefone parcialmente oculto por permissão' : undefined}>{phone || '—'}</span>;
+        },
       },
-      {accessorKey: 'lastVisit', header: 'Última visita', cell: ({row}) => (row.original.lastVisit ? formatDate(row.original.lastVisit) : '—')},
-      {accessorKey: 'visitsCount', header: 'Nº de visitas', cell: ({row}) => row.original.visitsCount.toLocaleString('pt-BR')},
-      {accessorKey: 'totalSpentCents', header: 'Gasto total', cell: ({row}) => <span className="tabular-nums">{formatBRL(row.original.totalSpentCents)}</span>},
+      { accessorKey: 'lastVisit', header: 'Última visita', cell: ({ row }) => (row.original.lastVisit ? formatDate(row.original.lastVisit) : '—') },
+      { accessorKey: 'visitsCount', header: 'Nº de visitas', cell: ({ row }) => row.original.visitsCount.toLocaleString('pt-BR') },
+      { accessorKey: 'totalSpentCents', header: 'Gasto total', cell: ({ row }) => <span className="tabular-nums">{formatBRL(row.original.totalSpentCents)}</span> },
       {
         id: 'tags',
         header: 'Tags',
         enableSorting: false,
-        cell: ({row}) =>
+        cell: ({ row }) =>
           row.original.tags.length ?
             <div className="flex min-w-32 flex-wrap gap-1.5">
               {row.original.tags.map((tag, index) => (
@@ -81,17 +81,17 @@ export default function CustomersPage() {
                 </Badge>
               ))}
             </div>
-          : <span className="text-muted-foreground">—</span>
-      }
+          : <span className="text-muted-foreground">—</span>,
+      },
     ],
-    []
-  )
+    [],
+  );
 
   function resetPage() {
-    setPagination(current => ({...current, pageIndex: 0}))
+    setPagination((current) => ({ ...current, pageIndex: 0 }));
   }
 
-  const hasFilters = search.trim() !== '' || noVisitFilter !== 'all' || birthdayFilter !== 'all'
+  const hasFilters = search.trim() !== '' || noVisitFilter !== 'all' || birthdayFilter !== 'all';
 
   return (
     <div className="space-y-6">
@@ -116,10 +116,11 @@ export default function CustomersPage() {
           </label>
           <Select
             value={noVisitFilter}
-            onValueChange={value => {
-              setNoVisitFilter(value as NoVisitFilter)
-              resetPage()
-            }}>
+            onValueChange={(value) => {
+              setNoVisitFilter(value as NoVisitFilter);
+              resetPage();
+            }}
+          >
             <SelectTrigger id="customer-no-visit-filter" className="min-h-11 w-full">
               <SelectValue />
             </SelectTrigger>
@@ -137,10 +138,11 @@ export default function CustomersPage() {
           </label>
           <Select
             value={birthdayFilter}
-            onValueChange={value => {
-              setBirthdayFilter(value as BirthdayFilter)
-              resetPage()
-            }}>
+            onValueChange={(value) => {
+              setBirthdayFilter(value as BirthdayFilter);
+              resetPage();
+            }}
+          >
             <SelectTrigger id="customer-birthday-filter" className="min-h-11 w-full">
               <SelectValue />
             </SelectTrigger>
@@ -159,14 +161,14 @@ export default function CustomersPage() {
         pagination={pagination}
         onPaginationChange={setPagination}
         sorting={sorting}
-        onSortingChange={next => {
-          setSorting(next)
-          resetPage()
+        onSortingChange={(next) => {
+          setSorting(next);
+          resetPage();
         }}
         query={search}
-        onSearchChange={value => {
-          setSearch(value)
-          resetPage()
+        onSearchChange={(value) => {
+          setSearch(value);
+          resetPage();
         }}
         searchPlaceholder="Buscar por nome ou telefone"
         loading={customersQuery.isPending}
@@ -176,7 +178,7 @@ export default function CustomersPage() {
         emptyDescription="Altere a busca ou os filtros para ver outros clientes."
         pageSizeOptions={[10, 20, 50]}
       />
-      {canWrite && <CustomerDrawer open={customerDrawer.isOpen} customerId={customerDrawerId} onOpenChange={open => customerDrawer.setOpen(open, customerDrawerId ?? 'novo')} />}
+      {canWrite && <CustomerDrawer open={customerDrawer.isOpen} customerId={customerDrawerId} onOpenChange={(open) => customerDrawer.setOpen(open, customerDrawerId ?? 'novo')} />}
     </div>
-  )
+  );
 }

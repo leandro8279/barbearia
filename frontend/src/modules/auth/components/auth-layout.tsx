@@ -1,12 +1,12 @@
-import {Link} from 'wouter'
-import type {ReactNode} from 'react'
-import {Brand} from '@/shared/components/brand'
+import { Link } from 'wouter';
+import type { ReactNode } from 'react';
+import { Brand } from '@/shared/components/brand';
 
 interface AuthLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
-export function AuthLayout({children}: AuthLayoutProps) {
+export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1fr_1fr]">
       <aside className="hidden flex-col justify-between bg-card p-10 lg:flex">
@@ -30,5 +30,5 @@ export function AuthLayout({children}: AuthLayoutProps) {
         </p>
       </main>
     </div>
-  )
+  );
 }

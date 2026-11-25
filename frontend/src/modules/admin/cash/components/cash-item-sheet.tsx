@@ -1,109 +1,109 @@
-import {useEffect, useMemo, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {Minus, Plus, ScanBarcode, Search, Scissors, ShoppingBag} from 'lucide-react'
-import {useForm} from 'react-hook-form'
-import {toast} from 'sonner'
-import type {CashCatalogProduct, CashCatalogService} from '@/modules/admin/cash/api/cash'
-import {useAddCashTabItem, useCashCatalog} from '@/modules/admin/cash/hooks/use-cash'
-import {cashItemSchema, type CashItemValues} from '@/modules/admin/cash/schemas/cash-item.schema'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {formatBRL, formatDuration} from '@/shared/lib/format'
-import {useMediaQuery} from '@/shared/hooks/use-media-query'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent} from '@/shared/ui/card'
-import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle} from '@/shared/ui/drawer'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/shared/ui/tabs'
+import { useEffect, useMemo, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Minus, Plus, ScanBarcode, Search, Scissors, ShoppingBag } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import type { CashCatalogProduct, CashCatalogService } from '@/modules/admin/cash/api/cash';
+import { useAddCashTabItem, useCashCatalog } from '@/modules/admin/cash/hooks/use-cash';
+import { cashItemSchema, type CashItemValues } from '@/modules/admin/cash/schemas/cash-item.schema';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { formatBRL, formatDuration } from '@/shared/lib/format';
+import { useMediaQuery } from '@/shared/hooks/use-media-query';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/shared/ui/drawer';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 
-type CashItemSelection = {type: 'service'; item: CashCatalogService} | {type: 'product'; item: CashCatalogProduct}
+type CashItemSelection = { type: 'service'; item: CashCatalogService } | { type: 'product'; item: CashCatalogProduct };
 
 interface CashItemSheetProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  tabId: number
-  defaultBarberId: number | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  tabId: number;
+  defaultBarberId: number | null;
 }
 
-export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: CashItemSheetProps) {
-  const isDesktop = useMediaQuery('(min-width: 768px)')
-  const catalogQuery = useCashCatalog()
-  const addItem = useAddCashTabItem()
-  const [activeTab, setActiveTab] = useState<'services' | 'products'>('services')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [barcode, setBarcode] = useState('')
-  const [selectedItem, setSelectedItem] = useState<CashItemSelection | null>(null)
-  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false)
-  const form = useForm<CashItemValues>({resolver: zodResolver(cashItemSchema), defaultValues: {qty: 1, barberId: defaultBarberId}})
-  const {reset} = form
-  const products = catalogQuery.data?.products ?? []
-  const services = catalogQuery.data?.services ?? []
-  const search = searchTerm.trim().toLocaleLowerCase('pt-BR')
-  const visibleServices = useMemo(() => services.filter(item => !search || `${item.name} ${item.description}`.toLocaleLowerCase('pt-BR').includes(search)), [search, services])
-  const visibleProducts = useMemo(() => products.filter(item => !search || `${item.name} ${item.sku}`.toLocaleLowerCase('pt-BR').includes(search)), [products, search])
-  const hasUnsavedChanges = Boolean(selectedItem) || form.formState.isDirty
+export function CashItemSheet({ open, onOpenChange, tabId, defaultBarberId }: CashItemSheetProps) {
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const catalogQuery = useCashCatalog();
+  const addItem = useAddCashTabItem();
+  const [activeTab, setActiveTab] = useState<'services' | 'products'>('services');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [barcode, setBarcode] = useState('');
+  const [selectedItem, setSelectedItem] = useState<CashItemSelection | null>(null);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const form = useForm<CashItemValues>({ resolver: zodResolver(cashItemSchema), defaultValues: { qty: 1, barberId: defaultBarberId } });
+  const { reset } = form;
+  const products = catalogQuery.data?.products ?? [];
+  const services = catalogQuery.data?.services ?? [];
+  const search = searchTerm.trim().toLocaleLowerCase('pt-BR');
+  const visibleServices = useMemo(() => services.filter((item) => !search || `${item.name} ${item.description}`.toLocaleLowerCase('pt-BR').includes(search)), [search, services]);
+  const visibleProducts = useMemo(() => products.filter((item) => !search || `${item.name} ${item.sku}`.toLocaleLowerCase('pt-BR').includes(search)), [products, search]);
+  const hasUnsavedChanges = Boolean(selectedItem) || form.formState.isDirty;
 
   useEffect(() => {
-    if (!open) return
-    setActiveTab('services')
-    setSearchTerm('')
-    setBarcode('')
-    setSelectedItem(null)
-    reset({qty: 1, barberId: defaultBarberId})
-    const focusFrame = window.requestAnimationFrame(() => document.getElementById('cash-barcode')?.focus())
-    return () => window.cancelAnimationFrame(focusFrame)
-  }, [defaultBarberId, open, reset])
+    if (!open) return;
+    setActiveTab('services');
+    setSearchTerm('');
+    setBarcode('');
+    setSelectedItem(null);
+    reset({ qty: 1, barberId: defaultBarberId });
+    const focusFrame = window.requestAnimationFrame(() => document.getElementById('cash-barcode')?.focus());
+    return () => window.cancelAnimationFrame(focusFrame);
+  }, [defaultBarberId, open, reset]);
 
   function requestOpenChange(nextOpen: boolean) {
     if (!nextOpen && hasUnsavedChanges && !addItem.isPending) {
-      setConfirmCloseOpen(true)
-      return
+      setConfirmCloseOpen(true);
+      return;
     }
-    onOpenChange(nextOpen)
+    onOpenChange(nextOpen);
   }
 
   function handleBarcode(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== 'Enter') return
-    event.preventDefault()
-    const code = barcode.trim().toLocaleLowerCase('pt-BR')
-    if (!code) return
-    const product = products.find(item => item.sku.toLocaleLowerCase('pt-BR') === code)
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const code = barcode.trim().toLocaleLowerCase('pt-BR');
+    if (!code) return;
+    const product = products.find((item) => item.sku.toLocaleLowerCase('pt-BR') === code);
     if (!product) {
-      toast.error('Produto não encontrado pelo código ou SKU informado.')
-      return
+      toast.error('Produto não encontrado pelo código ou SKU informado.');
+      return;
     }
-    setActiveTab('products')
-    setSelectedItem({type: 'product', item: product})
-    setBarcode('')
-    form.setValue('qty', 1, {shouldDirty: true})
+    setActiveTab('products');
+    setSelectedItem({ type: 'product', item: product });
+    setBarcode('');
+    form.setValue('qty', 1, { shouldDirty: true });
   }
 
   function selectItem(selection: CashItemSelection) {
-    setSelectedItem(selection)
-    form.setValue('qty', 1, {shouldDirty: true})
+    setSelectedItem(selection);
+    form.setValue('qty', 1, { shouldDirty: true });
   }
 
   function submit(values: CashItemValues) {
     if (!selectedItem) {
-      toast.error('Selecione um serviço ou produto.')
-      return
+      toast.error('Selecione um serviço ou produto.');
+      return;
     }
     addItem.mutate(
-      {id: tabId, item: {type: selectedItem.type, refId: selectedItem.item.id, qty: values.qty, barberId: values.barberId}},
+      { id: tabId, item: { type: selectedItem.type, refId: selectedItem.item.id, qty: values.qty, barberId: values.barberId } },
       {
         onSuccess: () => {
-          setSelectedItem(null)
-          reset({qty: 1, barberId: defaultBarberId})
-          onOpenChange(false)
-        }
-      }
-    )
+          setSelectedItem(null);
+          reset({ qty: 1, barberId: defaultBarberId });
+          onOpenChange(false);
+        },
+      },
+    );
   }
 
   const itemForm = (
@@ -118,7 +118,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
             id="cash-barcode"
             autoComplete="off"
             value={barcode}
-            onChange={event => setBarcode(event.target.value)}
+            onChange={(event) => setBarcode(event.target.value)}
             onKeyDown={handleBarcode}
             placeholder="Escaneie ou digite o SKU"
             className="min-h-11"
@@ -129,7 +129,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
             <Search className="size-4" aria-hidden="true" />
             Buscar no catálogo
           </span>
-          <Input id="cash-catalog-search" value={searchTerm} onChange={event => setSearchTerm(event.target.value)} placeholder="Nome do serviço ou produto" className="min-h-11" />
+          <Input id="cash-catalog-search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Nome do serviço ou produto" className="min-h-11" />
         </label>
       </div>
 
@@ -138,7 +138,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
       : catalogQuery.isPending ?
         <Skeleton className="h-56 rounded-xl" />
       : <>
-          <Tabs value={activeTab} onValueChange={value => setActiveTab(value as 'services' | 'products')}>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'services' | 'products')}>
             <TabsList className="grid h-11 w-full grid-cols-2">
               <TabsTrigger value="services">
                 <Scissors className="size-4" aria-hidden="true" />
@@ -152,7 +152,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
             <TabsContent value="services" className="mt-4">
               {visibleServices.length ?
                 <div className="grid max-h-64 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-                  {visibleServices.map(service => (
+                  {visibleServices.map((service) => (
                     <Card key={service.id} className={selectedItem?.type === 'service' && selectedItem.item.id === service.id ? 'border-primary ring-1 ring-primary/20' : undefined}>
                       <CardContent className="flex items-center justify-between gap-3 p-3">
                         <div className="min-w-0">
@@ -165,7 +165,8 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
                           type="button"
                           variant={selectedItem?.type === 'service' && selectedItem.item.id === service.id ? 'secondary' : 'outline'}
                           className="min-h-11"
-                          onClick={() => selectItem({type: 'service', item: service})}>
+                          onClick={() => selectItem({ type: 'service', item: service })}
+                        >
                           {selectedItem?.type === 'service' && selectedItem.item.id === service.id ? 'Selecionado' : 'Selecionar'}
                         </Button>
                       </CardContent>
@@ -177,7 +178,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
             <TabsContent value="products" className="mt-4">
               {visibleProducts.length ?
                 <div className="grid max-h-64 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-                  {visibleProducts.map(product => (
+                  {visibleProducts.map((product) => (
                     <Card key={product.id} className={selectedItem?.type === 'product' && selectedItem.item.id === product.id ? 'border-primary ring-1 ring-primary/20' : undefined}>
                       <CardContent className="flex items-center justify-between gap-3 p-3">
                         <div className="min-w-0">
@@ -190,7 +191,8 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
                           type="button"
                           variant={selectedItem?.type === 'product' && selectedItem.item.id === product.id ? 'secondary' : 'outline'}
                           className="min-h-11"
-                          onClick={() => selectItem({type: 'product', item: product})}>
+                          onClick={() => selectItem({ type: 'product', item: product })}
+                        >
                           {selectedItem?.type === 'product' && selectedItem.item.id === product.id ? 'Selecionado' : 'Selecionar'}
                         </Button>
                       </CardContent>
@@ -219,7 +221,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
                 <FormField
                   control={form.control}
                   name="qty"
-                  render={({field, fieldState}) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
                       <FormLabel htmlFor="cash-qty">Quantidade</FormLabel>
                       <FormControl>
@@ -231,7 +233,8 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
                             className="size-11"
                             aria-label="Diminuir quantidade"
                             disabled={field.value <= 1}
-                            onClick={() => field.onChange(Math.max(1, field.value - 1))}>
+                            onClick={() => field.onChange(Math.max(1, field.value - 1))}
+                          >
                             <Minus className="size-4" aria-hidden="true" />
                           </Button>
                           <Input
@@ -244,7 +247,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
                             aria-describedby={fieldState.error ? 'cash-qty-error' : undefined}
                             className="min-h-11 text-center"
                             value={field.value}
-                            onChange={event => field.onChange(Number(event.target.value))}
+                            onChange={(event) => field.onChange(Number(event.target.value))}
                           />
                           <Button
                             type="button"
@@ -253,7 +256,8 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
                             className="size-11"
                             aria-label="Aumentar quantidade"
                             disabled={field.value >= 50}
-                            onClick={() => field.onChange(Math.min(50, field.value + 1))}>
+                            onClick={() => field.onChange(Math.min(50, field.value + 1))}
+                          >
                             <Plus className="size-4" aria-hidden="true" />
                           </Button>
                         </div>
@@ -265,10 +269,10 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
                 <FormField
                   control={form.control}
                   name="barberId"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Barbeiro responsável</FormLabel>
-                      <Select value={field.value ? String(field.value) : 'none'} onValueChange={value => field.onChange(value === 'none' ? null : Number(value))}>
+                      <Select value={field.value ? String(field.value) : 'none'} onValueChange={(value) => field.onChange(value === 'none' ? null : Number(value))}>
                         <FormControl>
                           <SelectTrigger className="min-h-11 w-full">
                             <SelectValue placeholder="Selecione um barbeiro" />
@@ -276,7 +280,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">Sem profissional</SelectItem>
-                          {(catalogQuery.data?.barbers ?? []).map(barber => (
+                          {(catalogQuery.data?.barbers ?? []).map((barber) => (
                             <SelectItem key={barber.id} value={String(barber.id)}>
                               {barber.name}
                             </SelectItem>
@@ -296,7 +300,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
         </>
       }
     </div>
-  )
+  );
 
   const confirmClose = (
     <ConfirmDialog
@@ -308,13 +312,13 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
       confirmLabel="Descartar"
       destructive
       onConfirm={() => {
-        setConfirmCloseOpen(false)
-        setSelectedItem(null)
-        reset({qty: 1, barberId: defaultBarberId})
-        onOpenChange(false)
+        setConfirmCloseOpen(false);
+        setSelectedItem(null);
+        reset({ qty: 1, barberId: defaultBarberId });
+        onOpenChange(false);
       }}
     />
-  )
+  );
 
   if (isDesktop) {
     return (
@@ -330,7 +334,7 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
         </Dialog>
         {confirmClose}
       </>
-    )
+    );
   }
 
   return (
@@ -346,5 +350,5 @@ export function CashItemSheet({open, onOpenChange, tabId, defaultBarberId}: Cash
       </Drawer>
       {confirmClose}
     </>
-  )
+  );
 }

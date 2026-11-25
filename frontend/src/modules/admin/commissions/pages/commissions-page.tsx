@@ -1,55 +1,55 @@
-import {useEffect, useMemo, useState} from 'react'
-import {ChevronDown, ChevronRight, CircleDollarSign, LoaderCircle} from 'lucide-react'
-import {useCommissionSummary, useSettleCommissionPeriod} from '@/modules/admin/commissions/hooks/use-commissions'
-import type {CommissionFilters} from '@/modules/admin/commissions/api/commissions'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {formatBRL, formatDateTime} from '@/shared/lib/format'
-import {BUSINESS_TIME_ZONE} from '@/shared/lib/time'
-import {useCan} from '@/shared/hooks/use-can'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/shared/ui/table'
+import { useEffect, useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, CircleDollarSign, LoaderCircle } from 'lucide-react';
+import { useCommissionSummary, useSettleCommissionPeriod } from '@/modules/admin/commissions/hooks/use-commissions';
+import type { CommissionFilters } from '@/modules/admin/commissions/api/commissions';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { formatBRL, formatDateTime } from '@/shared/lib/format';
+import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
+import { useCan } from '@/shared/hooks/use-can';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 
-const pageSize = 20
-const monthFormatter = new Intl.DateTimeFormat('en-CA', {timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit'})
-const commissionKindLabels = {service: 'Serviço', product: 'Produto'}
+const pageSize = 20;
+const monthFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit' });
+const commissionKindLabels = { service: 'Serviço', product: 'Produto' };
 
 function monthRange(month: string) {
-  const [year, monthNumber] = month.split('-').map(Number)
-  const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
-  return {from: `${month}-01T00:00:00.000-03:00`, to: `${month}-${String(daysInMonth).padStart(2, '0')}T23:59:59.999-03:00`}
+  const [year, monthNumber] = month.split('-').map(Number);
+  const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+  return { from: `${month}-01T00:00:00.000-03:00`, to: `${month}-${String(daysInMonth).padStart(2, '0')}T23:59:59.999-03:00` };
 }
 
 function monthLabel(month: string) {
-  return new Intl.DateTimeFormat('pt-BR', {month: 'long', year: 'numeric', timeZone: BUSINESS_TIME_ZONE}).format(new Date(`${month}-01T12:00:00-03:00`))
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: BUSINESS_TIME_ZONE }).format(new Date(`${month}-01T12:00:00-03:00`));
 }
 
 export default function CommissionsPage() {
-  const user = useSessionStore(state => state.user)
-  const canManage = useCan('team.manage')
-  const isBarber = user?.role === 'barber'
-  const [month, setMonth] = useState(() => monthFormatter.format(new Date()))
-  const [status, setStatus] = useState<CommissionFilters['status']>('all')
-  const [page, setPage] = useState(1)
-  const [expandedId, setExpandedId] = useState<number | null>(null)
-  const range = useMemo(() => monthRange(month), [month])
-  const filters: CommissionFilters = {from: range.from, to: range.to, status, page, pageSize}
-  const summaryQuery = useCommissionSummary(filters, isBarber)
-  const settleMutation = useSettleCommissionPeriod()
-  const summary = summaryQuery.data
+  const user = useSessionStore((state) => state.user);
+  const canManage = useCan('team.manage');
+  const isBarber = user?.role === 'barber';
+  const [month, setMonth] = useState(() => monthFormatter.format(new Date()));
+  const [status, setStatus] = useState<CommissionFilters['status']>('all');
+  const [page, setPage] = useState(1);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const range = useMemo(() => monthRange(month), [month]);
+  const filters: CommissionFilters = { from: range.from, to: range.to, status, page, pageSize };
+  const summaryQuery = useCommissionSummary(filters, isBarber);
+  const settleMutation = useSettleCommissionPeriod();
+  const summary = summaryQuery.data;
 
   useEffect(() => {
-    document.title = 'Comissões | Painel administrativo'
-  }, [])
+    document.title = 'Comissões | Painel administrativo';
+  }, []);
 
   async function settle(barberId: number) {
-    await settleMutation.mutateAsync({barberId, ...range, periodLabel: monthLabel(month)})
+    await settleMutation.mutateAsync({ barberId, ...range, periodLabel: monthLabel(month) });
   }
 
   return (
@@ -64,10 +64,10 @@ export default function CommissionsPage() {
               type="month"
               className="min-h-11 w-full rounded-md border border-input bg-background px-3"
               value={month}
-              onChange={event => {
-                setMonth(event.target.value)
-                setPage(1)
-                setExpandedId(null)
+              onChange={(event) => {
+                setMonth(event.target.value);
+                setPage(1);
+                setExpandedId(null);
               }}
             />
           </label>
@@ -75,11 +75,12 @@ export default function CommissionsPage() {
             <span className="font-medium">Status</span>
             <Select
               value={status}
-              onValueChange={value => {
-                setStatus(value as CommissionFilters['status'])
-                setPage(1)
-                setExpandedId(null)
-              }}>
+              onValueChange={(value) => {
+                setStatus(value as CommissionFilters['status']);
+                setPage(1);
+                setExpandedId(null);
+              }}
+            >
               <SelectTrigger className="min-h-11 w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -105,13 +106,13 @@ export default function CommissionsPage() {
           <ErrorState title="Não foi possível carregar as comissões" onRetry={() => void summaryQuery.refetch()} />
         : summaryQuery.isPending ?
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Carregando comissões">
-            {[1, 2, 3].map(index => (
+            {[1, 2, 3].map((index) => (
               <Skeleton key={index} className="h-52 rounded-xl" />
             ))}
           </div>
         : summary?.totals.length ?
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {summary.totals.map(total => (
+            {summary.totals.map((total) => (
               <Card key={total.barberId}>
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center justify-between gap-3 text-lg">
@@ -173,7 +174,7 @@ export default function CommissionsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {summary.commissions.map(commission => (
+                  {summary.commissions.map((commission) => (
                     <>
                       <TableRow key={commission.id}>
                         <TableCell>{formatDateTime(commission.closedAt)}</TableCell>
@@ -187,7 +188,8 @@ export default function CommissionsPage() {
                               : commission.status === 'void' ?
                                 'destructive'
                               : 'outline'
-                            }>
+                            }
+                          >
                             {commission.status === 'paid' ?
                               'Pago'
                             : commission.status === 'void' ?
@@ -202,7 +204,8 @@ export default function CommissionsPage() {
                             size="icon"
                             className="size-10"
                             aria-label={`Detalhes da comissão ${commission.id}`}
-                            onClick={() => setExpandedId(current => (current === commission.id ? null : commission.id))}>
+                            onClick={() => setExpandedId((current) => (current === commission.id ? null : commission.id))}
+                          >
                             {expandedId === commission.id ?
                               <ChevronDown className="size-4" />
                             : <ChevronRight className="size-4" />}
@@ -240,7 +243,7 @@ export default function CommissionsPage() {
                   {summary.pagination.total} registros · página {summary.pagination.page} de {summary.pagination.pageCount}
                 </p>
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" className="min-h-11" disabled={page <= 1} onClick={() => setPage(value => Math.max(1, value - 1))}>
+                  <Button type="button" variant="outline" className="min-h-11" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>
                     Anterior
                   </Button>
                   <Button
@@ -248,7 +251,8 @@ export default function CommissionsPage() {
                     variant="outline"
                     className="min-h-11"
                     disabled={page >= summary.pagination.pageCount}
-                    onClick={() => setPage(value => Math.min(summary.pagination.pageCount, value + 1))}>
+                    onClick={() => setPage((value) => Math.min(summary.pagination.pageCount, value + 1))}
+                  >
                     Próxima
                   </Button>
                 </div>
@@ -258,5 +262,5 @@ export default function CommissionsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

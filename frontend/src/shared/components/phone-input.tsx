@@ -1,23 +1,23 @@
-import {useId} from 'react'
-import {formatPhone} from '@/shared/lib/format'
-import {Input} from '@/shared/ui/input'
+import { useId } from 'react';
+import { formatPhone } from '@/shared/lib/format';
+import { Input } from '@/shared/ui/input';
 
 export interface PhoneInputProps {
-  value: string
-  onValueChange: (digits: string) => void
-  id?: string
-  name?: string
-  disabled?: boolean
-  'aria-label'?: string
+  value: string;
+  onValueChange: (digits: string) => void;
+  id?: string;
+  name?: string;
+  disabled?: boolean;
+  'aria-label'?: string;
 }
 
-export function PhoneInput({value, onValueChange, id, name, disabled, ...props}: PhoneInputProps) {
-  const generatedId = useId()
-  const inputId = id ?? generatedId
+export function PhoneInput({ value, onValueChange, id, name, disabled, ...props }: PhoneInputProps) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
   const digits = value
     .replace(/\D/g, '')
     .replace(/^55(?=\d{10,11}$)/, '')
-    .slice(0, 11)
+    .slice(0, 11);
 
   return (
     <>
@@ -35,15 +35,15 @@ export function PhoneInput({value, onValueChange, id, name, disabled, ...props}:
         value={formatPhone(digits)}
         disabled={disabled}
         aria-label={props['aria-label'] ?? 'Telefone com DDD'}
-        onChange={event =>
+        onChange={(event) =>
           onValueChange(
             event.target.value
               .replace(/\D/g, '')
               .replace(/^55(?=\d{10,11}$)/, '')
-              .slice(0, 11)
+              .slice(0, 11),
           )
         }
       />
     </>
-  )
+  );
 }

@@ -1,41 +1,41 @@
-import {useEffect, useState} from 'react'
-import {Link, useLocation, useRoute} from 'wouter'
-import {ArrowLeft, CalendarDays} from 'lucide-react'
-import {TeamProfileForm} from '@/modules/admin/team/components/team-profile-form'
-import {useSaveTeamProfile, useTeamProfile, useTeamServiceCatalog} from '@/modules/admin/team/hooks/use-team-management'
-import type {TeamProfileInput} from '@/modules/admin/team/api/team-management'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {Button} from '@/shared/ui/button'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useRoute } from 'wouter';
+import { ArrowLeft, CalendarDays } from 'lucide-react';
+import { TeamProfileForm } from '@/modules/admin/team/components/team-profile-form';
+import { useSaveTeamProfile, useTeamProfile, useTeamServiceCatalog } from '@/modules/admin/team/hooks/use-team-management';
+import type { TeamProfileInput } from '@/modules/admin/team/api/team-management';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { Button } from '@/shared/ui/button';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 export default function TeamProfilePage() {
-  const [, params] = useRoute('/admin/equipe/:id')
-  const [, setLocation] = useLocation()
-  const routeId = params?.id ?? ''
-  const isCreating = routeId === 'novo'
-  const profileId = isCreating ? null : routeId || null
-  const profileQuery = useTeamProfile(profileId)
-  const servicesQuery = useTeamServiceCatalog()
-  const saveMutation = useSaveTeamProfile()
-  const [inviteUrl, setInviteUrl] = useState<string | null>(null)
-  const [inviteSent, setInviteSent] = useState(false)
+  const [, params] = useRoute('/admin/equipe/:id');
+  const [, setLocation] = useLocation();
+  const routeId = params?.id ?? '';
+  const isCreating = routeId === 'novo';
+  const profileId = isCreating ? null : routeId || null;
+  const profileQuery = useTeamProfile(profileId);
+  const servicesQuery = useTeamServiceCatalog();
+  const saveMutation = useSaveTeamProfile();
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [inviteSent, setInviteSent] = useState(false);
 
   useEffect(() => {
-    document.title = `${isCreating ? 'Novo profissional' : 'Profissional'} | Painel administrativo`
-  }, [isCreating])
+    document.title = `${isCreating ? 'Novo profissional' : 'Profissional'} | Painel administrativo`;
+  }, [isCreating]);
 
   async function save(input: TeamProfileInput) {
-    const result = await saveMutation.mutateAsync({id: profileId, input})
-    setInviteSent(result.inviteSent)
+    const result = await saveMutation.mutateAsync({ id: profileId, input });
+    setInviteSent(result.inviteSent);
     if (result.inviteToken) {
-      setInviteUrl(`${window.location.origin}/redefinir-senha/${encodeURIComponent(result.inviteToken)}`)
+      setInviteUrl(`${window.location.origin}/redefinir-senha/${encodeURIComponent(result.inviteToken)}`);
     }
-    if (isCreating) setLocation(`/admin/equipe/${result.barber.id}`)
+    if (isCreating) setLocation(`/admin/equipe/${result.barber.id}`);
   }
 
-  const services = servicesQuery.data ?? []
-  const profile = profileQuery.data
+  const services = servicesQuery.data ?? [];
+  const profile = profileQuery.data;
 
   return (
     <div className="space-y-6">
@@ -87,5 +87,5 @@ export default function TeamProfilePage() {
         />
       }
     </div>
-  )
+  );
 }

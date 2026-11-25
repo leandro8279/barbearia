@@ -1,21 +1,21 @@
-import {useEffect, useState} from 'react'
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {ImagePlus, Plus, Save, Trash2, Upload} from 'lucide-react'
-import type {BusinessFormValues} from '@/modules/admin/settings/api/settings'
-import {useBusinessSettings, useSaveBusinessSettings} from '@/modules/admin/settings/hooks/use-settings'
-import {SettingsField} from '@/modules/admin/settings/components/settings-form-fields'
-import {SettingsNavigation} from '@/modules/admin/settings/components/settings-navigation'
-import {businessSchema} from '@/modules/admin/settings/schemas/business.schema'
-import {useCan} from '@/shared/hooks/use-can'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {formatPhone} from '@/shared/lib/format'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Form} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ImagePlus, Plus, Save, Trash2, Upload } from 'lucide-react';
+import type { BusinessFormValues } from '@/modules/admin/settings/api/settings';
+import { useBusinessSettings, useSaveBusinessSettings } from '@/modules/admin/settings/hooks/use-settings';
+import { SettingsField } from '@/modules/admin/settings/components/settings-form-fields';
+import { SettingsNavigation } from '@/modules/admin/settings/components/settings-navigation';
+import { businessSchema } from '@/modules/admin/settings/schemas/business.schema';
+import { useCan } from '@/shared/hooks/use-can';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { formatPhone } from '@/shared/lib/format';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Form } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 const emptyValues: BusinessFormValues = {
   name: '',
@@ -24,88 +24,88 @@ const emptyValues: BusinessFormValues = {
   whatsapp: '',
   email: '',
   logo: '',
-  addressDetails: {zip: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', reference: ''},
-  socials: {instagram: '', facebook: '', tiktok: '', website: ''},
+  addressDetails: { zip: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', reference: '' },
+  socials: { instagram: '', facebook: '', tiktok: '', website: '' },
   amenities: [],
-  photos: []
-}
+  photos: [],
+};
 
-const MAX_LOGO_DATA_URL_BYTES = 200 * 1024
-const MAX_MEDIA_DATA_URL_BYTES = 750 * 1024
+const MAX_LOGO_DATA_URL_BYTES = 200 * 1024;
+const MAX_MEDIA_DATA_URL_BYTES = 750 * 1024;
 
 function fileAsDataUrl(file: Blob) {
   return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => (typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('Não foi possível ler a imagem.')))
-    reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'))
-    reader.readAsDataURL(file)
-  })
+    const reader = new FileReader();
+    reader.onload = () => (typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('Não foi possível ler a imagem.')));
+    reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 function imageDataUrlBytes(value: string) {
-  return value.startsWith('data:image/') ? new TextEncoder().encode(value).length : 0
+  return value.startsWith('data:image/') ? new TextEncoder().encode(value).length : 0;
 }
 
 async function imageDataUrlWithinLimit(file: File, maxBytes: number) {
-  const original = await fileAsDataUrl(file)
-  if (imageDataUrlBytes(original) <= maxBytes) return original
+  const original = await fileAsDataUrl(file);
+  if (imageDataUrlBytes(original) <= maxBytes) return original;
 
-  const image = new Image()
-  image.src = original
-  await image.decode()
-  let scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight))
-  let quality = 0.9
+  const image = new Image();
+  image.src = original;
+  await image.decode();
+  let scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+  let quality = 0.9;
 
   for (let attempt = 0; attempt < 14; attempt += 1) {
-    const canvas = document.createElement('canvas')
-    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale))
-    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale))
-    const context = canvas.getContext('2d')
-    if (!context) throw new Error('Não foi possível otimizar a imagem.')
-    context.drawImage(image, 0, 0, canvas.width, canvas.height)
-    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/webp', quality))
-    if (!blob) throw new Error('Não foi possível otimizar a imagem.')
-    const compressed = await fileAsDataUrl(blob)
-    if (imageDataUrlBytes(compressed) <= maxBytes) return compressed
-    if (quality > 0.55) quality -= 0.1
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Não foi possível otimizar a imagem.');
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', quality));
+    if (!blob) throw new Error('Não foi possível otimizar a imagem.');
+    const compressed = await fileAsDataUrl(blob);
+    if (imageDataUrlBytes(compressed) <= maxBytes) return compressed;
+    if (quality > 0.55) quality -= 0.1;
     else {
-      scale *= 0.8
-      quality = 0.82
+      scale *= 0.8;
+      quality = 0.82;
     }
   }
-  throw new Error('Não foi possível reduzir a imagem para o limite permitido.')
+  throw new Error('Não foi possível reduzir a imagem para o limite permitido.');
 }
 
 function mediaDataUrlBytes(logo: string, photos: string[]) {
-  return imageDataUrlBytes(logo) + photos.reduce((total, photo) => total + imageDataUrlBytes(photo), 0)
+  return imageDataUrlBytes(logo) + photos.reduce((total, photo) => total + imageDataUrlBytes(photo), 0);
 }
 
 function displayPhone(value: string) {
-  return value ? formatPhone(value) : ''
+  return value ? formatPhone(value) : '';
 }
 
 function legacyAddress(value: string) {
-  const [streetPart = '', locality = ''] = value.split(/\s+—\s+|\s+-\s+/)
-  const streetMatch = /^(.*?)(?:,\s*([^,]+))?$/.exec(streetPart.trim())
-  const [city = '', state = ''] = locality.split(',').map(item => item.trim())
-  return {...emptyValues.addressDetails, street: streetMatch?.[1]?.trim() || streetPart, number: streetMatch?.[2]?.trim() || '', city, state}
+  const [streetPart = '', locality = ''] = value.split(/\s+—\s+|\s+-\s+/);
+  const streetMatch = /^(.*?)(?:,\s*([^,]+))?$/.exec(streetPart.trim());
+  const [city = '', state = ''] = locality.split(',').map((item) => item.trim());
+  return { ...emptyValues.addressDetails, street: streetMatch?.[1]?.trim() || streetPart, number: streetMatch?.[2]?.trim() || '', city, state };
 }
 
 export default function BusinessSettingsPage() {
-  const query = useBusinessSettings()
-  const saveMutation = useSaveBusinessSettings()
-  const canWrite = useCan('settings.write')
-  const [amenityDraft, setAmenityDraft] = useState('')
-  const form = useForm<BusinessFormValues>({resolver: zodResolver(businessSchema), defaultValues: emptyValues})
+  const query = useBusinessSettings();
+  const saveMutation = useSaveBusinessSettings();
+  const canWrite = useCan('settings.write');
+  const [amenityDraft, setAmenityDraft] = useState('');
+  const form = useForm<BusinessFormValues>({ resolver: zodResolver(businessSchema), defaultValues: emptyValues });
 
   useEffect(() => {
-    document.title = 'Dados do negócio | Configurações'
-  }, [])
+    document.title = 'Dados do negócio | Configurações';
+  }, []);
 
   useEffect(() => {
-    const data = query.data
-    const unit = data?.unit
-    if (!data || !unit) return
+    const data = query.data;
+    const unit = data?.unit;
+    if (!data || !unit) return;
     form.reset({
       ...emptyValues,
       name: data.business.name || unit.name || '',
@@ -115,65 +115,65 @@ export default function BusinessSettingsPage() {
       email: data.business.email || '',
       logo: unit.logo || '',
       addressDetails: unit.addressDetails || legacyAddress(unit.address || ''),
-      socials: {...emptyValues.socials, ...(data.business.socials || {})},
+      socials: { ...emptyValues.socials, ...(data.business.socials || {}) },
       amenities: unit.amenities || [],
-      photos: unit.photos || []
-    })
-  }, [form, query.data])
+      photos: unit.photos || [],
+    });
+  }, [form, query.data]);
 
   function addAmenity() {
-    const value = amenityDraft.trim()
-    const current = form.getValues('amenities')
-    if (!value || current.some(item => item.toLocaleLowerCase('pt-BR') === value.toLocaleLowerCase('pt-BR'))) return
-    form.setValue('amenities', [...current, value], {shouldDirty: true, shouldValidate: true})
-    setAmenityDraft('')
+    const value = amenityDraft.trim();
+    const current = form.getValues('amenities');
+    if (!value || current.some((item) => item.toLocaleLowerCase('pt-BR') === value.toLocaleLowerCase('pt-BR'))) return;
+    form.setValue('amenities', [...current, value], { shouldDirty: true, shouldValidate: true });
+    setAmenityDraft('');
   }
 
   async function setLogo(file?: File) {
-    if (!file) return
+    if (!file) return;
     if (file.size > 200 * 1024) {
-      form.setError('logo', {type: 'manual', message: 'A logo deve ter no máximo 200 KB.'})
-      return
+      form.setError('logo', { type: 'manual', message: 'A logo deve ter no máximo 200 KB.' });
+      return;
     }
     try {
-      const photos = form.getValues('photos')
-      const availableBytes = MAX_MEDIA_DATA_URL_BYTES - mediaDataUrlBytes('', photos)
-      if (availableBytes <= 0) throw new Error('Remova algumas fotos antes de enviar uma logo.')
-      const dataUrl = await imageDataUrlWithinLimit(file, Math.min(MAX_LOGO_DATA_URL_BYTES, availableBytes))
-      form.clearErrors('logo')
-      form.setValue('logo', dataUrl, {shouldDirty: true, shouldValidate: true})
+      const photos = form.getValues('photos');
+      const availableBytes = MAX_MEDIA_DATA_URL_BYTES - mediaDataUrlBytes('', photos);
+      if (availableBytes <= 0) throw new Error('Remova algumas fotos antes de enviar uma logo.');
+      const dataUrl = await imageDataUrlWithinLimit(file, Math.min(MAX_LOGO_DATA_URL_BYTES, availableBytes));
+      form.clearErrors('logo');
+      form.setValue('logo', dataUrl, { shouldDirty: true, shouldValidate: true });
     } catch (error) {
-      form.setError('logo', {type: 'manual', message: error instanceof Error ? error.message : 'Não foi possível carregar a imagem.'})
+      form.setError('logo', { type: 'manual', message: error instanceof Error ? error.message : 'Não foi possível carregar a imagem.' });
     }
   }
 
   async function addPhotos(files: FileList | null) {
-    if (!files) return
-    const selected = Array.from(files)
-    const tooLarge = selected.find(file => file.size > 200 * 1024)
+    if (!files) return;
+    const selected = Array.from(files);
+    const tooLarge = selected.find((file) => file.size > 200 * 1024);
     if (tooLarge) {
-      form.setError('photos', {type: 'manual', message: `${tooLarge.name} excede o limite de 200 KB.`})
-      return
+      form.setError('photos', { type: 'manual', message: `${tooLarge.name} excede o limite de 200 KB.` });
+      return;
     }
-    const current = form.getValues('photos')
+    const current = form.getValues('photos');
     if (current.length + selected.length > 8) {
-      form.setError('photos', {type: 'manual', message: 'Cadastre no máximo oito fotos.'})
-      return
+      form.setError('photos', { type: 'manual', message: 'Cadastre no máximo oito fotos.' });
+      return;
     }
     try {
-      const nextPhotos: string[] = []
-      let remainingBytes = MAX_MEDIA_DATA_URL_BYTES - mediaDataUrlBytes(form.getValues('logo'), current)
+      const nextPhotos: string[] = [];
+      let remainingBytes = MAX_MEDIA_DATA_URL_BYTES - mediaDataUrlBytes(form.getValues('logo'), current);
       for (let index = 0; index < selected.length; index += 1) {
-        const perPhotoLimit = Math.floor(remainingBytes / (selected.length - index))
-        if (perPhotoLimit <= 0) throw new Error('Remova ou substitua algumas imagens para caber no limite de envio.')
-        const photo = await imageDataUrlWithinLimit(selected[index], perPhotoLimit)
-        nextPhotos.push(photo)
-        remainingBytes -= imageDataUrlBytes(photo)
+        const perPhotoLimit = Math.floor(remainingBytes / (selected.length - index));
+        if (perPhotoLimit <= 0) throw new Error('Remova ou substitua algumas imagens para caber no limite de envio.');
+        const photo = await imageDataUrlWithinLimit(selected[index], perPhotoLimit);
+        nextPhotos.push(photo);
+        remainingBytes -= imageDataUrlBytes(photo);
       }
-      form.clearErrors('photos')
-      form.setValue('photos', [...current, ...nextPhotos], {shouldDirty: true, shouldValidate: true})
+      form.clearErrors('photos');
+      form.setValue('photos', [...current, ...nextPhotos], { shouldDirty: true, shouldValidate: true });
     } catch (error) {
-      form.setError('photos', {type: 'manual', message: error instanceof Error ? error.message : 'Não foi possível carregar as fotos.'})
+      form.setError('photos', { type: 'manual', message: error instanceof Error ? error.message : 'Não foi possível carregar as fotos.' });
     }
   }
 
@@ -184,23 +184,23 @@ export default function BusinessSettingsPage() {
         <Skeleton className="h-80" />
         <Skeleton className="h-64" />
       </div>
-    )
-  if (query.isError || !query.data) return <ErrorState title="Não foi possível carregar os dados do negócio" description="Confira a conexão e tente novamente." onRetry={() => void query.refetch()} />
+    );
+  if (query.isError || !query.data) return <ErrorState title="Não foi possível carregar os dados do negócio" description="Confira a conexão e tente novamente." onRetry={() => void query.refetch()} />;
 
   function save(values: BusinessFormValues) {
     if (imageDataUrlBytes(values.logo) > MAX_LOGO_DATA_URL_BYTES) {
-      form.setError('logo', {type: 'manual', message: 'A logo deve gerar um data URL de no máximo 200 KB.'})
-      return
+      form.setError('logo', { type: 'manual', message: 'A logo deve gerar um data URL de no máximo 200 KB.' });
+      return;
     }
     if (mediaDataUrlBytes(values.logo, values.photos) > MAX_MEDIA_DATA_URL_BYTES) {
-      form.setError('photos', {type: 'manual', message: 'Otimize ou remova algumas imagens antes de salvar.'})
-      return
+      form.setError('photos', { type: 'manual', message: 'Otimize ou remova algumas imagens antes de salvar.' });
+      return;
     }
     if (new TextEncoder().encode(JSON.stringify(values)).length > 950 * 1024) {
-      form.setError('photos', {type: 'manual', message: 'O envio excede o limite seguro. Reduza a quantidade de fotos e tente novamente.'})
-      return
+      form.setError('photos', { type: 'manual', message: 'O envio excede o limite seguro. Reduza a quantidade de fotos e tente novamente.' });
+      return;
     }
-    saveMutation.mutate(values)
+    saveMutation.mutate(values);
   }
 
   return (
@@ -226,7 +226,15 @@ export default function BusinessSettingsPage() {
                 </label>
                 <div className="flex flex-wrap items-center gap-3">
                   {form.watch('logo') ?
-                    <img src={form.watch('logo')} alt="Prévia da logo" width={64} height={64} loading="lazy" decoding="async" className="size-16 rounded-lg border border-border bg-card object-contain p-1" />
+                    <img
+                      src={form.watch('logo')}
+                      alt="Prévia da logo"
+                      width={64}
+                      height={64}
+                      loading="lazy"
+                      decoding="async"
+                      className="size-16 rounded-lg border border-border bg-card object-contain p-1"
+                    />
                   : <div className="grid size-16 place-items-center rounded-lg border border-dashed border-border text-muted-foreground">
                       <ImagePlus className="size-5" />
                     </div>
@@ -239,9 +247,9 @@ export default function BusinessSettingsPage() {
                       accept="image/png,image/jpeg,image/webp,image/svg+xml"
                       className="sr-only"
                       disabled={!canWrite}
-                      onChange={event => {
-                        void setLogo(event.target.files?.[0])
-                        event.currentTarget.value = ''
+                      onChange={(event) => {
+                        void setLogo(event.target.files?.[0]);
+                        event.currentTarget.value = '';
                       }}
                     />
                   </label>
@@ -252,9 +260,10 @@ export default function BusinessSettingsPage() {
                       className="min-h-11"
                       disabled={!canWrite}
                       onClick={() => {
-                        form.clearErrors('logo')
-                        form.setValue('logo', '', {shouldDirty: true})
-                      }}>
+                        form.clearErrors('logo');
+                        form.setValue('logo', '', { shouldDirty: true });
+                      }}
+                    >
                       Remover logo
                     </Button>
                   )}
@@ -321,9 +330,10 @@ export default function BusinessSettingsPage() {
                           form.setValue(
                             'amenities',
                             form.getValues('amenities').filter((_, itemIndex) => itemIndex !== index),
-                            {shouldDirty: true}
+                            { shouldDirty: true },
                           )
-                        }>
+                        }
+                      >
                         <Trash2 className="size-3.5" />
                       </button>
                     </span>
@@ -333,13 +343,13 @@ export default function BusinessSettingsPage() {
                 <div className="flex max-w-lg gap-2">
                   <Input
                     value={amenityDraft}
-                    onChange={event => setAmenityDraft(event.target.value)}
+                    onChange={(event) => setAmenityDraft(event.target.value)}
                     placeholder="Ex.: Wi-Fi"
                     disabled={!canWrite}
-                    onKeyDown={event => {
+                    onKeyDown={(event) => {
                       if (event.key === 'Enter') {
-                        event.preventDefault()
-                        addAmenity()
+                        event.preventDefault();
+                        addAmenity();
                       }
                     }}
                   />
@@ -362,9 +372,9 @@ export default function BusinessSettingsPage() {
                     accept="image/png,image/jpeg,image/webp,image/svg+xml"
                     className="sr-only"
                     disabled={!canWrite}
-                    onChange={event => {
-                      void addPhotos(event.target.files)
-                      event.currentTarget.value = ''
+                    onChange={(event) => {
+                      void addPhotos(event.target.files);
+                      event.currentTarget.value = '';
                     }}
                   />
                 </label>
@@ -385,13 +395,14 @@ export default function BusinessSettingsPage() {
                         aria-label={`Remover foto ${index + 1}`}
                         disabled={!canWrite}
                         onClick={() => {
-                          form.clearErrors('photos')
+                          form.clearErrors('photos');
                           form.setValue(
                             'photos',
                             form.getValues('photos').filter((_, itemIndex) => itemIndex !== index),
-                            {shouldDirty: true}
-                          )
-                        }}>
+                            { shouldDirty: true },
+                          );
+                        }}
+                      >
                         <Trash2 className="size-4" />
                       </Button>
                     </div>
@@ -409,5 +420,5 @@ export default function BusinessSettingsPage() {
         </form>
       </Form>
     </div>
-  )
+  );
 }

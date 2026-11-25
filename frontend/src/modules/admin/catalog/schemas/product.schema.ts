@@ -1,4 +1,4 @@
-import {z} from 'zod'
+import { z } from 'zod';
 
 export const productSchema = z.object({
   sku: z.string().trim().min(2, 'Informe um SKU válido.').max(40, 'Use até 40 caracteres.'),
@@ -11,13 +11,13 @@ export const productSchema = z.object({
   kind: z.enum(['resale', 'supply']),
   commissionPct: z.number().min(0).max(100, 'A comissão deve ficar entre 0% e 100%.'),
   image: z.string(),
-  active: z.boolean()
-})
+  active: z.boolean(),
+});
 
 export const stockAdjustmentSchema = z.object({
   newStock: z.number().int().min(0, 'Informe um saldo inteiro não negativo.'),
-  reason: z.string().trim().min(3, 'Explique o motivo do ajuste.').max(200, 'Use até 200 caracteres.')
-})
+  reason: z.string().trim().min(3, 'Explique o motivo do ajuste.').max(200, 'Use até 200 caracteres.'),
+});
 
-export type ProductFormValues = z.infer<typeof productSchema>
-export type StockAdjustmentValues = z.infer<typeof stockAdjustmentSchema>
+export type ProductFormValues = z.infer<typeof productSchema>;
+export type StockAdjustmentValues = z.infer<typeof stockAdjustmentSchema>;

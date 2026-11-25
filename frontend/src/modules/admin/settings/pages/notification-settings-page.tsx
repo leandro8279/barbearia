@@ -1,124 +1,124 @@
-import {useEffect, useState} from 'react'
-import {useForm} from 'react-hook-form'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {BellRing, ExternalLink, Save} from 'lucide-react'
-import {useMarkNotificationSent, useNotificationSettings, useResendNotification, useSaveNotificationSettings} from '@/modules/admin/settings/hooks/use-settings'
-import type {NotificationLogRow} from '@/modules/admin/settings/api/settings'
-import {SettingsField} from '@/modules/admin/settings/components/settings-form-fields'
-import {SettingsNavigation} from '@/modules/admin/settings/components/settings-navigation'
-import {notificationSchema, type NotificationFormValues} from '@/modules/admin/settings/schemas/notifications.schema'
-import {ErrorState} from '@/shared/components/error-state'
-import {EmptyState} from '@/shared/components/empty-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/shared/ui/tabs'
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { BellRing, ExternalLink, Save } from 'lucide-react';
+import { useMarkNotificationSent, useNotificationSettings, useResendNotification, useSaveNotificationSettings } from '@/modules/admin/settings/hooks/use-settings';
+import type { NotificationLogRow } from '@/modules/admin/settings/api/settings';
+import { SettingsField } from '@/modules/admin/settings/components/settings-form-fields';
+import { SettingsNavigation } from '@/modules/admin/settings/components/settings-navigation';
+import { notificationSchema, type NotificationFormValues } from '@/modules/admin/settings/schemas/notifications.schema';
+import { ErrorState } from '@/shared/components/error-state';
+import { EmptyState } from '@/shared/components/empty-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 
 const notificationTypes = [
-  {key: 'confirmation', label: 'Confirmação do agendamento'},
-  {key: 'reminder24', label: 'Lembrete 24 horas antes'},
-  {key: 'reminder2', label: 'Lembrete 2 horas antes'},
-  {key: 'post', label: 'Mensagem pós-atendimento'}
-] as const
+  { key: 'confirmation', label: 'Confirmação do agendamento' },
+  { key: 'reminder24', label: 'Lembrete 24 horas antes' },
+  { key: 'reminder2', label: 'Lembrete 2 horas antes' },
+  { key: 'post', label: 'Mensagem pós-atendimento' },
+] as const;
 
 function dateTimeLabel(value: string | null) {
-  if (!value) return '—'
-  return new Intl.DateTimeFormat('pt-BR', {timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short'}).format(new Date(value))
+  if (!value) return '—';
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
 }
 
 function notificationTypeLabel(type: string) {
-  return notificationTypes.find(item => item.key === type)?.label || (type === 'rescheduled' ? 'Remarcação' : type)
+  return notificationTypes.find((item) => item.key === type)?.label || (type === 'rescheduled' ? 'Remarcação' : type);
 }
 
 function notificationStatusLabel(status: string) {
-  if (status === 'ready') return 'Pronta para envio'
-  if (status === 'scheduled' || status === 'queued') return 'Pendente'
-  if (status === 'sent') return 'Enviada'
-  if (status === 'canceled') return 'Cancelada'
-  if (status === 'failed') return 'Falhou'
-  return status
+  if (status === 'ready') return 'Pronta para envio';
+  if (status === 'scheduled' || status === 'queued') return 'Pendente';
+  if (status === 'sent') return 'Enviada';
+  if (status === 'canceled') return 'Cancelada';
+  if (status === 'failed') return 'Falhou';
+  return status;
 }
 
-function ChannelToggle({name, label, control}: {name: 'channels.whatsapp' | 'channels.email'; label: string; control: ReturnType<typeof useForm<NotificationFormValues>>['control']}) {
+function ChannelToggle({ name, label, control }: { name: 'channels.whatsapp' | 'channels.email'; label: string; control: ReturnType<typeof useForm<NotificationFormValues>>['control'] }) {
   return (
     <FormField
       control={control}
       name={name}
-      render={({field}) => (
+      render={({ field }) => (
         <FormItem className="flex min-h-12 items-center gap-3 rounded-lg border border-border px-3">
           <FormControl>
-            <Checkbox checked={field.value === true} onCheckedChange={checked => field.onChange(checked === true)} />
+            <Checkbox checked={field.value === true} onCheckedChange={(checked) => field.onChange(checked === true)} />
           </FormControl>
           <FormLabel className="cursor-pointer">{label}</FormLabel>
           <FormMessage />
         </FormItem>
       )}
     />
-  )
+  );
 }
 
 function EventToggle({
   name,
   label,
-  control
+  control,
 }: {
-  name: 'events.confirmation' | 'events.reminder24' | 'events.reminder2' | 'events.post'
-  label: string
-  control: ReturnType<typeof useForm<NotificationFormValues>>['control']
+  name: 'events.confirmation' | 'events.reminder24' | 'events.reminder2' | 'events.post';
+  label: string;
+  control: ReturnType<typeof useForm<NotificationFormValues>>['control'];
 }) {
   return (
     <FormField
       control={control}
       name={name}
-      render={({field}) => (
+      render={({ field }) => (
         <FormItem className="flex min-h-12 items-center gap-3 rounded-lg border border-border px-3">
           <FormControl>
-            <Checkbox checked={field.value === true} onCheckedChange={checked => field.onChange(checked === true)} />
+            <Checkbox checked={field.value === true} onCheckedChange={(checked) => field.onChange(checked === true)} />
           </FormControl>
           <FormLabel className="cursor-pointer">{label}</FormLabel>
         </FormItem>
       )}
     />
-  )
+  );
 }
 
 export default function NotificationSettingsPage() {
-  const query = useNotificationSettings()
-  const saveMutation = useSaveNotificationSettings()
-  const resendMutation = useResendNotification()
-  const markSentMutation = useMarkNotificationSent()
-  const [tab, setTab] = useState('config')
-  const [prepared, setPrepared] = useState<{url: string; notification: NotificationLogRow} | null>(null)
+  const query = useNotificationSettings();
+  const saveMutation = useSaveNotificationSettings();
+  const resendMutation = useResendNotification();
+  const markSentMutation = useMarkNotificationSent();
+  const [tab, setTab] = useState('config');
+  const [prepared, setPrepared] = useState<{ url: string; notification: NotificationLogRow } | null>(null);
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
     defaultValues: {
-      events: {confirmation: true, reminder24: true, reminder2: true, post: true},
-      channels: {whatsapp: true, email: false},
-      quietHours: {enabled: true, start: '22:00', end: '08:00'},
+      events: { confirmation: true, reminder24: true, reminder2: true, post: true },
+      channels: { whatsapp: true, email: false },
+      quietHours: { enabled: true, start: '22:00', end: '08:00' },
       retentionDays: 180,
-      templates: {confirmation: '', reminder24: '', reminder2: '', post: ''}
-    }
-  })
+      templates: { confirmation: '', reminder24: '', reminder2: '', post: '' },
+    },
+  });
 
   useEffect(() => {
-    document.title = 'Notificações e lembretes | Configurações'
-  }, [])
+    document.title = 'Notificações e lembretes | Configurações';
+  }, []);
 
   useEffect(() => {
-    if (!query.data) return
-    form.reset({...query.data.settings, templates: query.data.templates})
-  }, [form, query.data])
+    if (!query.data) return;
+    form.reset({ ...query.data.settings, templates: query.data.templates });
+  }, [form, query.data]);
 
   function prepareResend(notification: NotificationLogRow) {
     resendMutation.mutate(notification.id, {
-      onSuccess: result => {
-        setPrepared({url: result.url, notification: result.notification})
-      }
-    })
+      onSuccess: (result) => {
+        setPrepared({ url: result.url, notification: result.notification });
+      },
+    });
   }
 
   if (query.isPending)
@@ -128,8 +128,8 @@ export default function NotificationSettingsPage() {
         <Skeleton className="h-72" />
         <Skeleton className="h-64" />
       </div>
-    )
-  if (query.isError || !query.data) return <ErrorState title="Não foi possível carregar as notificações" description="Confira a conexão e tente novamente." onRetry={() => void query.refetch()} />
+    );
+  if (query.isError || !query.data) return <ErrorState title="Não foi possível carregar as notificações" description="Confira a conexão e tente novamente." onRetry={() => void query.refetch()} />;
 
   return (
     <div className="space-y-6">
@@ -144,13 +144,13 @@ export default function NotificationSettingsPage() {
 
         <TabsContent value="config" className="mt-5">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(input => saveMutation.mutate(input))} className="space-y-5">
+            <form onSubmit={form.handleSubmit((input) => saveMutation.mutate(input))} className="space-y-5">
               <Card>
                 <CardHeader>
                   <CardTitle>Quando avisar</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-3 sm:grid-cols-2">
-                  {notificationTypes.map(item => (
+                  {notificationTypes.map((item) => (
                     <EventToggle key={item.key} name={`events.${item.key}`} label={item.label} control={form.control} />
                   ))}
                 </CardContent>
@@ -177,10 +177,10 @@ export default function NotificationSettingsPage() {
                   <FormField
                     control={form.control}
                     name="quietHours.enabled"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem className="flex min-h-12 items-center gap-3">
                         <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={checked => field.onChange(checked === true)} />
+                          <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                         </FormControl>
                         <FormLabel className="cursor-pointer">Respeitar horário silencioso</FormLabel>
                       </FormItem>
@@ -190,7 +190,7 @@ export default function NotificationSettingsPage() {
                     <FormField
                       control={form.control}
                       name="quietHours.start"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Início</FormLabel>
                           <FormControl>
@@ -203,7 +203,7 @@ export default function NotificationSettingsPage() {
                     <FormField
                       control={form.control}
                       name="quietHours.end"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Fim</FormLabel>
                           <FormControl>
@@ -225,7 +225,7 @@ export default function NotificationSettingsPage() {
                   </p>
                 </CardHeader>
                 <CardContent className="grid gap-5 lg:grid-cols-2">
-                  {notificationTypes.map(item => (
+                  {notificationTypes.map((item) => (
                     <SettingsField key={item.key} control={form.control} name={`templates.${item.key}`} label={item.label} multiline rows={4} />
                   ))}
                 </CardContent>
@@ -240,7 +240,7 @@ export default function NotificationSettingsPage() {
                   <FormField
                     control={form.control}
                     name="retentionDays"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Manter registros por</FormLabel>
                         <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ export default function NotificationSettingsPage() {
                               max={730}
                               step={1}
                               value={Number.isFinite(field.value) ? field.value : ''}
-                              onChange={event => field.onChange(event.target.value === '' ? undefined : event.target.valueAsNumber)}
+                              onChange={(event) => field.onChange(event.target.value === '' ? undefined : event.target.valueAsNumber)}
                             />
                           </FormControl>
                           <span className="text-sm text-muted-foreground">dias</span>
@@ -290,7 +290,8 @@ export default function NotificationSettingsPage() {
                   href={prepared.url}
                   target={prepared.url.startsWith('http') ? '_blank' : undefined}
                   rel="noreferrer"
-                  className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+                  className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+                >
                   <ExternalLink className="size-4" /> Abrir canal
                 </a>
                 <Button
@@ -298,7 +299,8 @@ export default function NotificationSettingsPage() {
                   variant="outline"
                   className="min-h-11"
                   disabled={markSentMutation.isPending}
-                  onClick={() => markSentMutation.mutate(prepared.notification.id, {onSuccess: () => setPrepared(null)})}>
+                  onClick={() => markSentMutation.mutate(prepared.notification.id, { onSuccess: () => setPrepared(null) })}
+                >
                   Registrar envio concluído
                 </Button>
               </CardContent>
@@ -308,7 +310,7 @@ export default function NotificationSettingsPage() {
           <p className="text-sm text-muted-foreground">O histórico é somente de consulta. Reenviar cria um novo registro e não sobrescreve o original.</p>
           {query.data.notifications.length ?
             <div className="space-y-3">
-              {query.data.notifications.map(notification => (
+              {query.data.notifications.map((notification) => (
                 <Card key={notification.id}>
                   <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
                     <div className="min-w-0 space-y-1">
@@ -337,5 +339,5 @@ export default function NotificationSettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

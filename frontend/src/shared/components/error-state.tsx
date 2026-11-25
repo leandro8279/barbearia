@@ -1,18 +1,18 @@
-import {AlertTriangle} from 'lucide-react'
-import {Button} from '@/shared/ui/button'
+import { AlertTriangle } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
 
 export interface ErrorStateProps {
-  title?: string
-  description?: string
-  onRetry?: () => void
-  retryLabel?: string
+  title?: string;
+  description?: string;
+  onRetry?: () => void;
+  retryLabel?: string;
 }
 
 export function ErrorState({
   title = 'Não foi possível carregar',
   description = 'Ocorreu um erro ao carregar estas informações. Tente novamente.',
   onRetry,
-  retryLabel = 'Tentar novamente'
+  retryLabel = 'Tentar novamente',
 }: ErrorStateProps) {
   return (
     <section className="flex min-h-48 flex-col items-center justify-center rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-center" role="alert">
@@ -25,5 +25,5 @@ export function ErrorState({
         </Button>
       )}
     </section>
-  )
+  );
 }

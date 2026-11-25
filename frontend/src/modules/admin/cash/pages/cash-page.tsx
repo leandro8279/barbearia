@@ -1,41 +1,41 @@
-import {useEffect} from 'react'
-import {Link, useLocation, useSearch} from 'wouter'
-import {ArrowDownUp, ArrowRight, CircleDollarSign, Clock3, Plus, Receipt, ShoppingBag} from 'lucide-react'
-import {CashCloseDialog} from '@/modules/admin/cash/components/cash-close-dialog'
-import {CashMovementDialog} from '@/modules/admin/cash/components/cash-movement-dialog'
-import {useCashSummary, useCreateCounterTab} from '@/modules/admin/cash/hooks/use-cash'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {formatBRL, formatDateTime} from '@/shared/lib/format'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {useOverlay} from '@/shared/hooks/use-overlay'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardTitle} from '@/shared/ui/card'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect } from 'react';
+import { Link, useLocation, useSearch } from 'wouter';
+import { ArrowDownUp, ArrowRight, CircleDollarSign, Clock3, Plus, Receipt, ShoppingBag } from 'lucide-react';
+import { CashCloseDialog } from '@/modules/admin/cash/components/cash-close-dialog';
+import { CashMovementDialog } from '@/modules/admin/cash/components/cash-movement-dialog';
+import { useCashSummary, useCreateCounterTab } from '@/modules/admin/cash/hooks/use-cash';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { formatBRL, formatDateTime } from '@/shared/lib/format';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { useOverlay } from '@/shared/hooks/use-overlay';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardTitle } from '@/shared/ui/card';
+import { Skeleton } from '@/shared/ui/skeleton';
 
 export default function CashPage() {
-  const [, setLocation] = useLocation()
-  const search = useSearch()
-  const closeOverlay = useOverlay('fechar')
-  const movementOverlay = useOverlay('movimento')
-  const user = useSessionStore(state => state.user)
-  const summaryQuery = useCashSummary()
-  const createTab = useCreateCounterTab()
-  const summary = summaryQuery.data ?? {session: null, balanceByMethod: null, openTabs: []}
-  const session = summary?.session
-  const canWriteCash = Boolean(user && (['admin', 'manager', 'reception'].includes(user.role) || user.permissions.includes('cash.write')))
-  const tabIdParam = new URLSearchParams(search).get('tabId')
-  const selectedTabId = Number(tabIdParam)
-  const closeTabId = tabIdParam && Number.isInteger(selectedTabId) && selectedTabId > 0 ? selectedTabId : null
+  const [, setLocation] = useLocation();
+  const search = useSearch();
+  const closeOverlay = useOverlay('fechar');
+  const movementOverlay = useOverlay('movimento');
+  const user = useSessionStore((state) => state.user);
+  const summaryQuery = useCashSummary();
+  const createTab = useCreateCounterTab();
+  const summary = summaryQuery.data ?? { session: null, balanceByMethod: null, openTabs: [] };
+  const session = summary?.session;
+  const canWriteCash = Boolean(user && (['admin', 'manager', 'reception'].includes(user.role) || user.permissions.includes('cash.write')));
+  const tabIdParam = new URLSearchParams(search).get('tabId');
+  const selectedTabId = Number(tabIdParam);
+  const closeTabId = tabIdParam && Number.isInteger(selectedTabId) && selectedTabId > 0 ? selectedTabId : null;
 
   useEffect(() => {
-    document.title = 'Comandas e caixa | Painel administrativo'
-  }, [])
+    document.title = 'Comandas e caixa | Painel administrativo';
+  }, []);
 
   function createSale() {
-    createTab.mutate(undefined, {onSuccess: tab => setLocation(`/admin/caixa/comandas/${tab.id}`)})
+    createTab.mutate(undefined, { onSuccess: (tab) => setLocation(`/admin/caixa/comandas/${tab.id}`) });
   }
 
   return (
@@ -113,7 +113,7 @@ export default function CashPage() {
 
             {summary.openTabs.length ?
               <div className="grid gap-3">
-                {summary.openTabs.map(tab => (
+                {summary.openTabs.map((tab) => (
                   <Card key={tab.id} className={selectedTabId === tab.id ? 'border-primary ring-1 ring-primary/20' : undefined}>
                     <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:p-5">
                       <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
@@ -157,9 +157,9 @@ export default function CashPage() {
       }
       <CashCloseDialog
         open={closeOverlay.isOpen}
-        onOpenChange={isOpen => {
-          if (isOpen) closeOverlay.open()
-          else setLocation('/admin/caixa')
+        onOpenChange={(isOpen) => {
+          if (isOpen) closeOverlay.open();
+          else setLocation('/admin/caixa');
         }}
         tabId={closeTabId}
         openTabs={summary.openTabs}
@@ -167,11 +167,11 @@ export default function CashPage() {
         tabListLoading={summaryQuery.isPending}
         tabListError={summaryQuery.isError}
         onRetryTabList={() => void summaryQuery.refetch()}
-        onSelectTab={id => setLocation(`/admin/caixa?fechar=1&tabId=${id}`)}
+        onSelectTab={(id) => setLocation(`/admin/caixa?fechar=1&tabId=${id}`)}
       />
       <CashMovementDialog
         open={movementOverlay.isOpen}
-        onOpenChange={isOpen => movementOverlay.setOpen(isOpen)}
+        onOpenChange={(isOpen) => movementOverlay.setOpen(isOpen)}
         cashSessionOpen={Boolean(session)}
         cashSessionLoading={summaryQuery.isPending}
         cashSessionError={summaryQuery.isError}
@@ -180,5 +180,5 @@ export default function CashPage() {
         responsibleName={user?.name ?? 'Equipe'}
       />
     </div>
-  )
+  );
 }

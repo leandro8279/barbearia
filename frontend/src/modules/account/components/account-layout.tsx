@@ -1,19 +1,19 @@
-import {CalendarDays, CircleUserRound, LayoutDashboard} from 'lucide-react'
-import type {ReactNode} from 'react'
-import {Link} from 'wouter'
-import {Brand} from '@/shared/components/brand'
+import { CalendarDays, CircleUserRound, LayoutDashboard } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Link } from 'wouter';
+import { Brand } from '@/shared/components/brand';
 
 const links = [
-  {href: '/conta', label: 'Visão geral', icon: LayoutDashboard},
-  {href: '/conta/agendamentos', label: 'Agendamentos', icon: CalendarDays},
-  {href: '/conta/perfil', label: 'Meu perfil', icon: CircleUserRound}
-]
+  { href: '/conta', label: 'Visão geral', icon: LayoutDashboard },
+  { href: '/conta/agendamentos', label: 'Agendamentos', icon: CalendarDays },
+  { href: '/conta/perfil', label: 'Meu perfil', icon: CircleUserRound },
+];
 
 interface AccountLayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
-export function AccountLayout({children}: AccountLayoutProps) {
+export function AccountLayout({ children }: AccountLayoutProps) {
   return (
     <div className="min-h-screen">
       <header className="border-b border-border">
@@ -26,7 +26,7 @@ export function AccountLayout({children}: AccountLayoutProps) {
       </header>
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 md:grid-cols-[14rem_1fr] md:py-10">
         <nav aria-label="Menu da conta" className="flex gap-2 overflow-x-auto md:block md:space-y-1">
-          {links.map(({href, label, icon: Icon}) => (
+          {links.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href} className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground md:flex">
               <Icon className="size-4" />
               {label}
@@ -36,5 +36,5 @@ export function AccountLayout({children}: AccountLayoutProps) {
         <main className="min-w-0">{children}</main>
       </div>
     </div>
-  )
+  );
 }

@@ -1,26 +1,26 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import type {AccountAddress} from '@/modules/account/api/profile'
-import {accountAddressSchema, type AccountAddressValues} from '@/modules/account/schemas/account-profile.schema'
-import {Button} from '@/shared/ui/button'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from '@/shared/ui/sheet'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import type { AccountAddress } from '@/modules/account/api/profile';
+import { accountAddressSchema, type AccountAddressValues } from '@/modules/account/schemas/account-profile.schema';
+import { Button } from '@/shared/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
 
 interface AccountAddressDrawerProps {
-  open: boolean
-  address?: AccountAddress
-  onOpenChange: (open: boolean) => void
-  onSave: (values: AccountAddressValues) => void
-  isPending: boolean
+  open: boolean;
+  address?: AccountAddress;
+  onOpenChange: (open: boolean) => void;
+  onSave: (values: AccountAddressValues) => void;
+  isPending: boolean;
 }
 
-const emptyAddress: AccountAddressValues = {label: 'Casa', zip: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', reference: ''}
+const emptyAddress: AccountAddressValues = { label: 'Casa', zip: '', street: '', number: '', complement: '', neighborhood: '', city: '', state: '', reference: '' };
 
-export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPending}: AccountAddressDrawerProps) {
-  const form = useForm<AccountAddressValues>({resolver: zodResolver(accountAddressSchema), defaultValues: emptyAddress})
-  const [submitting, setSubmitting] = useState(false)
+export function AccountAddressDrawer({ open, address, onOpenChange, onSave, isPending }: AccountAddressDrawerProps) {
+  const form = useForm<AccountAddressValues>({ resolver: zodResolver(accountAddressSchema), defaultValues: emptyAddress });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     form.reset(
@@ -34,28 +34,28 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
           neighborhood: address.neighborhood,
           city: address.city,
           state: address.state,
-          reference: address.reference
+          reference: address.reference,
         }
-      : emptyAddress
-    )
-  }, [address, form, open])
+      : emptyAddress,
+    );
+  }, [address, form, open]);
 
   async function submit(values: AccountAddressValues) {
-    setSubmitting(true)
-    form.clearErrors('root.server')
+    setSubmitting(true);
+    form.clearErrors('root.server');
     try {
-      await onSave(values)
-      form.reset(values)
+      await onSave(values);
+      form.reset(values);
     } catch (error) {
-      form.setError('root.server', {type: 'server', message: error instanceof Error ? error.message : 'Não foi possível salvar o endereço.'})
+      form.setError('root.server', { type: 'server', message: error instanceof Error ? error.message : 'Não foi possível salvar o endereço.' });
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
   function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen && form.formState.isDirty && !submitting && !window.confirm('Descartar as alterações deste endereço?')) return
-    onOpenChange(nextOpen)
+    if (!nextOpen && form.formState.isDirty && !submitting && !window.confirm('Descartar as alterações deste endereço?')) return;
+    onOpenChange(nextOpen);
   }
 
   return (
@@ -71,7 +71,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
               <FormField
                 control={form.control}
                 name="label"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Identificação</FormLabel>
                     <FormControl>
@@ -84,7 +84,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
               <FormField
                 control={form.control}
                 name="zip"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>CEP</FormLabel>
                     <FormControl>
@@ -95,7 +95,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
                         maxLength={9}
                         placeholder="00000-000"
                         className="min-h-11"
-                        onChange={event => field.onChange(event.target.value.replace(/\D/g, '').slice(0, 8))}
+                        onChange={(event) => field.onChange(event.target.value.replace(/\D/g, '').slice(0, 8))}
                         value={field.value.replace(/^(\d{5})(\d)/, '$1-$2')}
                       />
                     </FormControl>
@@ -108,7 +108,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
               <FormField
                 control={form.control}
                 name="street"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Rua ou avenida</FormLabel>
                     <FormControl>
@@ -121,7 +121,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
               <FormField
                 control={form.control}
                 name="number"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Número</FormLabel>
                     <FormControl>
@@ -135,7 +135,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
             <FormField
               control={form.control}
               name="complement"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Complemento (opcional)</FormLabel>
                   <FormControl>
@@ -149,7 +149,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
               <FormField
                 control={form.control}
                 name="neighborhood"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Bairro</FormLabel>
                     <FormControl>
@@ -162,7 +162,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
               <FormField
                 control={form.control}
                 name="city"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cidade</FormLabel>
                     <FormControl>
@@ -177,11 +177,11 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
               <FormField
                 control={form.control}
                 name="state"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>UF</FormLabel>
                     <FormControl>
-                      <Input {...field} autoComplete="address-level1" maxLength={2} className="min-h-11 uppercase" onChange={event => field.onChange(event.target.value.toUpperCase())} />
+                      <Input {...field} autoComplete="address-level1" maxLength={2} className="min-h-11 uppercase" onChange={(event) => field.onChange(event.target.value.toUpperCase())} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -190,7 +190,7 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
               <FormField
                 control={form.control}
                 name="reference"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Ponto de referência (opcional)</FormLabel>
                     <FormControl>
@@ -215,5 +215,5 @@ export function AccountAddressDrawer({open, address, onOpenChange, onSave, isPen
         </Form>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

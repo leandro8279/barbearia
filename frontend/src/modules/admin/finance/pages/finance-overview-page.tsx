@@ -1,95 +1,95 @@
-import {useEffect, useMemo, useState} from 'react'
-import {ArrowRight, CalendarClock, CircleDollarSign, FileText} from 'lucide-react'
-import {Link} from 'wouter'
-import type {FinanceBasis, FinanceSummaryFilters} from '@/modules/admin/finance/api/finance'
-import {FinanceMetricCard, MonthlyFinanceChart, PaymentMethodChart, metricValue} from '@/modules/admin/finance/components/finance-charts'
-import {useFinanceSummary} from '@/modules/admin/finance/hooks/use-finance'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {BUSINESS_TIME_ZONE} from '@/shared/lib/time'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent} from '@/shared/ui/card'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, CalendarClock, CircleDollarSign, FileText } from 'lucide-react';
+import { Link } from 'wouter';
+import type { FinanceBasis, FinanceSummaryFilters } from '@/modules/admin/finance/api/finance';
+import { FinanceMetricCard, MonthlyFinanceChart, PaymentMethodChart, metricValue } from '@/modules/admin/finance/components/finance-charts';
+import { useFinanceSummary } from '@/modules/admin/finance/hooks/use-finance';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent } from '@/shared/ui/card';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
 
-type Period = 'month' | 'last30' | 'quarter' | 'custom'
+type Period = 'month' | 'last30' | 'quarter' | 'custom';
 
 function todayInSaoPaulo() {
-  return new Intl.DateTimeFormat('en-CA', {timeZone: BUSINESS_TIME_ZONE}).format(new Date())
+  return new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIME_ZONE }).format(new Date());
 }
 
 function shiftDate(date: string, days: number) {
-  const [year, month, day] = date.split('-').map(Number)
-  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10)
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
 }
 
 function initialDates() {
-  const today = todayInSaoPaulo()
-  return {from: `${today.slice(0, 7)}-01`, to: today}
+  const today = todayInSaoPaulo();
+  return { from: `${today.slice(0, 7)}-01`, to: today };
 }
 
 function dateTimeBound(date: string, end = false) {
-  return `${date}T${end ? '23:59:59.999' : '00:00:00.000'}-03:00`
+  return `${date}T${end ? '23:59:59.999' : '00:00:00.000'}-03:00`;
 }
 
 function previousRange(from: string, to: string) {
-  const start = new Date(`${from}T12:00:00-03:00`).getTime()
-  const end = new Date(`${to}T12:00:00-03:00`).getTime()
-  const days = Math.round((end - start) / 86400000) + 1
-  return {from: shiftDate(from, -days), to: shiftDate(from, -1)}
+  const start = new Date(`${from}T12:00:00-03:00`).getTime();
+  const end = new Date(`${to}T12:00:00-03:00`).getTime();
+  const days = Math.round((end - start) / 86400000) + 1;
+  return { from: shiftDate(from, -days), to: shiftDate(from, -1) };
 }
 
 export default function FinanceOverviewPage() {
-  const [period, setPeriod] = useState<Period>('month')
-  const [initial] = useState(initialDates)
-  const [from, setFrom] = useState(initial.from)
-  const [to, setTo] = useState(initial.to)
-  const [basis, setBasis] = useState<FinanceBasis>('cash')
-  const validRange = Boolean(from && to && from <= to && to <= todayInSaoPaulo())
-  const queryFrom = validRange ? from : initial.from
-  const queryTo = validRange ? to : initial.to
-  const filters = useMemo<FinanceSummaryFilters>(() => ({from: dateTimeBound(queryFrom), to: dateTimeBound(queryTo, true), basis}), [basis, queryFrom, queryTo])
-  const summaryQuery = useFinanceSummary(filters)
-  const summary = summaryQuery.data
+  const [period, setPeriod] = useState<Period>('month');
+  const [initial] = useState(initialDates);
+  const [from, setFrom] = useState(initial.from);
+  const [to, setTo] = useState(initial.to);
+  const [basis, setBasis] = useState<FinanceBasis>('cash');
+  const validRange = Boolean(from && to && from <= to && to <= todayInSaoPaulo());
+  const queryFrom = validRange ? from : initial.from;
+  const queryTo = validRange ? to : initial.to;
+  const filters = useMemo<FinanceSummaryFilters>(() => ({ from: dateTimeBound(queryFrom), to: dateTimeBound(queryTo, true), basis }), [basis, queryFrom, queryTo]);
+  const summaryQuery = useFinanceSummary(filters);
+  const summary = summaryQuery.data;
 
   useEffect(() => {
-    document.title = 'Financeiro | Painel administrativo'
-  }, [])
+    document.title = 'Financeiro | Painel administrativo';
+  }, []);
 
   function choosePeriod(value: string) {
-    const today = todayInSaoPaulo()
+    const today = todayInSaoPaulo();
     if (value === 'month') {
-      setFrom(`${today.slice(0, 7)}-01`)
-      setTo(today)
-      setPeriod('month')
+      setFrom(`${today.slice(0, 7)}-01`);
+      setTo(today);
+      setPeriod('month');
     } else if (value === 'last30') {
-      setFrom(shiftDate(today, -29))
-      setTo(today)
-      setPeriod('last30')
+      setFrom(shiftDate(today, -29));
+      setTo(today);
+      setPeriod('last30');
     } else if (value === 'quarter') {
-      const [year, month] = today.split('-').map(Number)
-      const quarterStartMonth = Math.floor((month - 1) / 3) * 3 + 1
-      setFrom(`${year}-${String(quarterStartMonth).padStart(2, '0')}-01`)
-      setTo(today)
-      setPeriod('quarter')
+      const [year, month] = today.split('-').map(Number);
+      const quarterStartMonth = Math.floor((month - 1) / 3) * 3 + 1;
+      setFrom(`${year}-${String(quarterStartMonth).padStart(2, '0')}-01`);
+      setTo(today);
+      setPeriod('quarter');
     } else {
-      setPeriod('custom')
+      setPeriod('custom');
     }
   }
 
-  const prior = previousRange(from, to)
+  const prior = previousRange(from, to);
   const metricCards =
     summary ?
       [
-        {title: 'Receita', key: 'revenueCents' as const, description: 'Comandas e recebimentos no período'},
-        {title: 'Despesas', key: 'expensesCents' as const, description: 'Despesas consideradas no período', inverseTrend: true},
-        {title: 'Lucro', key: 'profitCents' as const, description: 'Receita menos despesas', highlight: true},
-        {title: 'Ticket médio', key: 'averageTicketCents' as const, description: `${summary.metrics.tabsCount} comandas fechadas`},
-        {title: 'Comissões a pagar', key: 'commissionsToPayCents' as const, description: 'Saldo pendente de pagamento', inverseTrend: true}
+        { title: 'Receita', key: 'revenueCents' as const, description: 'Comandas e recebimentos no período' },
+        { title: 'Despesas', key: 'expensesCents' as const, description: 'Despesas consideradas no período', inverseTrend: true },
+        { title: 'Lucro', key: 'profitCents' as const, description: 'Receita menos despesas', highlight: true },
+        { title: 'Ticket médio', key: 'averageTicketCents' as const, description: `${summary.metrics.tabsCount} comandas fechadas` },
+        { title: 'Comissões a pagar', key: 'commissionsToPayCents' as const, description: 'Saldo pendente de pagamento', inverseTrend: true },
       ]
-    : []
+    : [];
 
   return (
     <div className="space-y-6">
@@ -114,7 +114,7 @@ export default function FinanceOverviewPage() {
             <label htmlFor="finance-basis" className="text-sm font-medium">
               Regime de apuração
             </label>
-            <Select value={basis} onValueChange={value => setBasis(value as FinanceBasis)}>
+            <Select value={basis} onValueChange={(value) => setBasis(value as FinanceBasis)}>
               <SelectTrigger id="finance-basis" className="min-h-11 w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -150,9 +150,9 @@ export default function FinanceOverviewPage() {
               value={from}
               max={to || todayInSaoPaulo()}
               className="min-h-11"
-              onChange={event => {
-                setFrom(event.target.value)
-                setPeriod('custom')
+              onChange={(event) => {
+                setFrom(event.target.value);
+                setPeriod('custom');
               }}
             />
           </div>
@@ -167,9 +167,9 @@ export default function FinanceOverviewPage() {
               min={from || undefined}
               max={todayInSaoPaulo()}
               className="min-h-11"
-              onChange={event => {
-                setTo(event.target.value)
-                setPeriod('custom')
+              onChange={(event) => {
+                setTo(event.target.value);
+                setPeriod('custom');
               }}
             />
           </div>
@@ -186,13 +186,13 @@ export default function FinanceOverviewPage() {
       : <>
           {summaryQuery.isPending || !validRange ?
             <section aria-label="Carregando indicadores financeiros" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              {[0, 1, 2, 3, 4].map(item => (
+              {[0, 1, 2, 3, 4].map((item) => (
                 <Skeleton key={item} className="h-36 rounded-xl" />
               ))}
             </section>
           : summary ?
             <section aria-label="Indicadores financeiros" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              {metricCards.map(item => (
+              {metricCards.map((item) => (
                 <FinanceMetricCard
                   key={item.key}
                   title={item.title}
@@ -245,5 +245,5 @@ export default function FinanceOverviewPage() {
         </>
       }
     </div>
-  )
+  );
 }

@@ -1,19 +1,19 @@
-import {useEffect, useState} from 'react'
-import {useLocation} from 'wouter'
-import {ArrowUpRight, CalendarClock, MessageCircle, Scissors, UserRound} from 'lucide-react'
-import {useAgendaAppointmentDetail, useAgendaServices, useOpenAgendaAppointmentTab, useUpdateAgendaAppointmentItems, useUpdateAgendaAppointmentStatus} from '@/modules/admin/agenda/hooks/use-agenda'
-import type {AgendaAppointmentEvent, AgendaAppointmentRecord} from '@/modules/admin/agenda/api/agenda'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {formatBRL, formatDate, formatDateTime, formatDuration} from '@/shared/lib/format'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from '@/shared/ui/sheet'
-import {StatusBadge} from '@/shared/components/status-badge'
-import {ErrorState} from '@/shared/components/error-state'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
+import { useEffect, useState } from 'react';
+import { useLocation } from 'wouter';
+import { ArrowUpRight, CalendarClock, MessageCircle, Scissors, UserRound } from 'lucide-react';
+import { useAgendaAppointmentDetail, useAgendaServices, useOpenAgendaAppointmentTab, useUpdateAgendaAppointmentItems, useUpdateAgendaAppointmentStatus } from '@/modules/admin/agenda/hooks/use-agenda';
+import type { AgendaAppointmentEvent, AgendaAppointmentRecord } from '@/modules/admin/agenda/api/agenda';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { formatBRL, formatDate, formatDateTime, formatDuration } from '@/shared/lib/format';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
+import { StatusBadge } from '@/shared/components/status-badge';
+import { ErrorState } from '@/shared/components/error-state';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
 
 const statusLabels: Record<string, string> = {
   pending: 'agendado',
@@ -22,8 +22,8 @@ const statusLabels: Record<string, string> = {
   in_service: 'em_atendimento',
   done: 'concluido',
   canceled: 'cancelado',
-  no_show: 'no_show'
-}
+  no_show: 'no_show',
+};
 
 const eventNames: Record<string, string> = {
   created: 'Agendamento criado',
@@ -34,136 +34,136 @@ const eventNames: Record<string, string> = {
   canceled: 'Agendamento cancelado',
   no_show: 'Cliente não compareceu',
   rescheduled: 'Agendamento remarcado',
-  items_updated: 'Serviços atualizados'
-}
+  items_updated: 'Serviços atualizados',
+};
 
-const paymentMethods: Record<string, string> = {cash: 'Dinheiro', pix: 'Pix', debit: 'Cartão de débito', credit: 'Cartão de crédito'}
+const paymentMethods: Record<string, string> = { cash: 'Dinheiro', pix: 'Pix', debit: 'Cartão de débito', credit: 'Cartão de crédito' };
 
 function birthdayLabel(value?: string | null) {
-  if (!value) return 'Não informado'
-  const date = new Date(`${value.slice(0, 10)}T12:00:00-03:00`)
-  return Number.isNaN(date.getTime()) ? 'Não informado' : formatDate(date, 'dd/MM/yyyy')
+  if (!value) return 'Não informado';
+  const date = new Date(`${value.slice(0, 10)}T12:00:00-03:00`);
+  return Number.isNaN(date.getTime()) ? 'Não informado' : formatDate(date, 'dd/MM/yyyy');
 }
 
 function eventLabel(event: AgendaAppointmentEvent) {
-  return eventNames[event.type] ?? event.type.replaceAll('_', ' ')
+  return eventNames[event.type] ?? event.type.replaceAll('_', ' ');
 }
 
 function statusAction(status: string) {
-  if (status === 'pending') return {status: 'confirmed', label: 'Confirmar'}
-  if (status === 'confirmed') return {status: 'checked_in', label: 'Cliente chegou'}
-  if (status === 'checked_in') return {status: 'in_service', label: 'Iniciar'}
-  return null
+  if (status === 'pending') return { status: 'confirmed', label: 'Confirmar' };
+  if (status === 'confirmed') return { status: 'checked_in', label: 'Cliente chegou' };
+  if (status === 'checked_in') return { status: 'in_service', label: 'Iniciar' };
+  return null;
 }
 
 function elapsedMinutes(appointment: AgendaAppointmentRecord) {
-  return Math.max(0, Math.round((new Date(appointment.end).getTime() - new Date(appointment.start).getTime()) / 60_000))
+  return Math.max(0, Math.round((new Date(appointment.end).getTime() - new Date(appointment.start).getTime()) / 60_000));
 }
 
 interface AppointmentDetailDrawerProps {
-  appointmentId: string | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  appointmentId: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: AppointmentDetailDrawerProps) {
-  const [, setLocation] = useLocation()
-  const user = useSessionStore(state => state.user)
-  const canWriteAgenda = Boolean(user && (user.role === 'admin' || user.role === 'manager' || user.role === 'reception' || user.permissions.includes('agenda.write')))
-  const canOpenCash = Boolean(user && (user.role === 'admin' || user.role === 'manager' || user.role === 'reception' || user.permissions.includes('cash.write')))
-  const validId = appointmentId && /^\d+$/.test(appointmentId) ? Number(appointmentId) : null
-  const detailQuery = useAgendaAppointmentDetail(validId)
-  const servicesQuery = useAgendaServices()
-  const statusMutation = useUpdateAgendaAppointmentStatus()
-  const itemsMutation = useUpdateAgendaAppointmentItems()
-  const openTabMutation = useOpenAgendaAppointmentTab()
-  const detail = detailQuery.data
-  const appointment = detail?.appointment
-  const [confirmation, setConfirmation] = useState<{kind: 'status'; status: string; label: string} | null>(null)
-  const [discardServicesOpen, setDiscardServicesOpen] = useState(false)
-  const [editingServices, setEditingServices] = useState(false)
-  const [serviceDraft, setServiceDraft] = useState<number[]>([])
-  const [serviceError, setServiceError] = useState('')
-  const busy = statusMutation.isPending || itemsMutation.isPending || openTabMutation.isPending
+export function AppointmentDetailDrawer({ appointmentId, open, onOpenChange }: AppointmentDetailDrawerProps) {
+  const [, setLocation] = useLocation();
+  const user = useSessionStore((state) => state.user);
+  const canWriteAgenda = Boolean(user && (user.role === 'admin' || user.role === 'manager' || user.role === 'reception' || user.permissions.includes('agenda.write')));
+  const canOpenCash = Boolean(user && (user.role === 'admin' || user.role === 'manager' || user.role === 'reception' || user.permissions.includes('cash.write')));
+  const validId = appointmentId && /^\d+$/.test(appointmentId) ? Number(appointmentId) : null;
+  const detailQuery = useAgendaAppointmentDetail(validId);
+  const servicesQuery = useAgendaServices();
+  const statusMutation = useUpdateAgendaAppointmentStatus();
+  const itemsMutation = useUpdateAgendaAppointmentItems();
+  const openTabMutation = useOpenAgendaAppointmentTab();
+  const detail = detailQuery.data;
+  const appointment = detail?.appointment;
+  const [confirmation, setConfirmation] = useState<{ kind: 'status'; status: string; label: string } | null>(null);
+  const [discardServicesOpen, setDiscardServicesOpen] = useState(false);
+  const [editingServices, setEditingServices] = useState(false);
+  const [serviceDraft, setServiceDraft] = useState<number[]>([]);
+  const [serviceError, setServiceError] = useState('');
+  const busy = statusMutation.isPending || itemsMutation.isPending || openTabMutation.isPending;
 
   useEffect(() => {
-    setConfirmation(null)
-    setEditingServices(false)
-    setServiceError('')
-    setServiceDraft(detail?.appointment.items.map(item => item.serviceId) ?? [])
-  }, [detail?.appointment.id, detail?.appointment.items])
+    setConfirmation(null);
+    setEditingServices(false);
+    setServiceError('');
+    setServiceDraft(detail?.appointment.items.map((item) => item.serviceId) ?? []);
+  }, [detail?.appointment.id, detail?.appointment.items]);
 
   function closeDrawer(nextOpen: boolean) {
-    if (!nextOpen && editingServices && appointment && serviceDraft.join(',') !== appointment.items.map(item => item.serviceId).join(',')) {
-      setDiscardServicesOpen(true)
-      return
+    if (!nextOpen && editingServices && appointment && serviceDraft.join(',') !== appointment.items.map((item) => item.serviceId).join(',')) {
+      setDiscardServicesOpen(true);
+      return;
     }
-    onOpenChange(nextOpen)
-    if (!nextOpen) setLocation('/admin/agenda')
+    onOpenChange(nextOpen);
+    if (!nextOpen) setLocation('/admin/agenda');
   }
 
   function discardServiceChanges() {
-    setDiscardServicesOpen(false)
-    setEditingServices(false)
-    setServiceDraft(appointment?.items.map(item => item.serviceId) ?? [])
-    onOpenChange(false)
-    setLocation('/admin/agenda')
+    setDiscardServicesOpen(false);
+    setEditingServices(false);
+    setServiceDraft(appointment?.items.map((item) => item.serviceId) ?? []);
+    onOpenChange(false);
+    setLocation('/admin/agenda');
   }
 
   async function confirmAction() {
-    if (!appointment || !confirmation) return
+    if (!appointment || !confirmation) return;
     try {
-      await statusMutation.mutateAsync({id: appointment.id, status: confirmation.status})
-      setConfirmation(null)
+      await statusMutation.mutateAsync({ id: appointment.id, status: confirmation.status });
+      setConfirmation(null);
     } catch {
       // React Query exibe a mensagem retornada pelo servidor.
     }
   }
 
   function toggleService(serviceId: number) {
-    setServiceError('')
-    setServiceDraft(current => (current.includes(serviceId) ? current.filter(id => id !== serviceId) : [...current, serviceId]))
+    setServiceError('');
+    setServiceDraft((current) => (current.includes(serviceId) ? current.filter((id) => id !== serviceId) : [...current, serviceId]));
   }
 
   async function saveServices() {
     if (!appointment || serviceDraft.length < 1 || serviceDraft.length > 4) {
-      setServiceError('Selecione de um a quatro serviços.')
-      return
+      setServiceError('Selecione de um a quatro serviços.');
+      return;
     }
     try {
-      await itemsMutation.mutateAsync({id: appointment.id, serviceIds: serviceDraft, barberId: appointment.barberId})
-      setEditingServices(false)
-      setServiceError('')
+      await itemsMutation.mutateAsync({ id: appointment.id, serviceIds: serviceDraft, barberId: appointment.barberId });
+      setEditingServices(false);
+      setServiceError('');
     } catch (error) {
-      setServiceError(error instanceof Error ? error.message : 'A duração não cabe neste horário. Escolha outros serviços.')
+      setServiceError(error instanceof Error ? error.message : 'A duração não cabe neste horário. Escolha outros serviços.');
     }
   }
 
   async function openCommand() {
-    if (!appointment || !canOpenCash) return
-    const existingTab = detail?.tabs.find(tab => tab.status === 'open') ?? detail?.tabs[0]
+    if (!appointment || !canOpenCash) return;
+    const existingTab = detail?.tabs.find((tab) => tab.status === 'open') ?? detail?.tabs[0];
     try {
-      const tab = existingTab ?? (await openTabMutation.mutateAsync(appointment.id))
-      setLocation(`/admin/caixa/comandas/${tab.id}`)
+      const tab = existingTab ?? (await openTabMutation.mutateAsync(appointment.id));
+      setLocation(`/admin/caixa/comandas/${tab.id}`);
     } catch {
       // React Query exibe a mensagem retornada pelo servidor.
     }
   }
 
   function openReschedule() {
-    if (!appointment) return
-    setLocation(`/admin/agenda?remarcar=1&appointmentId=${appointment.id}`)
+    if (!appointment) return;
+    setLocation(`/admin/agenda?remarcar=1&appointmentId=${appointment.id}`);
   }
 
-  const nextAction = appointment ? statusAction(appointment.status) : null
-  const canEditServices = Boolean(canWriteAgenda && appointment && ['pending', 'confirmed'].includes(appointment.status))
-  const canReschedule = Boolean(canWriteAgenda && appointment && ['pending', 'confirmed'].includes(appointment.status))
-  const canCancel = Boolean(canWriteAgenda && appointment && ['pending', 'confirmed', 'checked_in'].includes(appointment.status))
-  const canReportNoShow = canWriteAgenda && appointment?.status === 'confirmed'
-  const canComplete = appointment?.status === 'in_service'
-  const phoneDigits = (detail?.customer.phone ?? '').replace(/\D/g, '')
+  const nextAction = appointment ? statusAction(appointment.status) : null;
+  const canEditServices = Boolean(canWriteAgenda && appointment && ['pending', 'confirmed'].includes(appointment.status));
+  const canReschedule = Boolean(canWriteAgenda && appointment && ['pending', 'confirmed'].includes(appointment.status));
+  const canCancel = Boolean(canWriteAgenda && appointment && ['pending', 'confirmed', 'checked_in'].includes(appointment.status));
+  const canReportNoShow = canWriteAgenda && appointment?.status === 'confirmed';
+  const canComplete = appointment?.status === 'in_service';
+  const phoneDigits = (detail?.customer.phone ?? '').replace(/\D/g, '');
   const whatsappHref =
-    phoneDigits.length >= 10 ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(`Olá, ${detail?.customer.name}. Estamos falando sobre seu agendamento ${appointment?.code}.`)}` : null
+    phoneDigits.length >= 10 ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(`Olá, ${detail?.customer.name}. Estamos falando sobre seu agendamento ${appointment?.code}.`)}` : null;
 
   return (
     <>
@@ -254,7 +254,7 @@ export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: App
                     </div>
                   </div>
                   <div className="space-y-2 border-t border-border pt-3">
-                    {appointment.items.map(item => (
+                    {appointment.items.map((item) => (
                       <div key={`${appointment.id}-${item.serviceId}`} className="flex justify-between gap-3">
                         <span>
                           {item.name} <span className="text-muted-foreground">· {formatDuration(item.durationMin)}</span>
@@ -289,10 +289,11 @@ export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: App
                       variant="outline"
                       className="min-h-11"
                       onClick={() => {
-                        setServiceDraft(appointment.items.map(item => item.serviceId))
-                        setServiceError('')
-                        setEditingServices(value => !value)
-                      }}>
+                        setServiceDraft(appointment.items.map((item) => item.serviceId));
+                        setServiceError('');
+                        setEditingServices((value) => !value);
+                      }}
+                    >
                       {editingServices ? 'Fechar edição' : 'Editar serviços'}
                     </Button>
                   </CardHeader>
@@ -303,20 +304,21 @@ export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: App
                       : servicesQuery.isError ?
                         <ErrorState title="Não foi possível carregar os serviços" onRetry={() => void servicesQuery.refetch()} />
                       : <div className="space-y-2">
-                          {(servicesQuery.data ?? []).map(service => {
-                            const checked = serviceDraft.includes(service.id)
+                          {(servicesQuery.data ?? []).map((service) => {
+                            const checked = serviceDraft.includes(service.id);
                             return (
                               <button
                                 key={service.id}
                                 type="button"
                                 aria-pressed={checked}
                                 onClick={() => toggleService(service.id)}
-                                className={`flex min-h-12 w-full items-center gap-3 rounded-md border p-3 text-left ${checked ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}>
+                                className={`flex min-h-12 w-full items-center gap-3 rounded-md border p-3 text-left ${checked ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}
+                              >
                                 <Checkbox checked={checked} aria-hidden="true" tabIndex={-1} />
                                 <span className="flex-1 font-medium">{service.name}</span>
                                 <span className="text-sm text-muted-foreground">{formatBRL(service.price)}</span>
                               </button>
-                            )
+                            );
                           })}
                         </div>
                       }
@@ -341,15 +343,16 @@ export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: App
                 <CardContent>
                   {detail.history.length > 0 ?
                     <ul className="space-y-2">
-                      {detail.history.map(historyItem => (
+                      {detail.history.map((historyItem) => (
                         <li key={historyItem.id}>
                           <button
                             type="button"
                             className="flex min-h-12 w-full items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-left hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            onClick={() => setLocation(`/admin/agenda?ag=${historyItem.id}`)}>
+                            onClick={() => setLocation(`/admin/agenda?ag=${historyItem.id}`)}
+                          >
                             <span className="min-w-0">
                               <span className="block truncate font-medium">{formatDateTime(historyItem.start)}</span>
-                              <span className="block text-xs text-muted-foreground">{historyItem.items.map(item => item.name).join(', ')}</span>
+                              <span className="block text-xs text-muted-foreground">{historyItem.items.map((item) => item.name).join(', ')}</span>
                             </span>
                             <StatusBadge kind="appointment" status={statusLabels[historyItem.status] ?? historyItem.status.replaceAll('_', ' ')} />
                           </button>
@@ -367,7 +370,7 @@ export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: App
                 <CardContent>
                   {detail.payments.length ?
                     <ul className="space-y-2">
-                      {detail.payments.map(payment => (
+                      {detail.payments.map((payment) => (
                         <li key={payment.id} className="flex items-center justify-between gap-3 rounded-md bg-muted/40 px-3 py-2 text-sm">
                           <span>
                             {paymentMethods[payment.method] ?? payment.method} · {payment.status === 'paid' ? 'Pago' : payment.status}
@@ -421,7 +424,7 @@ export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: App
           {appointment && (
             <SheetFooter className="fixed bottom-0 right-0 z-10 grid w-full grid-cols-2 gap-2 border-t border-border bg-background px-5 py-4 sm:max-w-2xl sm:px-6">
               {nextAction && canWriteAgenda && (
-                <Button type="button" className="min-h-11" disabled={busy} onClick={() => setConfirmation({kind: 'status', ...nextAction})}>
+                <Button type="button" className="min-h-11" disabled={busy} onClick={() => setConfirmation({ kind: 'status', ...nextAction })}>
                   {nextAction.label}
                 </Button>
               )}
@@ -462,8 +465,8 @@ export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: App
 
       <ConfirmDialog
         open={confirmation !== null}
-        onOpenChange={open => {
-          if (!open && !busy) setConfirmation(null)
+        onOpenChange={(open) => {
+          if (!open && !busy) setConfirmation(null);
         }}
         title={confirmation ? `Confirmar ação: ${confirmation.label}?` : 'Confirmar ação?'}
         description="A alteração será registrada na linha do tempo e na auditoria."
@@ -481,5 +484,5 @@ export function AppointmentDetailDrawer({appointmentId, open, onOpenChange}: App
         onConfirm={discardServiceChanges}
       />
     </>
-  )
+  );
 }

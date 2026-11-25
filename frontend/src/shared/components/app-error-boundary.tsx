@@ -1,31 +1,33 @@
-import {Component} from 'react'
-import type {ErrorInfo, ReactNode} from 'react'
-import {Link} from 'wouter'
-import {setPageMetadata} from '@/shared/lib/page-meta'
-import {Button} from '@/shared/ui/button'
+import { Component } from 'react';
 
+import { setPageMetadata } from '@/shared/lib/page-meta';
+import { Button } from '@/shared/ui/button';
+
+import { Link } from 'wouter';
+
+import type { ErrorInfo, ReactNode } from 'react';
 interface AppErrorBoundaryProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 interface AppErrorBoundaryState {
-  hasError: boolean
+  hasError: boolean;
 }
 
 export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
-  state: AppErrorBoundaryState = {hasError: false}
+  state: AppErrorBoundaryState = { hasError: false };
 
   static getDerivedStateFromError(): AppErrorBoundaryState {
-    return {hasError: true}
+    return { hasError: true };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('Erro não tratado na interface:', error, info.componentStack)
-    setPageMetadata('Erro inesperado', 'Ocorreu um erro inesperado ao abrir esta tela.')
+    console.error('Erro não tratado na interface:', error, info.componentStack);
+    setPageMetadata('Erro inesperado', 'Ocorreu um erro inesperado ao abrir esta tela.');
   }
 
   render() {
-    if (!this.state.hasError) return this.props.children
+    if (!this.state.hasError) return this.props.children;
 
     return (
       <main className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 py-12 text-center" role="alert" aria-live="assertive">
@@ -41,6 +43,6 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
           </Button>
         </div>
       </main>
-    )
+    );
   }
 }

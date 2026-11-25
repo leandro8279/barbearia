@@ -1,42 +1,42 @@
-import {useEffect, useState} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {CalendarOff} from 'lucide-react'
-import {useAgendaBarbers, useCreateAgendaTimeBlocks} from '@/modules/admin/agenda/hooks/use-agenda'
-import type {AgendaTimeBlockConflict} from '@/modules/admin/agenda/api/agenda'
-import {createTimeBlockSchema, type CreateTimeBlockValues} from '@/modules/admin/agenda/schemas/agenda-overlays.schema'
-import {formatDateTime} from '@/shared/lib/format'
-import {BUSINESS_TIME_ZONE} from '@/shared/lib/time'
-import {Button} from '@/shared/ui/button'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/shared/ui/dialog'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {ErrorState} from '@/shared/components/error-state'
-import {HttpError} from '@/shared/lib/http'
+import { useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { CalendarOff } from 'lucide-react';
+import { useAgendaBarbers, useCreateAgendaTimeBlocks } from '@/modules/admin/agenda/hooks/use-agenda';
+import type { AgendaTimeBlockConflict } from '@/modules/admin/agenda/api/agenda';
+import { createTimeBlockSchema, type CreateTimeBlockValues } from '@/modules/admin/agenda/schemas/agenda-overlays.schema';
+import { formatDateTime } from '@/shared/lib/format';
+import { BUSINESS_TIME_ZONE } from '@/shared/lib/time';
+import { Button } from '@/shared/ui/button';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { ErrorState } from '@/shared/components/error-state';
+import { HttpError } from '@/shared/lib/http';
 
 function today() {
-  return new Intl.DateTimeFormat('en-CA', {timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'}).format(new Date())
+  return new Intl.DateTimeFormat('en-CA', { timeZone: BUSINESS_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }
 
 function getConflicts(error: unknown): AgendaTimeBlockConflict[] {
-  if (!(error instanceof HttpError) || error.status !== 409 || typeof error.details !== 'object' || error.details === null || !('details' in error.details)) return []
-  const details = error.details.details
-  return typeof details === 'object' && details !== null && 'conflicts' in details && Array.isArray(details.conflicts) ? (details.conflicts as AgendaTimeBlockConflict[]) : []
+  if (!(error instanceof HttpError) || error.status !== 409 || typeof error.details !== 'object' || error.details === null || !('details' in error.details)) return [];
+  const details = error.details.details;
+  return typeof details === 'object' && details !== null && 'conflicts' in details && Array.isArray(details.conflicts) ? (details.conflicts as AgendaTimeBlockConflict[]) : [];
 }
 
 interface CreateTimeBlockDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onRescheduleConflict: (appointmentId: number) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onRescheduleConflict: (appointmentId: number) => void;
 }
 
-export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}: CreateTimeBlockDialogProps) {
-  const barbersQuery = useAgendaBarbers()
-  const mutation = useCreateAgendaTimeBlocks()
+export function CreateTimeBlockDialog({ open, onOpenChange, onRescheduleConflict }: CreateTimeBlockDialogProps) {
+  const barbersQuery = useAgendaBarbers();
+  const mutation = useCreateAgendaTimeBlocks();
   const form = useForm<CreateTimeBlockValues>({
     resolver: zodResolver(createTimeBlockSchema),
     defaultValues: {
@@ -50,17 +50,17 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
       reason: 'Almoço',
       customReason: '',
       weekly: false,
-      repeatWeeks: '4'
-    }
-  })
-  const allBarbers = form.watch('allBarbers')
-  const allDay = form.watch('allDay')
-  const reason = form.watch('reason')
-  const weekly = form.watch('weekly')
-  const [formError, setFormError] = useState('')
-  const [conflicts, setConflicts] = useState<AgendaTimeBlockConflict[]>([])
-  const [completed, setCompleted] = useState(false)
-  const [discardOpen, setDiscardOpen] = useState(false)
+      repeatWeeks: '4',
+    },
+  });
+  const allBarbers = form.watch('allBarbers');
+  const allDay = form.watch('allDay');
+  const reason = form.watch('reason');
+  const weekly = form.watch('weekly');
+  const [formError, setFormError] = useState('');
+  const [conflicts, setConflicts] = useState<AgendaTimeBlockConflict[]>([]);
+  const [completed, setCompleted] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -75,31 +75,31 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
         reason: 'Almoço',
         customReason: '',
         weekly: false,
-        repeatWeeks: '4'
-      })
-      setFormError('')
-      setConflicts([])
-      setCompleted(false)
+        repeatWeeks: '4',
+      });
+      setFormError('');
+      setConflicts([]);
+      setCompleted(false);
     }
-  }, [form, open])
+  }, [form, open]);
 
   function requestClose(nextOpen: boolean) {
     if (!nextOpen && form.formState.isDirty && !completed) {
-      setDiscardOpen(true)
-      return
+      setDiscardOpen(true);
+      return;
     }
-    onOpenChange(nextOpen)
+    onOpenChange(nextOpen);
   }
 
   function toggleBarber(id: string, checked: boolean) {
-    const selected = form.getValues('barberIds')
-    form.setValue('barberIds', checked ? [...selected, id] : selected.filter(value => value !== id), {shouldDirty: true, shouldValidate: true})
+    const selected = form.getValues('barberIds');
+    form.setValue('barberIds', checked ? [...selected, id] : selected.filter((value) => value !== id), { shouldDirty: true, shouldValidate: true });
   }
 
   async function submit(values: CreateTimeBlockValues) {
-    setFormError('')
-    setConflicts([])
-    const chosenReason = values.reason === 'Outro' ? values.customReason.trim() : values.reason
+    setFormError('');
+    setConflicts([]);
+    const chosenReason = values.reason === 'Outro' ? values.customReason.trim() : values.reason;
     try {
       await mutation.mutateAsync({
         barberIds: values.allBarbers ? null : values.barberIds.map(Number),
@@ -109,16 +109,16 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
         allDay: values.allDay,
         type: values.reason === 'Folga' ? 'timeoff' : 'block',
         reason: chosenReason,
-        repeatWeeks: values.weekly ? Number(values.repeatWeeks) : 1
-      })
-      setCompleted(true)
+        repeatWeeks: values.weekly ? Number(values.repeatWeeks) : 1,
+      });
+      setCompleted(true);
     } catch (error) {
-      const appointments = getConflicts(error)
+      const appointments = getConflicts(error);
       if (appointments.length) {
-        setConflicts(appointments)
-        setFormError('Há agendamentos ativos neste período. Remarque-os antes de criar o bloqueio.')
+        setConflicts(appointments);
+        setFormError('Há agendamentos ativos neste período. Remarque-os antes de criar o bloqueio.');
       } else {
-        setFormError(error instanceof Error ? error.message : 'Não foi possível criar o bloqueio.')
+        setFormError(error instanceof Error ? error.message : 'Não foi possível criar o bloqueio.');
       }
     }
   }
@@ -147,14 +147,14 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                 <FormField
                   control={form.control}
                   name="allBarbers"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem className="flex items-start gap-3 rounded-lg border p-3">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
-                          onCheckedChange={checked => {
-                            field.onChange(checked === true)
-                            if (checked === true) form.setValue('barberIds', [], {shouldDirty: true, shouldValidate: true})
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked === true);
+                            if (checked === true) form.setValue('barberIds', [], { shouldDirty: true, shouldValidate: true });
                           }}
                         />
                       </FormControl>
@@ -177,14 +177,14 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                         : barbersQuery.isError ?
                           <ErrorState title="Não foi possível carregar os barbeiros" onRetry={() => void barbersQuery.refetch()} />
                         : <div className="grid gap-2 sm:grid-cols-2">
-                            {(barbersQuery.data ?? []).map(barber => {
-                              const checked = form.getValues('barberIds').includes(String(barber.id))
+                            {(barbersQuery.data ?? []).map((barber) => {
+                              const checked = form.getValues('barberIds').includes(String(barber.id));
                               return (
                                 <label key={barber.id} className="flex min-h-11 items-center gap-3 rounded-md border px-3 text-sm">
-                                  <Checkbox checked={checked} onCheckedChange={value => toggleBarber(String(barber.id), value === true)} />
+                                  <Checkbox checked={checked} onCheckedChange={(value) => toggleBarber(String(barber.id), value === true)} />
                                   {barber.name}
                                 </label>
-                              )
+                              );
                             })}
                           </div>
                         }
@@ -197,7 +197,7 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                   <FormField
                     control={form.control}
                     name="date"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Data inicial</FormLabel>
                         <FormControl>
@@ -206,9 +206,9 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                             min={today()}
                             className="min-h-11"
                             {...field}
-                            onChange={event => {
-                              field.onChange(event)
-                              setConflicts([])
+                            onChange={(event) => {
+                              field.onChange(event);
+                              setConflicts([]);
                             }}
                           />
                         </FormControl>
@@ -219,15 +219,16 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                   <FormField
                     control={form.control}
                     name="reason"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Motivo</FormLabel>
                         <Select
                           value={field.value}
-                          onValueChange={value => {
-                            field.onChange(value)
-                            form.setValue('type', value === 'Folga' ? 'timeoff' : 'block', {shouldDirty: true})
-                          }}>
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('type', value === 'Folga' ? 'timeoff' : 'block', { shouldDirty: true });
+                          }}
+                        >
                           <FormControl>
                             <SelectTrigger className="min-h-11 w-full">
                               <SelectValue />
@@ -249,7 +250,7 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                   <FormField
                     control={form.control}
                     name="customReason"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Descreva o motivo</FormLabel>
                         <FormControl>
@@ -263,10 +264,10 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                 <FormField
                   control={form.control}
                   name="allDay"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem className="flex items-center gap-3">
                       <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={value => field.onChange(value === true)} />
+                        <Checkbox checked={field.value} onCheckedChange={(value) => field.onChange(value === true)} />
                       </FormControl>
                       <FormLabel className="cursor-pointer">Dia inteiro</FormLabel>
                     </FormItem>
@@ -277,7 +278,7 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                     <FormField
                       control={form.control}
                       name="startTime"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Início</FormLabel>
                           <FormControl>
@@ -290,7 +291,7 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                     <FormField
                       control={form.control}
                       name="endTime"
-                      render={({field}) => (
+                      render={({ field }) => (
                         <FormItem>
                           <FormLabel>Fim</FormLabel>
                           <FormControl>
@@ -305,10 +306,10 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                 <FormField
                   control={form.control}
                   name="weekly"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem className="flex items-start gap-3 rounded-lg border p-3">
                       <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={value => field.onChange(value === true)} />
+                        <Checkbox checked={field.value} onCheckedChange={(value) => field.onChange(value === true)} />
                       </FormControl>
                       <div>
                         <FormLabel className="cursor-pointer">Repetir semanalmente</FormLabel>
@@ -321,7 +322,7 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                   <FormField
                     control={form.control}
                     name="repeatWeeks"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Ocorrências, contando esta semana</FormLabel>
                         <Select value={field.value} onValueChange={field.onChange}>
@@ -344,7 +345,7 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
                   <section className="space-y-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3" aria-label="Agendamentos em conflito">
                     <p className="font-medium">Remarque antes de bloquear</p>
                     <ul className="space-y-2">
-                      {conflicts.map(appointment => (
+                      {conflicts.map((appointment) => (
                         <li key={appointment.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-background p-2 text-sm">
                           <span>
                             {appointment.customerName} · {appointment.barberName} · {formatDateTime(appointment.start)}
@@ -387,11 +388,11 @@ export function CreateTimeBlockDialog({open, onOpenChange, onRescheduleConflict}
         confirmLabel="Descartar"
         destructive
         onConfirm={() => {
-          setDiscardOpen(false)
-          form.reset()
-          onOpenChange(false)
+          setDiscardOpen(false);
+          form.reset();
+          onOpenChange(false);
         }}
       />
     </>
-  )
+  );
 }

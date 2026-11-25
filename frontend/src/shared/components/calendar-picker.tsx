@@ -1,26 +1,26 @@
-import {useId} from 'react'
-import {ptBR} from 'date-fns/locale'
-import type {Matcher} from 'react-day-picker'
-import {CalendarDays} from 'lucide-react'
-import {formatDate} from '@/shared/lib/format'
-import {Button} from '@/shared/ui/button'
-import {Calendar} from '@/shared/ui/calendar'
-import {Popover, PopoverContent, PopoverTrigger} from '@/shared/ui/popover'
+import { useId } from 'react';
+import { ptBR } from 'date-fns/locale';
+import type { Matcher } from 'react-day-picker';
+import { CalendarDays } from 'lucide-react';
+import { formatDate } from '@/shared/lib/format';
+import { Button } from '@/shared/ui/button';
+import { Calendar } from '@/shared/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 
 export interface CalendarPickerProps {
-  value: Date | null
-  onValueChange: (date: Date | null) => void
-  disabled?: Matcher | Matcher[]
-  disabledDays?: Matcher | Matcher[]
-  placeholder?: string
-  label?: string
-  id?: string
+  value: Date | null;
+  onValueChange: (date: Date | null) => void;
+  disabled?: Matcher | Matcher[];
+  disabledDays?: Matcher | Matcher[];
+  placeholder?: string;
+  label?: string;
+  id?: string;
 }
 
-export function CalendarPicker({value, onValueChange, disabled, disabledDays, placeholder = 'Escolher data', label = 'Data', id}: CalendarPickerProps) {
-  const generatedId = useId()
-  const triggerId = id ?? generatedId
-  const disabledMatchers = disabledDays ?? disabled
+export function CalendarPicker({ value, onValueChange, disabled, disabledDays, placeholder = 'Escolher data', label = 'Data', id }: CalendarPickerProps) {
+  const generatedId = useId();
+  const triggerId = id ?? generatedId;
+  const disabledMatchers = disabledDays ?? disabled;
 
   return (
     <div className="grid gap-2">
@@ -39,7 +39,7 @@ export function CalendarPicker({value, onValueChange, disabled, disabledDays, pl
             className="[--cell-size:--spacing(11)]"
             mode="single"
             selected={value ?? undefined}
-            onSelect={day => onValueChange(day ?? null)}
+            onSelect={(day) => onValueChange(day ?? null)}
             disabled={disabledMatchers}
             locale={ptBR}
             autoFocus
@@ -47,5 +47,5 @@ export function CalendarPicker({value, onValueChange, disabled, disabledDays, pl
         </PopoverContent>
       </Popover>
     </div>
-  )
+  );
 }

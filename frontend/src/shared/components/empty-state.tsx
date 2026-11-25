@@ -1,16 +1,16 @@
-import type {ReactNode} from 'react'
-import {Inbox} from 'lucide-react'
-import {Button} from '@/shared/ui/button'
+import type { ReactNode } from 'react';
+import { Inbox } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
 
 export interface EmptyStateProps {
-  title: string
-  description?: string
-  icon?: ReactNode
-  actionLabel?: string
-  onAction?: () => void
+  title: string;
+  description?: string;
+  icon?: ReactNode;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
-export function EmptyState({title, description, icon, actionLabel, onAction}: EmptyStateProps) {
+export function EmptyState({ title, description, icon, actionLabel, onAction }: EmptyStateProps) {
   return (
     <section className="flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 p-6 text-center" aria-live="polite">
       <span className="mb-3 text-muted-foreground" aria-hidden="true">
@@ -24,5 +24,5 @@ export function EmptyState({title, description, icon, actionLabel, onAction}: Em
         </Button>
       )}
     </section>
-  )
+  );
 }

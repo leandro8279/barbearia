@@ -1,54 +1,54 @@
-import {useEffect} from 'react'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {Link} from 'wouter'
-import {AlertTriangle, LoaderCircle} from 'lucide-react'
-import {customerSchema, type CustomerFormValues} from '@/modules/admin/customers/schemas/customer.schema'
-import {useAdminCustomerDuplicates, useAdminCustomerProfile, useSaveAdminCustomer} from '@/modules/admin/customers/hooks/use-customers'
-import type {AdminCustomerInput} from '@/modules/admin/customers/api/customers'
-import {useDebounce} from '@/shared/hooks/use-debounce'
-import {formatDateTime, formatPhone} from '@/shared/lib/format'
-import {HttpError} from '@/shared/lib/http'
-import {ErrorState} from '@/shared/components/error-state'
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '@/shared/components/form-field'
-import {Button} from '@/shared/ui/button'
-import {Input} from '@/shared/ui/input'
-import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from '@/shared/ui/sheet'
-import {Switch} from '@/shared/ui/switch'
+import { useEffect } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Link } from 'wouter';
+import { AlertTriangle, LoaderCircle } from 'lucide-react';
+import { customerSchema, type CustomerFormValues } from '@/modules/admin/customers/schemas/customer.schema';
+import { useAdminCustomerDuplicates, useAdminCustomerProfile, useSaveAdminCustomer } from '@/modules/admin/customers/hooks/use-customers';
+import type { AdminCustomerInput } from '@/modules/admin/customers/api/customers';
+import { useDebounce } from '@/shared/hooks/use-debounce';
+import { formatDateTime, formatPhone } from '@/shared/lib/format';
+import { HttpError } from '@/shared/lib/http';
+import { ErrorState } from '@/shared/components/error-state';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/form-field';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/shared/ui/sheet';
+import { Switch } from '@/shared/ui/switch';
 
 interface CustomerDrawerProps {
-  open: boolean
-  customerId: string | null
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  customerId: string | null;
+  onOpenChange: (open: boolean) => void;
 }
 
 function emptyCustomer(): CustomerFormValues {
-  return {name: '', phone: '', email: '', birthDate: '', cpf: '', referralSource: '', tags: '', reminders: true, marketing: false}
+  return { name: '', phone: '', email: '', birthDate: '', cpf: '', referralSource: '', tags: '', reminders: true, marketing: false };
 }
 
-export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerProps) {
-  const editingId = customerId && customerId !== 'novo' ? customerId : null
-  const customerQuery = useAdminCustomerProfile(editingId, open)
-  const saveCustomer = useSaveAdminCustomer()
-  const form = useForm<CustomerFormValues>({resolver: zodResolver(customerSchema), defaultValues: emptyCustomer()})
-  const phone = useDebounce(form.watch('phone'), 300)
-  const name = useDebounce(form.watch('name'), 300)
-  const phoneDigits = phone.replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '')
-  const canCheckDuplicates = open && (phoneDigits.length >= 10 || name.trim().length >= 3)
-  const duplicatesQuery = useAdminCustomerDuplicates({phone, name, excludeId: editingId ?? undefined}, canCheckDuplicates)
-  const duplicates = duplicatesQuery.data ?? []
-  const phoneDuplicate = duplicates.some(duplicate => duplicate.matchedBy.includes('phone'))
-  const waitingForCustomer = Boolean(editingId) && customerQuery.isPending
-  const customerLoadError = Boolean(editingId) && customerQuery.isError
+export function CustomerDrawer({ open, customerId, onOpenChange }: CustomerDrawerProps) {
+  const editingId = customerId && customerId !== 'novo' ? customerId : null;
+  const customerQuery = useAdminCustomerProfile(editingId, open);
+  const saveCustomer = useSaveAdminCustomer();
+  const form = useForm<CustomerFormValues>({ resolver: zodResolver(customerSchema), defaultValues: emptyCustomer() });
+  const phone = useDebounce(form.watch('phone'), 300);
+  const name = useDebounce(form.watch('name'), 300);
+  const phoneDigits = phone.replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, '');
+  const canCheckDuplicates = open && (phoneDigits.length >= 10 || name.trim().length >= 3);
+  const duplicatesQuery = useAdminCustomerDuplicates({ phone, name, excludeId: editingId ?? undefined }, canCheckDuplicates);
+  const duplicates = duplicatesQuery.data ?? [];
+  const phoneDuplicate = duplicates.some((duplicate) => duplicate.matchedBy.includes('phone'));
+  const waitingForCustomer = Boolean(editingId) && customerQuery.isPending;
+  const customerLoadError = Boolean(editingId) && customerQuery.isError;
 
   useEffect(() => {
-    if (!open) return
+    if (!open) return;
     if (!editingId) {
-      form.reset(emptyCustomer())
-      return
+      form.reset(emptyCustomer());
+      return;
     }
-    const customer = customerQuery.data?.customer
-    if (!customer) return
+    const customer = customerQuery.data?.customer;
+    if (!customer) return;
     form.reset({
       name: customer.name,
       phone: customer.phone,
@@ -58,20 +58,20 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
       referralSource: customer.referralSource ?? '',
       tags: customer.tags.join(', '),
       reminders: customer.consent?.reminders ?? false,
-      marketing: customer.consent?.marketing ?? false
-    })
-  }, [customerQuery.data, editingId, form, open])
+      marketing: customer.consent?.marketing ?? false,
+    });
+  }, [customerQuery.data, editingId, form, open]);
 
   function requestOpenChange(nextOpen: boolean) {
-    if (!nextOpen && form.formState.isDirty && !window.confirm('Descartar as alterações deste cliente?')) return
-    if (!nextOpen) form.reset()
-    onOpenChange(nextOpen)
+    if (!nextOpen && form.formState.isDirty && !window.confirm('Descartar as alterações deste cliente?')) return;
+    if (!nextOpen) form.reset();
+    onOpenChange(nextOpen);
   }
 
   async function onSubmit(values: CustomerFormValues) {
     if (phoneDuplicate) {
-      form.setError('phone', {message: 'Este telefone já está cadastrado. Abra o cliente existente.'})
-      return
+      form.setError('phone', { message: 'Este telefone já está cadastrado. Abra o cliente existente.' });
+      return;
     }
     const input: AdminCustomerInput = {
       name: values.name.trim(),
@@ -84,23 +84,23 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
         ...new Set(
           values.tags
             .split(',')
-            .map(tag => tag.trim())
-            .filter(Boolean)
-        )
+            .map((tag) => tag.trim())
+            .filter(Boolean),
+        ),
       ].slice(0, 12),
-      consent: {reminders: values.reminders, marketing: values.marketing}
-    }
-    form.clearErrors('root.server')
+      consent: { reminders: values.reminders, marketing: values.marketing },
+    };
+    form.clearErrors('root.server');
     try {
-      await saveCustomer.mutateAsync({id: editingId, input})
-      form.reset(values)
-      onOpenChange(false)
+      await saveCustomer.mutateAsync({ id: editingId, input });
+      form.reset(values);
+      onOpenChange(false);
     } catch (error) {
       const responseError =
-        error instanceof HttpError && typeof error.details === 'object' && error.details !== null && 'error' in error.details && typeof error.details.error === 'string' ? error.details.error : null
-      const message = responseError ?? (error instanceof Error ? error.message : 'Não foi possível salvar o cliente.')
-      if (message.toLocaleLowerCase('pt-BR').includes('telefone')) form.setError('phone', {message})
-      else form.setError('root.server', {message})
+        error instanceof HttpError && typeof error.details === 'object' && error.details !== null && 'error' in error.details && typeof error.details.error === 'string' ? error.details.error : null;
+      const message = responseError ?? (error instanceof Error ? error.message : 'Não foi possível salvar o cliente.');
+      if (message.toLocaleLowerCase('pt-BR').includes('telefone')) form.setError('phone', { message });
+      else form.setError('root.server', { message });
     }
   }
 
@@ -127,7 +127,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                 <FormField
                   control={form.control}
                   name="name"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nome completo</FormLabel>
                       <FormControl>
@@ -142,7 +142,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                   <FormField
                     control={form.control}
                     name="phone"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Telefone / WhatsApp</FormLabel>
                         <FormControl>
@@ -155,7 +155,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                   <FormField
                     control={form.control}
                     name="email"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>E-mail</FormLabel>
                         <FormControl>
@@ -177,7 +177,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                         </p>
                         {duplicates.length > 0 && (
                           <ul className="space-y-2">
-                            {duplicates.map(duplicate => (
+                            {duplicates.map((duplicate) => (
                               <li key={duplicate.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-background/70 px-3 py-2 text-sm">
                                 <span className="min-w-0">
                                   <span className="block font-medium">{duplicate.name}</span>
@@ -200,7 +200,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                   <FormField
                     control={form.control}
                     name="birthDate"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Data de nascimento</FormLabel>
                         <FormControl>
@@ -213,7 +213,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                   <FormField
                     control={form.control}
                     name="cpf"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>CPF (opcional)</FormLabel>
                         <FormControl>
@@ -228,7 +228,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                 <FormField
                   control={form.control}
                   name="referralSource"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Como conheceu a barbearia?</FormLabel>
                       <FormControl>
@@ -242,7 +242,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                 <FormField
                   control={form.control}
                   name="tags"
-                  render={({field}) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Tags</FormLabel>
                       <FormControl>
@@ -259,7 +259,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                   <FormField
                     control={form.control}
                     name="reminders"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem className="flex min-h-11 items-center justify-between gap-4">
                         <FormLabel className="cursor-pointer">Receber lembretes de agendamento</FormLabel>
                         <FormControl>
@@ -271,7 +271,7 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
                   <FormField
                     control={form.control}
                     name="marketing"
-                    render={({field}) => (
+                    render={({ field }) => (
                       <FormItem className="flex min-h-11 items-center justify-between gap-4">
                         <FormLabel className="cursor-pointer">Receber novidades e ofertas</FormLabel>
                         <FormControl>
@@ -309,5 +309,5 @@ export function CustomerDrawer({open, customerId, onOpenChange}: CustomerDrawerP
         }
       </SheetContent>
     </Sheet>
-  )
+  );
 }

@@ -1,13 +1,13 @@
-import type {ReactNode} from 'react'
+import type { ReactNode } from 'react';
 
 export interface PageHeaderProps {
-  title: string
-  description?: string
-  actions?: ReactNode
-  eyebrow?: string
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+  eyebrow?: string;
 }
 
-export function PageHeader({title, description, actions, eyebrow}: PageHeaderProps) {
+export function PageHeader({ title, description, actions, eyebrow }: PageHeaderProps) {
   return (
     <header className="mb-6 flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
@@ -17,5 +17,5 @@ export function PageHeader({title, description, actions, eyebrow}: PageHeaderPro
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </header>
-  )
+  );
 }

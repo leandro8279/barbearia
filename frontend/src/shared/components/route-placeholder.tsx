@@ -1,36 +1,36 @@
-import {ArrowRight, Construction} from 'lucide-react'
-import {useEffect} from 'react'
-import {Link} from 'wouter'
-import {Button} from '@/shared/ui/button'
+import { ArrowRight, Construction } from 'lucide-react';
+import { useEffect } from 'react';
+import { Link } from 'wouter';
+import { Button } from '@/shared/ui/button';
 
 export interface RouteMeta {
-  id: string
-  title: string
-  description: string
-  url: string
-  access: string
-  layout: 'site' | 'booking' | 'auth' | 'account' | 'admin' | 'bare'
-  matchPath: string
-  query?: {key: string; value?: string}
-  permission?: import('@/shared/types/domain').Permission
-  roles?: import('@/shared/types/domain').UserRole[]
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  access: string;
+  layout: 'site' | 'booking' | 'auth' | 'account' | 'admin' | 'bare';
+  matchPath: string;
+  query?: { key: string; value?: string };
+  permission?: import('@/shared/types/domain').Permission;
+  roles?: import('@/shared/types/domain').UserRole[];
 }
 
 interface RoutePlaceholderProps {
-  route: RouteMeta
+  route: RouteMeta;
 }
 
-export default function RoutePlaceholder({route}: RoutePlaceholderProps) {
+export default function RoutePlaceholder({ route }: RoutePlaceholderProps) {
   useEffect(() => {
-    document.title = `${route.title} | Barbearia`
-    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]')
+    document.title = `${route.title} | Barbearia`;
+    let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!description) {
-      description = document.createElement('meta')
-      description.name = 'description'
-      document.head.append(description)
+      description = document.createElement('meta');
+      description.name = 'description';
+      document.head.append(description);
     }
-    description.content = route.description
-  }, [route.description, route.title])
+    description.content = route.description;
+  }, [route.description, route.title]);
 
   if (route.id === 'S01') {
     return (
@@ -57,7 +57,7 @@ export default function RoutePlaceholder({route}: RoutePlaceholderProps) {
           <p>Pagamento presencial</p>
         </div>
       </section>
-    )
+    );
   }
 
   return (
@@ -82,5 +82,5 @@ export default function RoutePlaceholder({route}: RoutePlaceholderProps) {
         </Link>
       </Button>
     </section>
-  )
+  );
 }

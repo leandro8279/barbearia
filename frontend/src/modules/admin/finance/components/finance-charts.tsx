@@ -1,16 +1,21 @@
-import {ArrowDownRight, ArrowUpRight, Minus, Wallet} from 'lucide-react'
-import {Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts'
-import type {FinanceMetrics, FinanceSummary} from '@/modules/admin/finance/api/finance'
-import {EmptyState} from '@/shared/components/empty-state'
-import {formatBRL} from '@/shared/lib/format'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/shared/ui/card'
+import { ArrowDownRight, ArrowUpRight, Minus, Wallet } from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import type { FinanceMetrics, FinanceSummary } from '@/modules/admin/finance/api/finance';
+import { EmptyState } from '@/shared/components/empty-state';
+import { formatBRL } from '@/shared/lib/format';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 
-const paymentLabels: Record<FinanceSummary['paymentMethods'][number]['method'], string> = {cash: 'Dinheiro', pix: 'Pix', debit: 'Débito', credit: 'Crédito'}
+const paymentLabels: Record<FinanceSummary['paymentMethods'][number]['method'], string> = { cash: 'Dinheiro', pix: 'Pix', debit: 'Débito', credit: 'Crédito' };
 
-const paymentColors: Record<FinanceSummary['paymentMethods'][number]['method'], string> = {cash: 'hsl(var(--primary))', pix: 'hsl(153 34% 45%)', debit: 'hsl(202 31% 54%)', credit: 'hsl(28 49% 58%)'}
+const paymentColors: Record<FinanceSummary['paymentMethods'][number]['method'], string> = {
+  cash: 'hsl(var(--primary))',
+  pix: 'hsl(153 34% 45%)',
+  debit: 'hsl(202 31% 54%)',
+  credit: 'hsl(28 49% 58%)',
+};
 
 function currencyAxis(value: number) {
-  return new Intl.NumberFormat('pt-BR', {notation: 'compact', style: 'currency', currency: 'BRL', maximumFractionDigits: 1}).format(value / 100)
+  return new Intl.NumberFormat('pt-BR', { notation: 'compact', style: 'currency', currency: 'BRL', maximumFractionDigits: 1 }).format(value / 100);
 }
 
 export function FinanceMetricCard({
@@ -19,19 +24,19 @@ export function FinanceMetricCard({
   previousValue,
   description,
   highlight = false,
-  inverseTrend = false
+  inverseTrend = false,
 }: {
-  title: string
-  value: number
-  previousValue: number
-  description: string
-  highlight?: boolean
-  inverseTrend?: boolean
+  title: string;
+  value: number;
+  previousValue: number;
+  description: string;
+  highlight?: boolean;
+  inverseTrend?: boolean;
 }) {
-  const delta = value - previousValue
-  const percent = previousValue === 0 ? null : (delta / Math.abs(previousValue)) * 100
-  const isPositive = inverseTrend ? delta < 0 : delta > 0
-  const isNegative = inverseTrend ? delta > 0 : delta < 0
+  const delta = value - previousValue;
+  const percent = previousValue === 0 ? null : (delta / Math.abs(previousValue)) * 100;
+  const isPositive = inverseTrend ? delta < 0 : delta > 0;
+  const isNegative = inverseTrend ? delta > 0 : delta < 0;
 
   return (
     <Card className={highlight ? 'border-primary/35 bg-primary/[0.06]' : ''}>
@@ -53,8 +58,9 @@ export function FinanceMetricCard({
               delta === 0 ?
                 'sem variação'
               : 'sem base anterior'
-            : `${Math.abs(percent).toLocaleString('pt-BR', {maximumFractionDigits: 1})}%`
-          }`}>
+            : `${Math.abs(percent).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
+          }`}
+        >
           {delta > 0 ?
             <ArrowUpRight className="size-3.5 text-emerald-500" aria-hidden="true" />
           : delta < 0 ?
@@ -66,23 +72,24 @@ export function FinanceMetricCard({
               : isNegative ?
                 'font-medium text-destructive'
               : 'text-muted-foreground'
-            }>
+            }
+          >
             {percent === null ?
               delta === 0 ?
                 'Sem variação'
               : 'Sem base anterior'
-            : `${Math.abs(percent).toLocaleString('pt-BR', {maximumFractionDigits: 1})}%`}
+            : `${Math.abs(percent).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`}
           </span>
           <span className="text-muted-foreground">vs. período anterior</span>
         </p>
       </CardContent>
     </Card>
-  )
+  );
 }
 
-export function MonthlyFinanceChart({monthly}: {monthly: FinanceSummary['monthly']}) {
-  const data = monthly.map(item => ({...item, label: new Intl.DateTimeFormat('pt-BR', {month: 'short', timeZone: 'UTC'}).format(new Date(`${item.month}-01T12:00:00Z`)).replace('.', '')}))
-  const hasValues = data.some(item => item.incomeCents > 0 || item.expensesCents > 0)
+export function MonthlyFinanceChart({ monthly }: { monthly: FinanceSummary['monthly'] }) {
+  const data = monthly.map((item) => ({ ...item, label: new Intl.DateTimeFormat('pt-BR', { month: 'short', timeZone: 'UTC' }).format(new Date(`${item.month}-01T12:00:00Z`)).replace('.', '') }));
+  const hasValues = data.some((item) => item.incomeCents > 0 || item.expensesCents > 0);
 
   return (
     <Card className="min-w-0">
@@ -94,18 +101,18 @@ export function MonthlyFinanceChart({monthly}: {monthly: FinanceSummary['monthly
         {hasValues ?
           <div className="h-[17rem] w-full" role="img" aria-label="Gráfico mensal de receitas e despesas">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{top: 8, right: 8, left: 0, bottom: 0}} barGap={5}>
+              <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barGap={5}>
                 <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 4" vertical={false} />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12}} />
-                <YAxis width={64} tickFormatter={currencyAxis} tickLine={false} axisLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 11}} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                <YAxis width={64} tickFormatter={currencyAxis} tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
                 <Tooltip
-                  cursor={{fill: 'hsl(var(--muted) / 0.55)'}}
-                  formatter={value => formatBRL(Number(value))}
+                  cursor={{ fill: 'hsl(var(--muted) / 0.55)' }}
+                  formatter={(value) => formatBRL(Number(value))}
                   labelFormatter={(_, payload) => {
-                    const month = payload?.[0]?.payload?.month
-                    return typeof month === 'string' ? new Intl.DateTimeFormat('pt-BR', {month: 'long', year: 'numeric', timeZone: 'UTC'}).format(new Date(`${month}-01T12:00:00Z`)) : ''
+                    const month = payload?.[0]?.payload?.month;
+                    return typeof month === 'string' ? new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${month}-01T12:00:00Z`)) : '';
                   }}
-                  contentStyle={{borderRadius: 12, border: '1px solid hsl(var(--border))', background: 'hsl(var(--popover))', color: 'hsl(var(--popover-foreground))'}}
+                  contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', background: 'hsl(var(--popover))', color: 'hsl(var(--popover-foreground))' }}
                 />
                 <Bar dataKey="incomeCents" name="Receitas" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={34} />
                 <Bar dataKey="expensesCents" name="Despesas" fill="hsl(12 39% 51%)" radius={[4, 4, 0, 0]} maxBarSize={34} />
@@ -118,12 +125,12 @@ export function MonthlyFinanceChart({monthly}: {monthly: FinanceSummary['monthly
         }
       </CardContent>
     </Card>
-  )
+  );
 }
 
-export function PaymentMethodChart({paymentMethods}: {paymentMethods: FinanceSummary['paymentMethods']}) {
-  const total = paymentMethods.reduce((sum, item) => sum + item.amountCents, 0)
-  const rows = paymentMethods.filter(item => item.amountCents > 0).sort((a, b) => b.amountCents - a.amountCents)
+export function PaymentMethodChart({ paymentMethods }: { paymentMethods: FinanceSummary['paymentMethods'] }) {
+  const total = paymentMethods.reduce((sum, item) => sum + item.amountCents, 0);
+  const rows = paymentMethods.filter((item) => item.amountCents > 0).sort((a, b) => b.amountCents - a.amountCents);
 
   return (
     <Card className="min-w-0">
@@ -136,16 +143,16 @@ export function PaymentMethodChart({paymentMethods}: {paymentMethods: FinanceSum
           <div className="space-y-5">
             <div className="h-40 w-full" role="img" aria-label="Gráfico de receita por forma de pagamento">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={rows} layout="vertical" margin={{top: 4, right: 8, left: 0, bottom: 4}}>
+                <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="method" hide />
                   <Tooltip
-                    formatter={value => formatBRL(Number(value))}
-                    labelFormatter={value => paymentLabels[value as keyof typeof paymentLabels]}
-                    contentStyle={{borderRadius: 12, border: '1px solid hsl(var(--border))', background: 'hsl(var(--popover))', color: 'hsl(var(--popover-foreground))'}}
+                    formatter={(value) => formatBRL(Number(value))}
+                    labelFormatter={(value) => paymentLabels[value as keyof typeof paymentLabels]}
+                    contentStyle={{ borderRadius: 12, border: '1px solid hsl(var(--border))', background: 'hsl(var(--popover))', color: 'hsl(var(--popover-foreground))' }}
                   />
                   <Bar dataKey="amountCents" name="Receita" radius={[0, 5, 5, 0]} maxBarSize={22}>
-                    {rows.map(item => (
+                    {rows.map((item) => (
                       <Cell key={item.method} fill={paymentColors[item.method]} />
                     ))}
                   </Bar>
@@ -153,24 +160,24 @@ export function PaymentMethodChart({paymentMethods}: {paymentMethods: FinanceSum
               </ResponsiveContainer>
             </div>
             <ul className="space-y-3">
-              {rows.map(item => {
-                const share = (item.amountCents / total) * 100
+              {rows.map((item) => {
+                const share = (item.amountCents / total) * 100;
                 return (
                   <li key={item.method} className="space-y-1.5">
                     <div className="flex items-center justify-between gap-3 text-sm">
                       <span className="flex items-center gap-2">
-                        <span className="size-2 rounded-full" style={{backgroundColor: paymentColors[item.method]}} aria-hidden="true" />
+                        <span className="size-2 rounded-full" style={{ backgroundColor: paymentColors[item.method] }} aria-hidden="true" />
                         {paymentLabels[item.method]}
                       </span>
                       <span className="text-right font-medium tabular-nums">
-                        {formatBRL(item.amountCents)} <span className="font-normal text-muted-foreground">· {share.toLocaleString('pt-BR', {maximumFractionDigits: 1})}%</span>
+                        {formatBRL(item.amountCents)} <span className="font-normal text-muted-foreground">· {share.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</span>
                       </span>
                     </div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-                      <div className="h-full rounded-full transition-[width] duration-300" style={{width: `${share}%`, backgroundColor: paymentColors[item.method]}} />
+                      <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${share}%`, backgroundColor: paymentColors[item.method] }} />
                     </div>
                   </li>
-                )
+                );
               })}
             </ul>
           </div>
@@ -180,9 +187,9 @@ export function PaymentMethodChart({paymentMethods}: {paymentMethods: FinanceSum
         }
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export function metricValue(metrics: FinanceMetrics | undefined, key: keyof FinanceMetrics) {
-  return metrics?.[key] ?? 0
+  return metrics?.[key] ?? 0;
 }

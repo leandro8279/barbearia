@@ -1,54 +1,54 @@
-import {useEffect} from 'react'
-import {useMutation} from '@tanstack/react-query'
-import {zodResolver} from '@hookform/resolvers/zod'
-import {useForm} from 'react-hook-form'
-import {Link, useLocation} from 'wouter'
-import {register} from '@/modules/auth/api/auth'
-import {registerSchema, type RegisterFormValues} from '@/modules/auth/schemas/register.schema'
-import {PhoneInput} from '@/shared/components/phone-input'
-import {HttpError} from '@/shared/lib/http'
-import {useSessionStore} from '@/shared/stores/session-store'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from '@/shared/ui/form'
-import {Input} from '@/shared/ui/input'
+import { useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Link, useLocation } from 'wouter';
+import { register } from '@/modules/auth/api/auth';
+import { registerSchema, type RegisterFormValues } from '@/modules/auth/schemas/register.schema';
+import { PhoneInput } from '@/shared/components/phone-input';
+import { HttpError } from '@/shared/lib/http';
+import { useSessionStore } from '@/shared/stores/session-store';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Input } from '@/shared/ui/input';
 
 function getPasswordStrength(password: string) {
-  if (!password) return 0
-  return [password.length >= 8, /[a-z]/.test(password) && /[A-Z]/.test(password), /\d/.test(password), /[^a-zA-Z0-9]/.test(password)].filter(Boolean).length
+  if (!password) return 0;
+  return [password.length >= 8, /[a-z]/.test(password) && /[A-Z]/.test(password), /\d/.test(password), /[^a-zA-Z0-9]/.test(password)].filter(Boolean).length;
 }
 
 function getRegistrationError(error: unknown) {
   if (error instanceof HttpError && typeof error.details === 'object' && error.details !== null && 'error' in error.details && typeof error.details.error === 'string') {
-    return error.details.error
+    return error.details.error;
   }
-  return 'Não foi possível criar sua conta. Confira os dados e tente novamente.'
+  return 'Não foi possível criar sua conta. Confira os dados e tente novamente.';
 }
 
 export default function RegisterPage() {
-  const [, setLocation] = useLocation()
-  const setSession = useSessionStore(state => state.setSession)
-  const mutation = useMutation({mutationFn: register})
+  const [, setLocation] = useLocation();
+  const setSession = useSessionStore((state) => state.setSession);
+  const mutation = useMutation({ mutationFn: register });
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: {name: '', email: '', phone: '', birthDate: '', password: '', confirmPassword: '', termsAccepted: false, reminders: false}
-  })
-  const password = form.watch('password')
-  const passwordStrength = getPasswordStrength(password)
-  const strengthLabel = ['', 'Fraca', 'Média', 'Boa', 'Forte'][passwordStrength]
+    defaultValues: { name: '', email: '', phone: '', birthDate: '', password: '', confirmPassword: '', termsAccepted: false, reminders: false },
+  });
+  const password = form.watch('password');
+  const passwordStrength = getPasswordStrength(password);
+  const strengthLabel = ['', 'Fraca', 'Média', 'Boa', 'Forte'][passwordStrength];
   const strengthColor =
     passwordStrength === 1 ? 'bg-destructive'
     : passwordStrength === 2 ? 'bg-orange-500'
     : passwordStrength === 3 ? 'bg-amber-400'
-    : 'bg-emerald-500'
+    : 'bg-emerald-500';
 
   useEffect(() => {
-    document.title = 'Criar conta | Barbearia'
-  }, [])
+    document.title = 'Criar conta | Barbearia';
+  }, []);
 
   async function onSubmit(values: RegisterFormValues) {
-    form.clearErrors('root.server')
+    form.clearErrors('root.server');
     try {
       const result = await mutation.mutateAsync({
         name: values.name,
@@ -57,27 +57,27 @@ export default function RegisterPage() {
         password: values.password,
         birthDate: values.birthDate || null,
         reminders: values.reminders,
-        termsAccepted: values.termsAccepted
-      })
-      setSession(result.user, result.token)
-      setLocation('/conta')
+        termsAccepted: values.termsAccepted,
+      });
+      setSession(result.user, result.token);
+      setLocation('/conta');
     } catch (error) {
-      const message = getRegistrationError(error)
+      const message = getRegistrationError(error);
       if (error instanceof HttpError && error.status === 409) {
         if (message.toLowerCase().includes('e-mail')) {
-          form.setError('email', {type: 'server', message})
-          return
+          form.setError('email', { type: 'server', message });
+          return;
         }
         if (message.toLowerCase().includes('telefone')) {
-          form.setError('phone', {type: 'server', message})
-          return
+          form.setError('phone', { type: 'server', message });
+          return;
         }
       }
-      form.setError('root.server', {type: 'server', message})
+      form.setError('root.server', { type: 'server', message });
     }
   }
 
-  const isSubmitting = form.formState.isSubmitting || mutation.isPending
+  const isSubmitting = form.formState.isSubmitting || mutation.isPending;
 
   return (
     <Card className="auth-login-texture border-border/80 bg-card shadow-panel">
@@ -93,7 +93,7 @@ export default function RegisterPage() {
               <FormField
                 control={form.control}
                 name="name"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nome completo</FormLabel>
                     <FormControl>
@@ -106,7 +106,7 @@ export default function RegisterPage() {
               <FormField
                 control={form.control}
                 name="email"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>E-mail</FormLabel>
                     <FormControl>
@@ -119,7 +119,7 @@ export default function RegisterPage() {
               <FormField
                 control={form.control}
                 name="phone"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel htmlFor="register-phone">Telefone/WhatsApp</FormLabel>
                     <PhoneInput id="register-phone" value={field.value} onValueChange={field.onChange} name={field.name} aria-label="Telefone ou WhatsApp com DDD" />
@@ -130,7 +130,7 @@ export default function RegisterPage() {
               <FormField
                 control={form.control}
                 name="birthDate"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Data de nascimento (opcional)</FormLabel>
                     <FormControl>
@@ -145,7 +145,7 @@ export default function RegisterPage() {
             <FormField
               control={form.control}
               name="password"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Senha</FormLabel>
                   <FormControl>
@@ -158,9 +158,10 @@ export default function RegisterPage() {
                     aria-valuemin={0}
                     aria-valuemax={4}
                     aria-valuenow={passwordStrength}
-                    aria-valuetext={strengthLabel || 'Sem senha'}>
+                    aria-valuetext={strengthLabel || 'Sem senha'}
+                  >
                     <div className="flex gap-1.5">
-                      {[0, 1, 2, 3].map(segment => (
+                      {[0, 1, 2, 3].map((segment) => (
                         <span key={segment} className={`h-1.5 flex-1 rounded-full ${segment < passwordStrength ? strengthColor : 'bg-muted'}`} />
                       ))}
                     </div>
@@ -174,7 +175,7 @@ export default function RegisterPage() {
             <FormField
               control={form.control}
               name="confirmPassword"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Confirmar senha</FormLabel>
                   <FormControl>
@@ -188,10 +189,10 @@ export default function RegisterPage() {
             <FormField
               control={form.control}
               name="termsAccepted"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem className="grid grid-cols-[auto_1fr] items-start gap-x-3 gap-y-1 rounded-lg border border-border p-3">
                   <FormControl>
-                    <Checkbox className="mt-1 size-5" checked={field.value} onCheckedChange={checked => field.onChange(checked === true)} />
+                    <Checkbox className="mt-1 size-5" checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                   </FormControl>
                   <FormLabel className="cursor-pointer leading-relaxed">Li e aceito os termos de uso e a política de privacidade.</FormLabel>
                   <FormMessage className="col-span-2" />
@@ -202,10 +203,10 @@ export default function RegisterPage() {
             <FormField
               control={form.control}
               name="reminders"
-              render={({field}) => (
+              render={({ field }) => (
                 <FormItem className="grid grid-cols-[auto_1fr] items-start gap-x-3 gap-y-1 rounded-lg border border-border p-3">
                   <FormControl>
-                    <Checkbox className="mt-1 size-5" checked={field.value} onCheckedChange={checked => field.onChange(checked === true)} />
+                    <Checkbox className="mt-1 size-5" checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                   </FormControl>
                   <div className="space-y-1">
                     <FormLabel className="cursor-pointer leading-relaxed">Quero receber lembretes pelo WhatsApp.</FormLabel>
@@ -235,5 +236,5 @@ export default function RegisterPage() {
         </p>
       </CardContent>
     </Card>
-  )
+  );
 }

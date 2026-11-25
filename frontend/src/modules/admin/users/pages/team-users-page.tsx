@@ -1,140 +1,140 @@
-import {useEffect, useMemo, useState} from 'react'
-import {Copy, KeyRound, LoaderCircle, MailPlus, Save, ShieldCheck, UsersRound} from 'lucide-react'
-import {toast} from 'sonner'
-import {InviteStaffDialog} from '@/modules/admin/users/components/invite-staff-dialog'
-import {useInviteTeamUser, useTeamUsers, useUpdateTeamUser} from '@/modules/admin/users/hooks/use-team-users'
-import type {Permission, UserRole} from '@/shared/types/domain'
-import type {StaffUser} from '@/modules/admin/users/api/team-users'
-import type {InviteValues} from '@/modules/admin/users/schemas/invite.schema'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {PageHeader} from '@/shared/components/page-header'
-import {formatDateTime} from '@/shared/lib/format'
-import {useCan} from '@/shared/hooks/use-can'
-import {Badge} from '@/shared/ui/badge'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Checkbox} from '@/shared/ui/checkbox'
-import {Input} from '@/shared/ui/input'
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/shared/ui/select'
-import {Skeleton} from '@/shared/ui/skeleton'
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/shared/ui/table'
+import { useEffect, useMemo, useState } from 'react';
+import { Copy, KeyRound, LoaderCircle, MailPlus, Save, ShieldCheck, UsersRound } from 'lucide-react';
+import { toast } from 'sonner';
+import { InviteStaffDialog } from '@/modules/admin/users/components/invite-staff-dialog';
+import { useInviteTeamUser, useTeamUsers, useUpdateTeamUser } from '@/modules/admin/users/hooks/use-team-users';
+import type { Permission, UserRole } from '@/shared/types/domain';
+import type { StaffUser } from '@/modules/admin/users/api/team-users';
+import type { InviteValues } from '@/modules/admin/users/schemas/invite.schema';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { PageHeader } from '@/shared/components/page-header';
+import { formatDateTime } from '@/shared/lib/format';
+import { useCan } from '@/shared/hooks/use-can';
+import { Badge } from '@/shared/ui/badge';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Checkbox } from '@/shared/ui/checkbox';
+import { Input } from '@/shared/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 
-const roleLabels: Record<Exclude<UserRole, 'customer'>, string> = {barber: 'Barbeiro', reception: 'Recepção', manager: 'Gerente', admin: 'Administrador'}
-const permissionGroups: Array<{title: string; items: Array<{key: Permission; label: string}>}> = [
+const roleLabels: Record<Exclude<UserRole, 'customer'>, string> = { barber: 'Barbeiro', reception: 'Recepção', manager: 'Gerente', admin: 'Administrador' };
+const permissionGroups: Array<{ title: string; items: Array<{ key: Permission; label: string }> }> = [
   {
     title: 'Agenda',
     items: [
-      {key: 'agenda.read', label: 'Consultar'},
-      {key: 'agenda.write', label: 'Editar'},
-      {key: 'agenda.manage', label: 'Gerenciar'}
-    ]
+      { key: 'agenda.read', label: 'Consultar' },
+      { key: 'agenda.write', label: 'Editar' },
+      { key: 'agenda.manage', label: 'Gerenciar' },
+    ],
   },
-  {title: 'Comissões', items: [{key: 'commissions.read', label: 'Consultar'}]},
+  { title: 'Comissões', items: [{ key: 'commissions.read', label: 'Consultar' }] },
   {
     title: 'Caixa',
     items: [
-      {key: 'cash.read', label: 'Consultar'},
-      {key: 'cash.write', label: 'Operar'},
-      {key: 'cash.manage', label: 'Gerenciar'}
-    ]
+      { key: 'cash.read', label: 'Consultar' },
+      { key: 'cash.write', label: 'Operar' },
+      { key: 'cash.manage', label: 'Gerenciar' },
+    ],
   },
   {
     title: 'Catálogo',
     items: [
-      {key: 'catalog.read', label: 'Consultar'},
-      {key: 'catalog.write', label: 'Editar'}
-    ]
+      { key: 'catalog.read', label: 'Consultar' },
+      { key: 'catalog.write', label: 'Editar' },
+    ],
   },
   {
     title: 'Clientes',
     items: [
-      {key: 'customers.read', label: 'Consultar'},
-      {key: 'customers.write', label: 'Editar'}
-    ]
+      { key: 'customers.read', label: 'Consultar' },
+      { key: 'customers.write', label: 'Editar' },
+    ],
   },
   {
     title: 'Equipe',
     items: [
-      {key: 'team.read', label: 'Consultar'},
-      {key: 'team.write', label: 'Editar'},
-      {key: 'team.manage', label: 'Gerenciar'}
-    ]
+      { key: 'team.read', label: 'Consultar' },
+      { key: 'team.write', label: 'Editar' },
+      { key: 'team.manage', label: 'Gerenciar' },
+    ],
   },
   {
     title: 'Financeiro',
     items: [
-      {key: 'finance.read', label: 'Consultar'},
-      {key: 'finance.write', label: 'Editar despesas'},
-      {key: 'finance.manage', label: 'Editar despesas pagas'}
-    ]
+      { key: 'finance.read', label: 'Consultar' },
+      { key: 'finance.write', label: 'Editar despesas' },
+      { key: 'finance.manage', label: 'Editar despesas pagas' },
+    ],
   },
   {
     title: 'Configurações',
     items: [
-      {key: 'settings.read', label: 'Consultar'},
-      {key: 'settings.write', label: 'Editar'},
-      {key: 'settings.manage', label: 'Gerenciar'}
-    ]
-  }
-]
+      { key: 'settings.read', label: 'Consultar' },
+      { key: 'settings.write', label: 'Editar' },
+      { key: 'settings.manage', label: 'Gerenciar' },
+    ],
+  },
+];
 
 export default function TeamUsersPage() {
-  const canManage = useCan('team.manage')
-  const usersQuery = useTeamUsers()
-  const inviteMutation = useInviteTeamUser()
-  const updateMutation = useUpdateTeamUser()
-  const [inviteOpen, setInviteOpen] = useState(false)
-  const [expandedUserId, setExpandedUserId] = useState<number | null>(null)
-  const [permissionDrafts, setPermissionDrafts] = useState<Record<number, Permission[]>>({})
-  const [inviteNotice, setInviteNotice] = useState<{email: string; url: string | null} | null>(null)
-  const users = usersQuery.data?.users ?? []
-  const activeAdminCount = useMemo(() => users.filter(user => user.role === 'admin' && user.active).length, [users])
+  const canManage = useCan('team.manage');
+  const usersQuery = useTeamUsers();
+  const inviteMutation = useInviteTeamUser();
+  const updateMutation = useUpdateTeamUser();
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [expandedUserId, setExpandedUserId] = useState<number | null>(null);
+  const [permissionDrafts, setPermissionDrafts] = useState<Record<number, Permission[]>>({});
+  const [inviteNotice, setInviteNotice] = useState<{ email: string; url: string | null } | null>(null);
+  const users = usersQuery.data?.users ?? [];
+  const activeAdminCount = useMemo(() => users.filter((user) => user.role === 'admin' && user.active).length, [users]);
 
   useEffect(() => {
-    document.title = 'Usuários e permissões | Painel administrativo'
-  }, [])
+    document.title = 'Usuários e permissões | Painel administrativo';
+  }, []);
 
   useEffect(() => {
-    if (!usersQuery.data) return
-    setPermissionDrafts(current => {
-      const next = {...current}
+    if (!usersQuery.data) return;
+    setPermissionDrafts((current) => {
+      const next = { ...current };
       for (const user of usersQuery.data.users) {
-        if (next[user.id]) continue
-        const inherited = usersQuery.data.roleDefaults[user.role] ?? []
+        if (next[user.id]) continue;
+        const inherited = usersQuery.data.roleDefaults[user.role] ?? [];
         next[user.id] = usersQuery.data.permissionKeys.filter(
-          permission => user.permissions.includes(permission) || (user.effectivePermissions.includes(permission) && !inherited.includes(permission))
-        )
+          (permission) => user.permissions.includes(permission) || (user.effectivePermissions.includes(permission) && !inherited.includes(permission)),
+        );
       }
-      return next
-    })
-  }, [usersQuery.data])
+      return next;
+    });
+  }, [usersQuery.data]);
 
   async function invite(values: InviteValues) {
-    const result = await inviteMutation.mutateAsync(values)
-    const url = result.inviteToken ? `${window.location.origin}/redefinir-senha/${encodeURIComponent(result.inviteToken)}` : null
-    setInviteNotice({email: values.email, url})
-    setInviteOpen(false)
+    const result = await inviteMutation.mutateAsync(values);
+    const url = result.inviteToken ? `${window.location.origin}/redefinir-senha/${encodeURIComponent(result.inviteToken)}` : null;
+    setInviteNotice({ email: values.email, url });
+    setInviteOpen(false);
   }
 
   function setPermission(userId: number, permission: Permission, checked: boolean) {
-    setPermissionDrafts(current => {
-      const currentPermissions = current[userId] ?? []
-      return {...current, [userId]: checked ? [...new Set([...currentPermissions, permission])] : currentPermissions.filter(item => item !== permission)}
-    })
+    setPermissionDrafts((current) => {
+      const currentPermissions = current[userId] ?? [];
+      return { ...current, [userId]: checked ? [...new Set([...currentPermissions, permission])] : currentPermissions.filter((item) => item !== permission) };
+    });
   }
 
   async function savePermissions(userId: number) {
-    await updateMutation.mutateAsync({id: userId, input: {permissions: permissionDrafts[userId] ?? []}})
+    await updateMutation.mutateAsync({ id: userId, input: { permissions: permissionDrafts[userId] ?? [] } });
   }
 
   async function copyInvite() {
-    if (!inviteNotice?.url) return
+    if (!inviteNotice?.url) return;
     try {
-      await navigator.clipboard.writeText(inviteNotice.url)
-      toast.success('Link de definição de senha copiado.')
+      await navigator.clipboard.writeText(inviteNotice.url);
+      toast.success('Link de definição de senha copiado.');
     } catch {
-      toast.error('Não foi possível copiar o link. Selecione e copie o endereço.')
+      toast.error('Não foi possível copiar o link. Selecione e copie o endereço.');
     }
   }
 
@@ -188,7 +188,7 @@ export default function TeamUsersPage() {
             <ErrorState title="Não foi possível carregar os usuários" onRetry={() => void usersQuery.refetch()} />
           : usersQuery.isPending ?
             <div className="space-y-2" aria-label="Carregando usuários">
-              {[1, 2, 3].map(index => (
+              {[1, 2, 3].map((index) => (
                 <Skeleton key={index} className="h-14 rounded-lg" />
               ))}
             </div>
@@ -204,8 +204,8 @@ export default function TeamUsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map(user => {
-                  const lastActiveAdmin = user.role === 'admin' && user.active && activeAdminCount === 1
+                {users.map((user) => {
+                  const lastActiveAdmin = user.role === 'admin' && user.active && activeAdminCount === 1;
                   return (
                     <TableRow key={user.id}>
                       <TableCell>
@@ -215,20 +215,21 @@ export default function TeamUsersPage() {
                       <TableCell>
                         <Select
                           value={user.role}
-                          onValueChange={role => {
-                            setPermissionDrafts(current => {
-                              const next = {...current}
-                              delete next[user.id]
-                              return next
-                            })
-                            updateMutation.mutate({id: user.id, input: {role: role as StaffUser['role']}})
+                          onValueChange={(role) => {
+                            setPermissionDrafts((current) => {
+                              const next = { ...current };
+                              delete next[user.id];
+                              return next;
+                            });
+                            updateMutation.mutate({ id: user.id, input: { role: role as StaffUser['role'] } });
                           }}
-                          disabled={!canManage || updateMutation.isPending || lastActiveAdmin}>
+                          disabled={!canManage || updateMutation.isPending || lastActiveAdmin}
+                        >
                           <SelectTrigger className="min-h-10 w-40" aria-label={`Papel de ${user.email || user.name}`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {(usersQuery.data?.roles ?? []).map(role => (
+                            {(usersQuery.data?.roles ?? []).map((role) => (
                               <SelectItem key={role} value={role}>
                                 {roleLabels[role]}
                               </SelectItem>
@@ -249,13 +250,14 @@ export default function TeamUsersPage() {
                           type="button"
                           variant={expandedUserId === user.id ? 'secondary' : 'outline'}
                           className="min-h-10"
-                          onClick={() => setExpandedUserId(current => (current === user.id ? null : user.id))}>
+                          onClick={() => setExpandedUserId((current) => (current === user.id ? null : user.id))}
+                        >
                           <ShieldCheck className="size-4" aria-hidden="true" />
                           {expandedUserId === user.id ? 'Fechar matriz' : 'Editar matriz'}
                         </Button>
                       </TableCell>
                     </TableRow>
-                  )
+                  );
                 })}
               </TableBody>
             </Table>
@@ -272,15 +274,15 @@ export default function TeamUsersPage() {
 
       {expandedUserId !== null &&
         (() => {
-          const user = users.find(item => item.id === expandedUserId)
-          if (!user) return null
-          const defaults = usersQuery.data?.roleDefaults[user.role] ?? []
-          const draft = permissionDrafts[user.id] ?? []
+          const user = users.find((item) => item.id === expandedUserId);
+          if (!user) return null;
+          const defaults = usersQuery.data?.roleDefaults[user.role] ?? [];
+          const draft = permissionDrafts[user.id] ?? [];
           const dirty =
-            usersQuery.data?.permissionKeys.some(permission => {
-              const wasGranted = user.effectivePermissions.includes(permission) && !defaults.includes(permission)
-              return wasGranted !== draft.includes(permission)
-            }) ?? false
+            usersQuery.data?.permissionKeys.some((permission) => {
+              const wasGranted = user.effectivePermissions.includes(permission) && !defaults.includes(permission);
+              return wasGranted !== draft.includes(permission);
+            }) ?? false;
           return (
             <Card>
               <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -298,13 +300,13 @@ export default function TeamUsersPage() {
                 </Button>
               </CardHeader>
               <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {permissionGroups.map(group => (
+                {permissionGroups.map((group) => (
                   <section key={group.title} className="rounded-lg border border-border p-4" aria-label={`Permissões de ${group.title}`}>
                     <h3 className="font-semibold">{group.title}</h3>
                     <div className="mt-3 space-y-2">
-                      {group.items.map(item => {
-                        const inherited = defaults.includes(item.key)
-                        const checked = inherited || draft.includes(item.key)
+                      {group.items.map((item) => {
+                        const inherited = defaults.includes(item.key);
+                        const checked = inherited || draft.includes(item.key);
                         return (
                           <label key={item.key} className="flex min-h-10 items-center justify-between gap-3 text-sm">
                             <span>{item.label}</span>
@@ -313,22 +315,22 @@ export default function TeamUsersPage() {
                               <Checkbox
                                 checked={checked}
                                 disabled={!canManage || inherited}
-                                onCheckedChange={value => setPermission(user.id, item.key, value === true)}
+                                onCheckedChange={(value) => setPermission(user.id, item.key, value === true)}
                                 aria-label={`${item.label} em ${group.title}`}
                               />
                             </span>
                           </label>
-                        )
+                        );
                       })}
                     </div>
                   </section>
                 ))}
               </CardContent>
             </Card>
-          )
+          );
         })()}
 
       <InviteStaffDialog open={inviteOpen} pending={inviteMutation.isPending} onOpenChange={setInviteOpen} onInvite={invite} />
     </div>
-  )
+  );
 }

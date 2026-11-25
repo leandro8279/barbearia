@@ -1,83 +1,83 @@
-import {useEffect, useMemo, useState} from 'react'
-import {useForm} from 'react-hook-form'
-import type {ColumnDef} from '@tanstack/react-table'
-import {BarberCard} from '@/shared/components/barber-card'
-import {CalendarGrid} from '@/shared/components/calendar-grid'
-import {CalendarPicker} from '@/shared/components/calendar-picker'
-import {ConfirmDialog} from '@/shared/components/confirm-dialog'
-import {Countdown} from '@/shared/components/countdown'
-import {DataTable} from '@/shared/components/data-table'
-import {DurationInput} from '@/shared/components/duration-input'
-import {EmptyState} from '@/shared/components/empty-state'
-import {ErrorState} from '@/shared/components/error-state'
-import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from '@/shared/components/form-field'
-import {MoneyInput} from '@/shared/components/money-input'
-import {PageHeader} from '@/shared/components/page-header'
-import {PhoneInput} from '@/shared/components/phone-input'
-import {PriceTag} from '@/shared/components/price-tag'
-import {Reveal} from '@/shared/components/reveal'
-import {ServiceCard} from '@/shared/components/service-card'
-import {SlotGrid} from '@/shared/components/slot-grid'
-import {StatusBadge} from '@/shared/components/status-badge'
-import {Stepper} from '@/shared/components/stepper'
-import {useDebounce} from '@/shared/hooks/use-debounce'
-import {useMediaQuery} from '@/shared/hooks/use-media-query'
-import {useOverlay} from '@/shared/hooks/use-overlay'
-import {useBookingDraftStore} from '@/shared/stores/booking-draft-store'
-import {Button} from '@/shared/ui/button'
-import {Card, CardContent, CardHeader, CardTitle} from '@/shared/ui/card'
-import {Input} from '@/shared/ui/input'
+import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import type { ColumnDef } from '@tanstack/react-table';
+import { BarberCard } from '@/shared/components/barber-card';
+import { CalendarGrid } from '@/shared/components/calendar-grid';
+import { CalendarPicker } from '@/shared/components/calendar-picker';
+import { ConfirmDialog } from '@/shared/components/confirm-dialog';
+import { Countdown } from '@/shared/components/countdown';
+import { DataTable } from '@/shared/components/data-table';
+import { DurationInput } from '@/shared/components/duration-input';
+import { EmptyState } from '@/shared/components/empty-state';
+import { ErrorState } from '@/shared/components/error-state';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/form-field';
+import { MoneyInput } from '@/shared/components/money-input';
+import { PageHeader } from '@/shared/components/page-header';
+import { PhoneInput } from '@/shared/components/phone-input';
+import { PriceTag } from '@/shared/components/price-tag';
+import { Reveal } from '@/shared/components/reveal';
+import { ServiceCard } from '@/shared/components/service-card';
+import { SlotGrid } from '@/shared/components/slot-grid';
+import { StatusBadge } from '@/shared/components/status-badge';
+import { Stepper } from '@/shared/components/stepper';
+import { useDebounce } from '@/shared/hooks/use-debounce';
+import { useMediaQuery } from '@/shared/hooks/use-media-query';
+import { useOverlay } from '@/shared/hooks/use-overlay';
+import { useBookingDraftStore } from '@/shared/stores/booking-draft-store';
+import { Button } from '@/shared/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Input } from '@/shared/ui/input';
 
 interface DemoBooking {
-  id: string
-  client: string
-  service: string
-  date: string
+  id: string;
+  client: string;
+  service: string;
+  date: string;
 }
 
 const demoBookings: DemoBooking[] = [
-  {id: 'ag-1001', client: 'Ana Souza', service: 'Corte', date: '09/11/2026'},
-  {id: 'ag-1002', client: 'Bruno Lima', service: 'Barba', date: '09/11/2026'},
-  {id: 'ag-1003', client: 'Caio Mendes', service: 'Corte e barba', date: '10/11/2026'}
-]
+  { id: 'ag-1001', client: 'Ana Souza', service: 'Corte', date: '09/11/2026' },
+  { id: 'ag-1002', client: 'Bruno Lima', service: 'Barba', date: '09/11/2026' },
+  { id: 'ag-1003', client: 'Caio Mendes', service: 'Corte e barba', date: '10/11/2026' },
+];
 
 const bookingColumns: ColumnDef<DemoBooking>[] = [
-  {accessorKey: 'client', header: 'Cliente', enableSorting: true},
-  {accessorKey: 'service', header: 'Serviço', enableSorting: true},
-  {accessorKey: 'date', header: 'Data', enableSorting: true}
-]
+  { accessorKey: 'client', header: 'Cliente', enableSorting: true },
+  { accessorKey: 'service', header: 'Serviço', enableSorting: true },
+  { accessorKey: 'date', header: 'Data', enableSorting: true },
+];
 
 const demoSlots = [
-  {time: '09:00', available: true},
-  {time: '09:30', available: false},
-  {time: '10:00', available: true},
-  {time: '10:30', available: true},
-  {time: '14:00', available: true},
-  {time: '15:30', available: true},
-  {time: '19:00', available: false}
-]
+  { time: '09:00', available: true },
+  { time: '09:30', available: false },
+  { time: '10:00', available: true },
+  { time: '10:30', available: true },
+  { time: '14:00', available: true },
+  { time: '15:30', available: true },
+  { time: '19:00', available: false },
+];
 
 export default function UiGalleryPage() {
-  const [price, setPrice] = useState(6500)
-  const [duration, setDuration] = useState(30)
-  const [phone, setPhone] = useState('11987654321')
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
-  const [selectedTime, setSelectedTime] = useState<string | null>('10:00')
-  const [slotSearch, setSlotSearch] = useState('')
-  const debouncedSearch = useDebounce(slotSearch, 250)
-  const isDesktop = useMediaQuery('(min-width: 768px)')
-  const confirmOverlay = useOverlay('ui-confirm', '1')
-  const bookingStep = useBookingDraftStore(state => state.step)
-  const form = useForm<{nome: string}>({defaultValues: {nome: ''}})
-  const countdownExpiry = useMemo(() => Date.now() + 5 * 60_000, [])
+  const [price, setPrice] = useState(6500);
+  const [duration, setDuration] = useState(30);
+  const [phone, setPhone] = useState('11987654321');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string | null>('10:00');
+  const [slotSearch, setSlotSearch] = useState('');
+  const debouncedSearch = useDebounce(slotSearch, 250);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const confirmOverlay = useOverlay('ui-confirm', '1');
+  const bookingStep = useBookingDraftStore((state) => state.step);
+  const form = useForm<{ nome: string }>({ defaultValues: { nome: '' } });
+  const countdownExpiry = useMemo(() => Date.now() + 5 * 60_000, []);
 
   useEffect(() => {
-    const previousTitle = document.title
-    document.title = 'Componentes compartilhados | Barbearia'
+    const previousTitle = document.title;
+    document.title = 'Componentes compartilhados | Barbearia';
     return () => {
-      document.title = previousTitle
-    }
-  }, [])
+      document.title = previousTitle;
+    };
+  }, []);
 
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6">
@@ -107,7 +107,7 @@ export default function UiGalleryPage() {
           <CardTitle>Tabela com controle no servidor</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable columns={bookingColumns} data={demoBookings} rowCount={demoBookings.length} enableRowSelection getRowId={row => row.id} searchPlaceholder="Buscar agendamentos..." />
+          <DataTable columns={bookingColumns} data={demoBookings} rowCount={demoBookings.length} enableRowSelection getRowId={(row) => row.id} searchPlaceholder="Buscar agendamentos..." />
         </CardContent>
       </Card>
 
@@ -133,7 +133,7 @@ export default function UiGalleryPage() {
               <FormField
                 control={form.control}
                 name="nome"
-                render={({field}) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nome</FormLabel>
                     <FormControl>
@@ -148,11 +148,11 @@ export default function UiGalleryPage() {
           </div>
           <div className="grid gap-2">
             <span className="text-sm font-medium">Data com dias indisponíveis</span>
-            <CalendarPicker value={selectedDate} onValueChange={setSelectedDate} disabledDays={{before: new Date()}} />
+            <CalendarPicker value={selectedDate} onValueChange={setSelectedDate} disabledDays={{ before: new Date() }} />
           </div>
           <div className="grid gap-2">
             <span className="text-sm font-medium">Busca com debounce</span>
-            <Input className="min-h-11" value={slotSearch} onChange={event => setSlotSearch(event.target.value)} placeholder="Digite para testar" />
+            <Input className="min-h-11" value={slotSearch} onChange={(event) => setSlotSearch(event.target.value)} placeholder="Digite para testar" />
             <p className="text-sm text-muted-foreground">Valor aplicado: {debouncedSearch || '—'}</p>
           </div>
         </CardContent>
@@ -178,7 +178,7 @@ export default function UiGalleryPage() {
         <CardContent className="space-y-5">
           <Stepper
             currentStep={['services', 'barber', 'slot', 'details', 'review'].indexOf(bookingStep)}
-            steps={[{label: 'Serviço'}, {label: 'Profissional'}, {label: 'Horário'}, {label: 'Dados'}, {label: 'Revisão'}]}
+            steps={[{ label: 'Serviço' }, { label: 'Profissional' }, { label: 'Horário' }, { label: 'Dados' }, { label: 'Revisão' }]}
           />
           <SlotGrid slots={demoSlots} selectedTime={selectedTime} onSelect={setSelectedTime} />
           <div className="flex flex-wrap gap-2">
@@ -201,10 +201,10 @@ export default function UiGalleryPage() {
           <CalendarGrid
             date={selectedDate ?? new Date()}
             barbers={[
-              {id: 'barber-1', name: 'Rafael'},
-              {id: 'barber-2', name: 'Lucas'}
+              { id: 'barber-1', name: 'Rafael' },
+              { id: 'barber-2', name: 'Lucas' },
             ]}
-            appointments={[{id: 'demo-1', barberId: 'barber-1', startsAt: new Date().toISOString(), durationMinutes: 30, customerName: 'Marina Costa', serviceName: 'Corte', status: 'confirmado'}]}
+            appointments={[{ id: 'demo-1', barberId: 'barber-1', startsAt: new Date().toISOString(), durationMinutes: 30, customerName: 'Marina Costa', serviceName: 'Corte', status: 'confirmado' }]}
             view="day"
           />
         </CardContent>
@@ -231,5 +231,5 @@ export default function UiGalleryPage() {
         onConfirm={confirmOverlay.close}
       />
     </main>
-  )
+  );
 }
