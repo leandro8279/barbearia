@@ -1,12 +1,24 @@
-import { QueryKey, QueryObserver, QueryObserverOptions, QueryObserverResult } from '@tanstack/react-query';
+import {
+  QueryKey,
+  QueryObserver,
+  QueryObserverOptions,
+  QueryObserverResult,
+} from '@tanstack/react-query';
 
 import { queryClient } from '@/shared/lib/query-client';
 
 import { createAtom, observable, runInAction } from 'mobx';
 
-export class MobxQuery<TQueryFnData = unknown, TError = unknown, TData = TQueryFnData, TQueryData = TQueryFnData, TQueryKey extends QueryKey = QueryKey> {
+export class MobxQuery<
+  TQueryFnData = unknown,
+  TError = unknown,
+  TData = TQueryFnData,
+  TQueryData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey,
+> {
   private observer?: QueryObserver<TQueryFnData, TError, TData, TQueryData, TQueryKey>;
   private unsubscribe?: () => void;
+  private lastKeyHash?: string;
 
   // Muda a cada notificação do TanStack, fazendo os computed/observers recalcularem
   private readonly version = observable.box(0);
@@ -18,15 +30,29 @@ export class MobxQuery<TQueryFnData = unknown, TError = unknown, TData = TQueryF
     () => this.stop(),
   );
 
-  constructor(private readonly baseOptions = {} as Partial<QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>>) {}
+  constructor(
+    private readonly baseOptions: Partial<
+      QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>
+    > = {},
+  ) {}
 
-  query(options?: Partial<QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>>): QueryObserverResult<TData, TError> {
-    const merged = queryClient.defaultQueryOptions({ ...this.baseOptions, ...options } as QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>);
+  query(
+    options?: Partial<QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>>,
+  ): QueryObserverResult<TData, TError> {
+    const merged = queryClient.defaultQueryOptions({
+      ...this.baseOptions,
+      ...options,
+    } as QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>);
 
-    if (this.observer) {
-      this.observer.setOptions(merged);
-    } else {
+    const keyHash = JSON.stringify(merged.queryKey ?? null);
+
+    if (!this.observer) {
       this.observer = new QueryObserver(queryClient, merged);
+      this.lastKeyHash = keyHash;
+    } else if (keyHash !== this.lastKeyHash) {
+      // Só reconfigura quando a chave muda (evita churn a cada getter)
+      this.observer.setOptions(merged);
+      this.lastKeyHash = keyHash;
     }
 
     this.atom.reportObserved(); // dispara subscribe() se for o primeiro observador
@@ -37,7 +63,10 @@ export class MobxQuery<TQueryFnData = unknown, TError = unknown, TData = TQueryF
   }
 
   private subscribe() {
-    this.unsubscribe = this.observer?.subscribe(() => runInAction(() => this.version.set(this.version.get() + 1)));
+    this.unsubscribe?.();
+    this.unsubscribe = this.observer?.subscribe(() =>
+      runInAction(() => this.version.set(this.version.get() + 1)),
+    );
   }
 
   private stop() {
