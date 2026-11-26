@@ -1,8 +1,15 @@
 import { useState } from 'react';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getAccountProfile, updateAccountProfile, type UpdateAccountProfileInput } from '@/modules/account/api/profile';
-import { getMyAppointment, getMyAppointments, type AppointmentListParams } from '@/modules/account/api/appointments';
+
+import {
+    AppointmentListParams, CustomerAppointmentDetail, getMyAppointment, getMyAppointments
+} from '@/modules/account/api/appointments';
+import {
+    getAccountProfile, updateAccountProfile, UpdateAccountProfileInput
+} from '@/modules/account/api/profile';
 import { getPublicBarbers } from '@/modules/site/api/barbers';
+
 import { MobxQuery } from '@/shared/lib/query';
 import { useSessionStore } from '@/shared/stores/session-store';
 
@@ -32,12 +39,7 @@ interface UseAccountAppointmentProps {
 }
 
 export const useAccountAppointment = (params: () => UseAccountAppointmentProps) => {
-  const [store] = useState(
-    () =>
-      new MobxQuery({
-        queryKey: ['appointments', { scope: 'customer' }],
-      }),
-  );
+  const [store] = useState(() => new MobxQuery<CustomerAppointmentDetail>());
 
   const getResult = () => {
     const { id, enabled = true } = params();

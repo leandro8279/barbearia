@@ -1,10 +1,14 @@
-import { useSearch } from 'wouter';
-import { useAccountAppointment } from '@/modules/account/hooks/use-account-data';
-import type { CustomerAppointmentDetail } from '@/modules/account/api/appointments';
-import { useOverlay } from '@/shared/hooks/use-overlay';
 import { CancelAppointmentDialog } from '@/modules/account/components/cancel-appointment-dialog';
-import { RescheduleAppointmentDialog } from '@/modules/account/components/reschedule-appointment-dialog';
+import {
+    RescheduleAppointmentDialog
+} from '@/modules/account/components/reschedule-appointment-dialog';
+import { useAccountAppointment } from '@/modules/account/hooks/use-account-data';
 
+import { useOverlay } from '@/shared/hooks/use-overlay';
+
+import { useSearch } from 'wouter';
+
+import type { CustomerAppointmentDetail } from '@/modules/account/api/appointments';
 interface AppointmentActionOverlaysProps {
   appointment?: CustomerAppointmentDetail;
 }
