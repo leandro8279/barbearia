@@ -1,7 +1,6 @@
 import type { MutateOptions, MutationObserverOptions, MutationObserverResult, QueryClient } from "@tanstack/react-query";
 import { observable, runInAction } from "mobx";
 
-import { queryClient } from "@/config/query-client";
 import { MutationObserver } from "@tanstack/react-query";
 import { queryClient } from '@/shared/lib/query-client';
 
