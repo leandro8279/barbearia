@@ -1,57 +1,25 @@
-import { useEffect, useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { Link, useLocation, useSearch } from 'wouter';
-import { login } from '@/modules/auth/api/auth';
-import { loginSchema, type LoginFormValues } from '@/modules/auth/schemas/login.schema';
+import { useEffect } from 'react';
+
 import { ForgotPasswordDialog } from '@/modules/auth/components/forgot-password-dialog';
-import { HttpError } from '@/shared/lib/http';
-import { useSessionStore } from '@/shared/stores/session-store';
-import { useOverlay } from '@/shared/hooks/use-overlay';
+import { useLoginPage } from '@/modules/auth/hooks/use-login-page';
+
+import { RenderComponent } from '@/shared/components/render-component';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
-import type { UserRole } from '@/shared/types/domain';
 
-function destinationForRole(role: UserRole, search: string) {
-  if (role !== 'customer') return '/admin';
-
-  const next = new URLSearchParams(search).get('next');
-  if (next?.startsWith('/') && !next.startsWith('//') && !next.includes('\\')) return next;
-  return '/conta';
-}
-
-function loginErrorMessage(error: unknown) {
-  if (error instanceof HttpError && error.status === 401) return 'E-mail/telefone ou senha inválidos.';
-  return 'Não foi possível entrar agora. Tente novamente.';
-}
+import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import { Observer } from 'mobx-react-lite';
+import { Link } from 'wouter';
 
 export default function LoginPage() {
-  const search = useSearch();
-  const [, setLocation] = useLocation();
-  const recoveryOverlay = useOverlay('recuperar');
-  const setSession = useSessionStore((state) => state.setSession);
-  const [showPassword, setShowPassword] = useState(false);
-  const form = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema), defaultValues: { identifier: '', password: '' } });
+  const store = useLoginPage();
+  const documentTitle = store.documentTitle;
 
   useEffect(() => {
-    document.title = `${recoveryOverlay.isOpen ? 'Recuperar senha' : 'Entrar'} | Barbearia`;
-  }, [recoveryOverlay.isOpen]);
-
-  async function onSubmit(values: LoginFormValues) {
-    form.clearErrors('root.server');
-    try {
-      const result = await login(values.identifier, values.password);
-      setSession(result.user, result.token);
-      setLocation(destinationForRole(result.user.role, search));
-    } catch (error) {
-      form.setError('root.server', { type: 'server', message: loginErrorMessage(error) });
-    }
-  }
-
-  const isSubmitting = form.formState.isSubmitting;
+    document.title = documentTitle;
+  }, [documentTitle]);
 
   return (
     <>
@@ -62,68 +30,76 @@ export default function LoginPage() {
           <CardDescription>Use seu e-mail ou telefone para acompanhar seus horários.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          <Form {...form}>
-            <form className="space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
-              <FormField
-                control={form.control}
-                name="identifier"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-mail ou telefone</FormLabel>
-                    <FormControl>
-                      <Input {...field} autoComplete="username" autoFocus placeholder="Seu e-mail ou telefone" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <Observer>
+            {() => (
+              <Form {...store.form}>
+                <form className="space-y-5" onSubmit={(event) => void store.handleSubmit(event)}>
+                  <FormField
+                    control={store.form.control}
+                    name="identifier"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>E-mail ou telefone</FormLabel>
+                        <FormControl>
+                          <Input {...field} autoComplete="username" autoFocus placeholder="Seu e-mail ou telefone" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between gap-3">
-                      <FormLabel>Senha</FormLabel>
-                      <Link href="/entrar?recuperar=1" className="inline-flex min-h-11 items-center text-sm text-primary hover:underline">
-                        Esqueci a senha
-                      </Link>
-                    </div>
-                    <div className="relative">
-                      <FormControl>
-                        <Input {...field} autoComplete="current-password" className="h-11 pr-12" type={showPassword ? 'text' : 'password'} placeholder="Sua senha" />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-1 top-1 size-11"
-                        aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                        aria-pressed={showPassword}
-                        onClick={() => setShowPassword((value) => !value)}
-                      >
-                        {showPassword ?
-                          <EyeOff aria-hidden="true" />
-                        : <Eye aria-hidden="true" />}
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={store.form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between gap-3">
+                          <FormLabel>Senha</FormLabel>
+                          <Link href="/entrar?recuperar=1" className="inline-flex min-h-11 items-center text-sm text-primary hover:underline">
+                            Esqueci a senha
+                          </Link>
+                        </div>
+                        <div className="relative">
+                          <FormControl>
+                            <Input {...field} autoComplete="current-password" className="h-11 pr-12" type={store.passwordInputType} placeholder="Sua senha" />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-1 size-11"
+                            aria-label={store.passwordToggleLabel}
+                            aria-pressed={store.showPassword}
+                            onClick={() => store.togglePassword()}
+                          >
+                            <RenderComponent condition={store.showPassword}>
+                              <EyeOff aria-hidden="true" />
+                            </RenderComponent>
 
-              {form.formState.errors.root?.server && (
-                <p className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
-                  {form.formState.errors.root.server.message}
-                </p>
-              )}
+                            <RenderComponent condition={!store.showPassword}>
+                              <Eye aria-hidden="true" />
+                            </RenderComponent>
+                          </Button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <Button className="h-11 w-full" type="submit" disabled={isSubmitting}>
-                {isSubmitting && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
-                {isSubmitting ? 'Entrando…' : 'Entrar'}
-              </Button>
-            </form>
-          </Form>
+                  <RenderComponent condition={store.serverError}>
+                    <p className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+                      {store.serverError}
+                    </p>
+                  </RenderComponent>
+
+                  <Button className="h-11 w-full" type="submit" disabled={store.isSubmitting}>
+                    {store.isSubmitting && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
+                    {store.submitLabel}
+                  </Button>
+                </form>
+              </Form>
+            )}
+          </Observer>
 
           <p className="text-center text-sm text-muted-foreground">
             Ainda não tem conta?{' '}
@@ -143,7 +119,8 @@ export default function LoginPage() {
           </Button>
         </CardContent>
       </Card>
-      <ForgotPasswordDialog open={recoveryOverlay.isOpen} onOpenChange={(open) => recoveryOverlay.setOpen(open)} />
+
+      <Observer>{() => <ForgotPasswordDialog open={store.isRecoveryOpen} onOpenChange={(open) => store.setRecoveryOpen(open)} />}</Observer>
     </>
   );
 }
