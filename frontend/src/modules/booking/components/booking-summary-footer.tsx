@@ -1,7 +1,6 @@
-import { Button } from '@/shared/ui/button';
 import { formatBRL, formatDuration } from '@/shared/lib/format';
-import { useBookingEstimate } from '@/modules/booking/hooks/use-booking-data';
 import { useBookingDraftStore } from '@/shared/stores/booking-draft-store';
+import { Button } from '@/shared/ui/button';
 
 interface BookingSummaryFooterProps {
   actionLabel: string;
